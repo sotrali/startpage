@@ -1,0 +1,2665 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      /*
+      * GENERAL STATE HELPERS
+      */
+      .hidden {
+        visibility: hidden;
+        display: none;
+      }
+
+      /*
+      * CURSOR STUFF
+      body {
+        cursor: url(""), auto;
+      }
+      .grabbable:hover {
+        cursor: url(""), grab;
+      }
+      .removable:hover {
+        cursor: url(""), crosshair;
+      }
+      */
+
+      .movable {
+        position: fixed;
+      }
+
+      #mainContainer {
+        z-index: 998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: auto;
+      }
+
+      .section {
+        margin-top: 0rem;
+      }
+
+      .settingsContainer {
+        background-color: rgba(173, 165, 165, 0.8);
+        z-index: 999;
+
+        border: solid black 2px;
+        border-radius: 10px;
+        padding: 10px;
+
+        display: block;
+
+        top: 2rem;
+        align-self: flex-end;
+
+        overflow: auto;
+      }
+
+      /*
+      * SETTINGS TABS
+      */
+      #tabList {
+        display: block;
+        border-bottom: solid 2px black;
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+      }
+
+      .tab {
+        margin-right: 2rem;
+        user-select: none;
+        text-wrap: nowrap;
+      }
+      .tab:hover {
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      .tab.active {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+      #ioTab {
+        flex-shrink: 1;
+      }
+
+      /*
+      * SETTINGS PAGES
+      */
+      form,
+      #instructionsForm {
+        display: none;
+        flex-direction: column;
+      }
+      .formTitle {
+        margin-bottom: 1rem;
+        text-decoration: underline;
+        font-style: italic;
+        align-self: center;
+      }
+      label {
+        align-self: start;
+      }
+      input {
+        align-self: flex-end;
+        width: 100%;
+      }
+      input[type="checkbox"],
+      input[type="radio"] {
+        width: auto;
+      }
+
+      #instructionsTab {
+      }
+      #bookmarkForm {
+      }
+      #linkCustomizationForm {
+      }
+      #containerCustomizationForm {
+      }
+      #resetForm {
+      }
+
+      #editToggle {
+        z-index: 999;
+        position: fixed;
+        font-size: 0.75rem;
+      }
+      #editToggle:hover {
+        cursor: pointer;
+      }
+
+      .hiddenButton {
+        display: inline;
+        visibility: visible;
+        font-style: italic;
+      }
+      .hiddenButton.hidden {
+        visibility: hidden;
+        display: none;
+      }
+      .hiddenButton:hover {
+        cursor: pointer;
+      }
+
+      #imageRemovalWarning {
+        color: red;
+        size: 3rem;
+        font-weight: bold;
+        user-select: none;
+        z-index: 1000;
+        display: inline;
+        align-self: center;
+        background-color: black;
+        border: solid red 0.25rem;
+        padding: 0.25rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="movable" id="mainContainer">
+      <div style="margin: auto">
+        <div id="clock">
+          <span id="date"></span>
+          <br />
+          <span id="time"></span>
+        </div>
+        <hr id="containerDivider" />
+        <div id="linkContainer"></div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column">
+      <div id="imageRemovalWarning" class="hidden">
+        IMAGE REMOVAL MODE ACTIVE!!
+      </div>
+      <a id="editToggle" onClick="toggleEditMode()" style="align-self: flex-end"
+        >edit page</a
+      >
+
+      <br />
+
+      <div id="settingsContainer" class="movable settingsContainer hidden">
+        <div id="tabList">
+          <span class="tab" id="bookmarkTab">bookmarks</span>
+          <span class="tab" id="addContainerTab">containers / layers</span>
+          <span class="tab" id="containerCustomizationTab">container</span>
+          <span class="tab" id="imageAndWallpaperTab">images + wallpaper</span>
+          <span class="tab" id="audioTab">audio</span>
+          <span class="tab" id="globalSettingsTab">global settings</span>
+          <br />
+          <span class="tab" id="ioTab">import / export</span>
+          <span class="tab" id="resetTab">reset data</span>
+          <span class="tab" id="instructionsTab">instructions</span>
+        </div>
+        <div id="instructionsForm">
+          <p id="helpText">
+            you are now editing the page!<br /><br />
+            this is the settings box. there are various tabs containing various
+            customization options for your startpage experience. you can create
+            and categorize bookmarks, customize the bookmark box to your taste,
+            change the wallpaper, and add + maniuplate any image you want!<br /><br />
+            <b>[ <i>let it be known</i> ]</b><br />
+            <i
+              >your changes will only be saved when you stop editing the page.
+              to cancel your live edits, refresh the page without hitting
+              save.</i
+            ><br /><br />
+            <b>[ <i>bookmark tips</i> ]</b><br />
+            to group bookmarks together, just enter them with the same section.
+            bookmarks without a section will stay at the top. you can remove
+            individual bookmarks or whole sections, and sections can be
+            rearranged. there's also a button in this menu to full reset.<br /><br />
+            <b>[ <i>customization tips</i> ]</b><br />
+            everything on the screen can be dragged around and resized. left
+            click and drag to move, right click and drag to resize!<br /><br />
+            you can add as many images to the background and resize them as you
+            wish, but they can only be added via URL. i have provided a quick
+            link to a place to upload your own images if you have specific
+            things in mind, but you can also make a beautiful collage of random
+            photographs you find without using any disk space.<br /><br />
+            <b>[ <i>changing font</i> ]</b><br />
+            you can use any font that is available on
+            <a href="https://fonts.google.com/" target="blank">google fonts</a>.
+            FYI, if you have multiple fonts selected only the first one will be
+            loaded, and it will be the regular version (if there are variants of
+            the font)<br /><br />
+            to load a font:<br />
+            1.) on google fonts, click on a font you like, press the "get font"
+            button, and then press the "get embed code" button. <br />2.) under
+            the "web" tab (you are already probably on it), copy the stuff
+            under: "embed code in the &lt;head&gt; of your html" (it should be a
+            few lines starting with &lt;link&gt;)<br />3.) paste contents into
+            the "change font" input, found on the "container" tab of this
+            floating menu.<br /><br /><b>[ <i>back-up themes!</i> ]</b><br />
+            you can export your entire current setup to import again later (save
+            ur moodboards or share with friends). this is primarily useful
+            because everything for this page is stored as a cookie. so, if you
+            reset your browser history or cache, your startpage will be lost!!
+            unless you have it backed up 8]
+            <br /><br />
+            clicking 'export data' will fill your clipboard with your currently
+            saved data (make sure you've saved your changes before exporting),
+            simply paste the contents into a text file for safekeeping. to load
+            a saved configuration, just paste the exported text and hit
+            import.<br /><br />
+            if you somehow lose your bookmark box off-screen, use the "reset box
+            customization" options to get it back. you will lose your other
+            customizations tho :[<br /><br />
+          </p>
+        </div>
+
+        <form id="bookmarkForm" onsubmit="return false">
+          <div class="formTitle">add bookmarks</div>
+          <div>
+            <label> enter url: </label>
+            <input id="linkInput" type="text" name="url" />
+          </div>
+          <div>
+            <label> enter label: </label>
+            <input id="labelInput" type="text" name="label" />
+          </div>
+          <div>
+            <label> enter section (optional): </label>
+            <input type="text" name="section" />
+          </div>
+          <button onclick="addLink()">add link</button>
+
+          <br />
+
+          <div class="formTitle">customize sections</div>
+          <div>
+            <label>set section size (px): </label>
+            <input id="sectionSize" />
+          </div>
+          <div>
+            <label>set section color: </label>
+            <input id="sectionColorPicker" type="color" />
+          </div>
+          <div>
+            <label for="sectionBoldToggle">bold sections?</label>
+            <input id="sectionBoldToggle" type="checkbox" />
+          </div>
+          <div>
+            <label for="sectionItalicToggle">italic sections?</label>
+            <input id="sectionItalicToggle" type="checkbox" />
+          </div>
+
+          <br />
+
+          <div class="formTitle">customize sections</div>
+          <div>
+            <label>set link size (px): </label>
+            <input id="linkSize" />
+          </div>
+          <div>
+            <label>set link color: </label>
+            <input id="linkColorPicker" type="color" />
+          </div>
+        </form>
+
+        <form id="addContainerForm" onsubmit="return false">
+          <div class="formTitle">add new containers / layers</div>
+          <input
+            id="newContainerNameInput"
+            placeholder="new container name"
+            type="text"
+          />
+          <button id="newContainerCreateButton" onclick="createNewContainer()">
+            create new container
+          </button>
+        </form>
+
+        <form id="containerCustomizationForm" onsubmit="return false">
+          <div class="formTitle">change text</div>
+          <div>
+            <label>change font (see instructions for more info):</label>
+            <input id="fontInput" />
+            <button id="setFontButton">set font</button>
+            <label>current font: </label><span id="currentFont"></span>
+          </div>
+          <div>
+            align text:
+            <label for="setLeftAlign">left</label>
+            <input id="setLeftAlign" type="radio" name="align" />
+            <label for="setCenterAlign">center</label>
+            <input id="setCenterAlign" type="radio" name="align" />
+          </div>
+          <br />
+
+          <div class="formTitle">change background</div>
+          <div>
+            <label>set background color: </label>
+            <input id="containerColorPicker" type="color" />
+          </div>
+          <div>
+            <label>set background opacity (%): </label>
+            <input id="containerAlpha" />
+          </div>
+          <br />
+
+          <div class="formTitle">change border + shape</div>
+          <div>
+            <label>set border color: </label>
+            <input id="borderColorPicker" type="color" />
+          </div>
+          <div>
+            <label>set border width (px): </label>
+            <input id="borderWidth" placeholder="0 for none" />
+          </div>
+          <div>
+            <label>set border radius / roundedness (px): </label>
+            <input id="borderRadius" placeholder="0 for square" />
+          </div>
+          <br />
+
+          <div class="formTitle">change date + clock</div>
+          <div>
+            <label>set date + time color: </label>
+            <input id="clockColorPicker" type="color" />
+          </div>
+          <div>
+            <label>set date + time font size (px): </label>
+            <input id="clockSize" />
+          </div>
+          <div>
+            <label for="clockBoldToggle">bold?</label>
+            <input id="clockBoldToggle" type="checkbox" />
+          </div>
+          <div>
+            <label for="clockItalicToggle">italic?</label>
+            <input id="clockItalicToggle" type="checkbox" />
+          </div>
+          <br />
+
+          <div class="formTitle">change divider</div>
+          <div>
+            <label for="dividerToggle">disable divider: </label>
+            <input id="dividerToggle" type="checkbox" />
+          </div>
+          <div>
+            <label>set divider color: </label>
+            <input id="dividerColorPicker" type="color" />
+          </div>
+          <br />
+
+          <div class="formTitle">change shadow / glow</div>
+          <div>
+            shadow settings:<br />
+            <label>x-offset (px): </label><br />
+            <input id="shadowX" placeholder="all 0 for none" /><br />
+            <label>y-offset (px): </label><br />
+            <input id="shadowY" placeholder="all 0 for none" /><br />
+            <label>blur radius / fuzziness (px): </label><br />
+            <input id="shadowBlur" placeholder="all 0 for none" /><br />
+            <label>shadow color: </label><br />
+            <input id="shadowColorPicker" type="color" /><br />
+            <label>shadow opacity:</label>
+            <input id="shadowAlpha" />
+          </div>
+        </form>
+
+        <form id="imageAndWallpaperForm" onsubmit="return false">
+          <div class="formTitle">edit images</div>
+          <div>
+            <label> add a floating image to the page: </label><br />
+            <input type="text" name="url" placeholder="paste image URL" />
+            <span
+              ><a
+                href="https://imgur.com/upload"
+                target="_blank"
+                style="color: white"
+                >imgur upload</a
+              ></span
+            >
+          </div>
+          <button onclick="addFloatingImage()">add floating image</button><br />
+          <div>
+            <label for="imageRatioToggle">free transform mode</label>
+            <input type="checkbox" id="imageRatioToggle" />
+          </div>
+          <div>
+            <label for="imageRemovalToggle">image removal mode</label>
+            <input type="checkbox" id="imageRemovalToggle" />
+          </div>
+          <br />
+          <div class="formTitle">edit wallpaper</div>
+          <div>
+            <label> image as wallpaper: </label><br />
+            <input id="wallpaperUrl" placeholder="paste image URL" />
+            <button id="submitUrl" onclick="changeWallpaper()">
+              set image
+            </button>
+            <label for="wallpaperRepeatToggle"> tile? </label>
+            <input id="wallpaperRepeatToggle" type="checkbox" />
+          </div>
+          <div>
+            <label> solid color as wallpaper: </label><br />
+            <input type="color" id="wallpaperColorPicker" />
+          </div>
+        </form>
+
+        <form id="ioForm" onsubmit="return false">
+          <label
+            >use the button below to copy your current configuration to your
+            clipboard<br/ >(you should save this somewhere)</label
+          >
+          <button onclick="exportData()">export data</button><br />
+
+          <input id="importDataInput" />
+          <button
+            onclick="importData()"
+            placeholder="paste exported data here to load"
+          >
+            import data
+          </button>
+        </form>
+
+        <form id="audioForm" onsubmit="return false">
+          <label
+            >paste a direct URL to an audio file (ending in .mp3 or .wav or
+            whatever) to load:</label
+          >
+          <input id="audioLinkInput" />
+          <button onclick="setAudioLink()">set audio</button>
+          <audio id="audio" controls>
+            <source id="audioSource" src="" type="audio/mp3" />
+          </audio>
+          <label for="autoplayAudioToggle">auto-play when page loads? </label>
+          <input id="autoplayAudioToggle" type="checkbox" checked />
+          <label
+            >(note: this will require white-listing this site in your browser.
+            you can whitelist local HTML files! the URL would be something like
+            "file:///C:/path/to/saved/file")</label
+          >
+        </form>
+
+        <form id="globalSettingsForm" onsubmit="return false">
+          <label>enter source for normal cursor: </label>
+          <input id="pointerCursorInput" placeholder="paste link here" />
+          <button onclick="setDefaultCursor()">set normal cursor</button>
+
+          <label>enter source for grabbing cursor: </label>
+          <input id="grabCursorInput" placeholder="paste link here" />
+          <button onclick="setGrabCursor()">set grabbing cursor</button>
+        </form>
+
+        <form id="resetForm" onsubmit="return false">
+          <div class="formTitle">use these buttons to reset your page</div>
+          <button onclick="wipeBookmarks()">wipe links</button>
+          <button onclick="setDefault()">set to default gunny links</button
+          ><br />
+          <button onclick="wipeImages()">wipe floating images</button><br />
+          <button onclick="wipeWallpaper()">reset wallpaper</button><br />
+          <button onclick="wipeContainerSettings()">
+            reset box customizations</button
+          ><br />
+          <button onclick="resetCursors()">reset cursors</button>
+          <button onclick="resetFont()">reset font</button>
+        </form>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    // cookie holder for coordinates + size of settings menu
+    let settingsMenuData;
+
+    // cookie holder for coordinates + size of containers
+    let containerDataMap = new Map(); // key: element.id | values: {x:, y:, width:, height:, containerSettings}
+
+    // cookie holder for container settings
+    // let containerSettings = {};
+
+    // default values for easy resetting
+    let defaultTextContainerSettings = {
+      backgroundRgba: "rgba(255,255,255,.9)",
+      backgroundAlpha: 100,
+      borderWidth: "5",
+      borderRadius: "0",
+      borderColor: "grey",
+      sectionFontName: "",
+      sectionFontCode: "",
+      sectionColor: "",
+      sectionSize: "16",
+      sectionItalic: false,
+      sectionBold: false,
+      linkColor: "",
+      linkSize: "16",
+      enableDate: true,
+      enableClock: true,
+      /*
+       *
+       * IMPLEMENT CLOCK TOGGLE LOGIC
+       */
+      clockColor: "",
+      clockSize: "16",
+      clockBold: false,
+      clockItalic: false,
+      disableDivider: false,
+      dividerColor: "",
+      centerAlign: false,
+      shadowX: "0",
+      shadowY: "0",
+      shadowBlur: "0",
+      shadowRgba: "rgba(255,255,255,.90)",
+    };
+
+    /* let defaultImageContainerSettings = {
+      backgroundRgba: "",
+      backgroundAlpha: 100,
+      borderWidth: "0",
+      borderRadius: "0",
+      borderColor: "grey",
+      sectionFontName: "",
+      sectionFontCode: "",
+      sectionColor: "",
+      sectionSize: "16",
+      sectionItalic: false,
+      sectionBold: false,
+      linkColor: "",
+      linkSize: "16",
+      /*
+       *
+       * IMPLEMENT THIS
+       * clockToggle
+       *
+      clockColor: "",
+      clockSize: "16",
+      clockBold: false,
+      clockItalic: false,
+      disableDivider: false,
+      dividerColor: "",
+      centerAlign: false,
+      shadowX: "0",
+      shadowY: "0",
+      shadowBlur: "0",
+      shadowRgba: "rgba(255,255,255,.90)",
+    };*/
+
+    // cookie holder for images
+    // let imageMap = new Map(); // key: img.id     | value: {id:, url:}
+    let wallpaper = "";
+
+    // local states
+    let editing = false;
+    let moving = false;
+    let resizing = false;
+    let removing = false;
+    let changingElement;
+    let lastMouseX = 0;
+    let lastMouseY = 0;
+    let justImported = false;
+    let activeTabId = "";
+    let keepImageRatio = true;
+    let repeatWallpaper = false;
+    let audioLink = "";
+    let autoplayAudio = true;
+
+    let numberOfContainers = 0;
+
+    let cursors = {};
+
+    class Container {
+      id;
+      x;
+      y;
+      height;
+      width;
+      imageUrl;
+      containerSettings;
+      sections;
+
+      constructor(
+        name,
+        x,
+        y,
+        height,
+        width,
+        imageUrl,
+        containerSettings,
+        sections
+      ) {
+        this.id = name.replace(" ", "-");
+        // if initializing saved container content,
+        if (containerSettings != undefined) {
+          this.x = x;
+          this.y = y;
+          this.height = height;
+          this.width = width;
+          this.imageUrl = imageUrl;
+          this.containerSettings = containerSettings;
+          this.sections = sections;
+
+          this.loadSavedContainer();
+        }
+        // new text container content,
+        else if (imageUrl == "") {
+          this.initializeNewTextContainer();
+        }
+        // or new image container content
+        else {
+          // sanitize image input?
+          this.imageUrl = imageUrl;
+          this.initializeNewImageContainer();
+        }
+
+        // apply cosmetic customizations to container
+        this.applyContainerSettings();
+        // and create container settings UI
+        this.insertContainerOptionsMenu();
+        numberOfContainers++;
+      }
+
+      loadSavedContainer() {
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          `
+            <div id="${this.id}">
+            </div>
+          `
+        );
+        this.loadBookmarks();
+      }
+
+      /**
+       * creates container options menu in page settings menu
+       */
+      insertContainerOptionsMenu() {
+        document.getElementById("addContainerForm").insertAdjacentHTML(
+          "beforeend",
+          `
+          <div id=${this.id + "-settings-form"}>
+            <div class="formTitle">change background</div>
+            <div>
+                <label>set background color: </label>
+                <input id=${this.id + "-settings-bg-color"} type="color" />
+            </div>
+            <div>
+                <label>set background opacity (%): </label>
+                <input id=${this.id + "-settings-bg-alpha"} />
+            </div>
+            <br />
+            <div class="formTitle">change text</div>
+            <div>
+                <label>change font (see instructions for more info):</label>
+                <input  id=${this.id + "-settings-font-input"} />
+                <button id=${
+                  this.id + "-settings-set-font-button"
+                }>set font</button>
+                <label>current font:</label><span id=${
+                  this.id + "-settings-font-name"
+                }></span>
+            </div>
+            <br />
+
+            <div>
+                align text:
+                <label for=${this.id + "-settings-left-align"}>left</label>
+                <input id=${
+                  this.id + "-settings-left-align"
+                } type="radio" name="align" />
+                <label for=${this.id + "-settings-center-align"}>center</label>
+                <input id=${
+                  this.id + "-settings-center-align"
+                } type="radio" name="align" />
+            </div>
+            <br />
+
+            ` +
+            /*
+             *
+             * TODO
+             * MOVE THE SECTION COLOR AMD STUFF HERE
+             *
+             *
+             */
+            `
+            <div class="formTitle">change border + shape</div>
+            <div>
+                <label>set border color: </label>
+                <input id=${this.id + "-settings-border-color"} type="color" />
+            </div>
+            <div>
+                <label>set border width (px): </label>
+                <input id=${
+                  this.id + "-settings-border-width"
+                } placeholder="0 for none" />
+            </div>
+            <div>
+                <label>set container roundedness (px): </label>
+                <input id=${
+                  this.id + "-settings-border-radius"
+                } placeholder="0 for square" />
+            </div>
+            <br />
+
+            <div class="formTitle">change date + clock</div>
+            <div>
+                <label>show date?</label>
+                <input id=${this.id + "-settings-date-toggle"} />
+            </div>
+            <div>
+                <label>show clock?</label>
+                <input id=${this.id + "-settings-clock-toggle"} />
+            </div>
+            <div>
+                <label>set date + time color: </label>
+                <input id=${this.id + "-settings-clock-color"} type="color" />
+            </div>
+            <div>
+                <label>set date + time font size (px): </label>
+                <input id=${this.id + "-settings-clock-size"} />
+            </div>
+            <div>
+                <label for=${this.id + "-settings-clock-bold"}>bold?</label>
+                <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
+            </div>
+            <div>
+                <label for=${this.id + "-settings-clock-italic"}>italic?</label>
+                <input id=${
+                  this.id + "-settings-clock-italic"
+                } type="checkbox" />
+            </div>
+            <br />
+
+            <div class="formTitle">change divider</div>
+            <div>
+                <label for=${
+                  this.id + "-settings-divider-toggle"
+                }>disable divider: </label>
+                <input id=${
+                  this.id + "-settings-divider-toggle"
+                } type="checkbox" />
+            </div>
+            <div>
+                <label>set divider color: </label>
+                <input id=${this.id + "-settings-divider-color"} type="color" />
+            </div>
+            <br />
+
+            <div class="formTitle">change shadow / glow</div>
+            <div>
+                shadow settings:<br />
+                <label>x-offset (px): </label><br />
+                <input id=${
+                  this.id + "-settings-shadow-x"
+                } placeholder="all 0 for none" /><br />
+                <label>y-offset (px): </label><br />
+                <input id=${
+                  this.id + "-settings-shadow-y"
+                } placeholder="all 0 for none" /><br />
+                <label>blur radius / fuzziness (px): </label><br />
+                <input id=${
+                  this.id + "-settings-shadow-blur"
+                } placeholder="all 0 for none" /><br />
+                <label>shadow color: </label><br />
+                <input id=${
+                  this.id + "-settings-shadow-color"
+                } type="color" /><br />
+                <label>shadow opacity:</label>
+                <input id=${this.id + "-settings-shadow-alpha"} />
+            </div>
+          </div>
+          `
+        );
+      }
+
+      /**
+       * creates a default image container
+       */
+      initializeNewImageContainer() {
+        // use default settings
+        this.containerSettings = defaultImageContainerSettings;
+
+        // insert default container HTML
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          `
+          <span>
+          <img
+            class="movable userImage"
+            id="${this.id}"
+            onmousedown="bringImageToTop(this)"
+            style="z-index: ${numberOfContainers};"
+            src="${this.imageUrl}"
+            draggable=false
+          />
+          </div>
+        `
+        );
+
+        // save position fields
+        let newContainer = document.getElementById(this.id);
+        this.x = newContainer.offsetLeft;
+        this.y = newContainer.offsetTop;
+        this.height = newContainer.offsetHeight;
+        this.width = newContainer.offsetWidth;
+      }
+
+      /**
+       * creates a default text container
+       */
+      initializeNewTextContainer() {
+        // use default settings
+        this.containerSettings = defaultTextContainerSettings;
+
+        // insert default container HTML
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          `
+            <div class="movable" id="${this.id}">
+            <div style="margin: auto">
+              <div id="${this.id}-clock">
+                <span id="${this.id}-date"></span>
+                <br />
+                <span id="${this.id}-time"></span>
+              </div>
+              <hr id="${this.id}-divider" />
+              <div id="${this.id}-sections"></div>
+            </div>
+        `
+        );
+
+        // save position fields
+        let newContainer = document.getElementById(this.id);
+        this.x = newContainer.offsetLeft;
+        this.y = newContainer.offsetTop;
+        this.height = newContainer.offsetHeight;
+        this.width = newContainer.offsetWidth;
+
+        /** set up the time */
+        const timeFormat = new Intl.DateTimeFormat([], {
+          timeZone: "America/New_York",
+          hour12: false,
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+        });
+        // set time immediately so it shows upon load
+        document.getElementById(this.id + "-time").innerText =
+          timeFormat.format(new Date());
+        // set time on interval to continue to update
+        setInterval(() => {
+          document.getElementById(this.id + "-time").innerText =
+            timeFormat.format(new Date());
+        }, 1000);
+
+        /** set up date */
+        const dateFormat = new Intl.DateTimeFormat([], {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        });
+        document.getElementById(this.id + "-date").innerText =
+          dateFormat.format(new Date());
+      }
+
+      /*
+       * applies saved cosmetic customization options to instance
+       */
+      applyContainerSettings() {
+        /** SET POSITION + SIZE INFORMATION */
+        document.getElementById(this.id).style.top = this.y;
+        document.getElementById(this.id).style.left = this.x;
+
+        document.getElementById(this.id).style.width =
+          this.width - 2 * parseInt(this.containerSettings.borderWidth);
+        document.getElementById(this.id).style.height =
+          this.height - 2 * parseInt(this.containerSettings.borderWidth);
+
+        let containerSettings = this.containerSettings;
+
+        /** BACKGROUND COLOR */
+        document.getElementById(this.id).style.backgroundColor =
+          containerSettings.backgroundRgba;
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-bg-color").value =
+          rgbToHex(
+            containerSettings.backgroundRgba
+              .replace("rgba(", "")
+              .slice(0, -1)
+              .split(",")
+              .splice(0, 3)
+          );
+        document.getElementById(this.id + "-settings-bg-alpha").value =
+          containerSettings.backgroundRgba
+            .replace("rgba(", "")
+            .slice(0, -1)
+            .split(",")[3] * 100;
+
+        /**
+        *
+        *
+        * todo
+        * separate section and link font?
+
+        nah per container is good enough
+        *
+        *
+        *
+        *
+        * FONT */
+        if (containerSettings.sectionFontName == "") {
+          document.getElementById(this.id + "-settings-font-name").innerHTML =
+            "system default";
+        } else {
+          document.getElementById(this.id + "-settings-font-name").innerHTML =
+            containerSettings.sectionFontName;
+        }
+        if (containerSettings.sectionFontCode != "") {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            containerSettings.sectionFontCode
+          );
+          // fill in settings ui
+          document.body.style.fontFamily = containerSettings.sectionFontName;
+        }
+
+        /** TEXT ALIGNMENT */
+        if (containerSettings.centerAlign) {
+          document.getElementById(this.id).style.textAlign = "center";
+        } else {
+          document.getElementById(this.id).style.textAlign = "left";
+        }
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-left-align").checked =
+          !containerSettings.centerAlign;
+        document.getElementById(this.id + "-settings-center-align").checked =
+          containerSettings.centerAlign;
+        /**
+         *
+         *
+         * TODO
+         * need to apply container SECTION + LINK customizations + font
+         *
+         * idea:
+         * when generating sections, give class of this.id + 'section'
+         * (same for link)
+         * then can query for elements by class name here
+         *
+         *
+         *
+         */
+
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-section-font-name").value =
+          containerSettings.sectionFontName;
+        document.getElementById(this.id + "-settings-section-color").value =
+          containerSettings.sectionColor;
+        document.getElementById(this.id + "-settings-section-size").value =
+          containerSettings.sectionSize;
+        document.getElementById(this.id + "-settings-section-bold").checked =
+          containerSettings.sectionBold;
+        document.getElementById(this.id + "-settings-section-italic").checked =
+          containerSettings.sectionItalic;
+
+        document.getElementById(this.id + "-settings-link-color").value =
+          containerSettings.linkColor;
+        document.getElementById(this.id + "-settings-link-size").value =
+          containerSettings.linkSize;
+
+        /** BORDER */
+        document.getElementById(this.id).style.borderStyle = "solid";
+        document.getElementById(this.id).style.borderWidth =
+          containerSettings.borderWidth + "px";
+        document.getElementById(this.id).style.borderRadius =
+          containerSettings.borderRadius + "px";
+        document.getElementById(this.id).style.borderColor =
+          containerSettings.borderColor;
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-border-color").value =
+          containerSettings.borderColor;
+        document.getElementById(this.id + "-settings-border-width").value =
+          containerSettings.borderWidth;
+        document.getElementById(this.id + "-settings-border-radius").value =
+          containerSettings.borderRadius;
+
+        /** CLOCK */
+
+        // TODO EITHER SHOW THE CLOCK OR DONT
+        if (containerSettings.enableClock) {
+        }
+        if (containerSettings.enableDate) {
+        }
+
+        document.getElementById(this.id + "-settings-clock").style.color =
+          containerSettings.clockColor;
+        document.getElementById(this.id + "-clock").style.fontSize =
+          containerSettings.clockSize + "px";
+        if (containerSettings.clockBold) {
+          document.getElementById(this.id + "-clock").style.fontWeight = "bold";
+        }
+        if (containerSettings.clockItalic) {
+          document.getElementById(this.id + "-clock").style.fontStyle =
+            "italic";
+        }
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-date-toggle").checked =
+          containerSettings.enableDate;
+        document.getElementById(this.id + "-settings-clock-toggle").checked =
+          containerSettings.enableClock;
+
+        document.getElementById(this.id + "-settings-clock-color").value =
+          containerSettings.clockColor;
+        document.getElementById(this.id + "-settings-clock-size").value =
+          containerSettings.clockSize;
+        document.getElementById(this.id + "-settings-clock-bold").checked =
+          containerSettings.clockBold;
+        document.getElementById(this.id + "-settings-clock-italic").checked =
+          containerSettings.clockItalic;
+
+        /** DIVIDER */
+        let divider = document.getElementById(this.id + "-divider");
+        if (containerSettings.disableDivider) {
+          document.getElementById(this.id + "-divider").hidden = true;
+
+          /**
+           *
+           * TODO:
+           * need to fix links access here when sections overhaul is done
+           *
+           * vvvvvvvvvvvvv
+           */
+
+          if (links.length > 0) {
+            document.getElementById(this.id + "-clock").style.marginBottom =
+              "18px";
+          }
+        } else {
+          divider.style.color = containerSettings.dividerColor;
+          divider.style.backgroundColor = containerSettings.dividerColor;
+          divider.style.borderColor = containerSettings.dividerColor;
+        }
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-divider-toggle").checked =
+          containerSettings.disableDivider;
+        document.getElementById(this.id + "-settings-divider-color").value =
+          containerSettings.dividerColor;
+
+        /** SHADOW / GLOW */
+        document.getElementById(this.id).style.boxShadow =
+          containerSettings.shadowX +
+          "px " +
+          containerSettings.shadowY +
+          "px " +
+          containerSettings.shadowBlur +
+          "px " +
+          containerSettings.shadowRgba;
+        // fill in settings ui
+        document.getElementById(this.id + "-settings-shadow-x").value =
+          containerSettings.shadowX;
+        document.getElementById(this.id + "-settings-shadow-y").value =
+          containerSettings.shadowY;
+        document.getElementById(this.id + "-settings-shadow-blur").value =
+          containerSettings.shadowBlur;
+        document.getElementById(this.id + "-settings-shadow-color").value =
+          rgbToHex(
+            containerSettings.shadowRgba
+              .replace("rgba(", "")
+              .slice(0, -1)
+              .split(",")
+              .splice(0, 3)
+          );
+        document.getElementById(this.id + "-settings-shadow-alpha").value =
+          containerSettings.shadowRgba
+            .replace("rgba(", "")
+            .slice(0, -1)
+            .split(",")[3] * 100;
+      }
+
+      /**
+       * applies event listeners on all of the
+       */
+      addSettingsEventListeners() {
+        // container color setting listeners
+        document
+          .getElementById(this.id + "-settings-bg-color")
+          .addEventListener("input", changeContainerBackground, false);
+        document
+          .getElementById(this.id + "-settings-bg-alpha")
+          .addEventListener("input", changeContainerBackground, false);
+        // container text setting listeners
+        document
+          .getElementById(this.id + "-settings-set-font-button")
+          .addEventListener("click", changeFont, false);
+        document
+          .getElementById(this.id + "-settings-left-align")
+          .addEventListener("change", changeContainerAlignment, false);
+        document
+          .getElementById(this.id + "-settings-center-align")
+          .addEventListener("change", changeContainerAlignment, false);
+        // container border setting listeners
+        document
+          .getElementById(this.id + "-settings-border-color")
+          .addEventListener("input", changeContainerBorderColor, false);
+        document
+          .getElementById(this.id + "-settings-border-width")
+          .addEventListener("input", changeContainerBorderWidth, false);
+        document
+          .getElementById(this.id + "-settings-border-radius")
+          .addEventListener("input", changeContainerBorderRadius, false);
+        // bookmark section setting listeners
+        document
+          .getElementById(this.id + "-settings-section-color")
+          .addEventListener("input", changeSectionColor, false);
+        document
+          .getElementById(this.id + "-settings-section-size")
+          .addEventListener("input", changeSectionSize, false);
+        document
+          .getElementById(this.id + "-settings-section-bold")
+          .addEventListener("change", toggleSectionBold, false);
+        document
+          .getElementById(this.id + "-settings-section-italic")
+          .addEventListener("change", toggleSectionItalic, false);
+        // bookmark setting listeners
+        document
+          .getElementById(this.id + "-settings-link-color")
+          .addEventListener("input", changeLinkColor, false);
+        document
+          .getElementById(this.id + "-settings-link-size")
+          .addEventListener("input", changeLinkSize, false);
+        // clock setting listeners
+
+        // TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // ADD CLOCK and DATE TOGGLE HERE
+
+        document
+          .getElementById(this.id + "-settings-clock-color")
+          .addEventListener("input", changeClockColor, false);
+        document
+          .getElementById(this.id + "-settings-clock-size")
+          .addEventListener("input", changeClockSize, false);
+        document
+          .getElementById(this.id + "-settings-clock-bold")
+          .addEventListener("change", toggleClockBold, false);
+        document
+          .getElementById(this.id + "-settings-clock-italic")
+          .addEventListener("change", toggleClockItalic, false);
+        // container divider setting listeners
+        document
+          .getElementById(this.id + "-settings-divider-toggle")
+          .addEventListener("change", disableDivider, false);
+        document
+          .getElementById(this.id + "-settings-divider-color")
+          .addEventListener("input", changeDividerColor, false);
+        // container shadow setting listeners
+        document
+          .getElementById(this.id + "-settings-shadow-x")
+          .addEventListener("input", changeContainerShadow, false);
+        document
+          .getElementById(this.id + "-settings-shadow-y")
+          .addEventListener("input", changeContainerShadow, false);
+        document
+          .getElementById(this.id + "-settings-shadow-blur")
+          .addEventListener("input", changeContainerShadow, false);
+        document
+          .getElementById(this.id + "-settings-shadow-color")
+          .addEventListener("input", changeContainerShadow, false);
+        document
+          .getElementById(this.id + "-settings-shadow-alpha")
+          .addEventListener("input", changeContainerShadow, false);
+      }
+
+      /**
+       * [re]loads saved bookmark sections + links for container
+       */
+      loadBookmarks() {
+        let containerSettings = this.containerSettings;
+
+        let linkContainer = document.getElementById(this.id);
+        linkContainer.innerHTML = "";
+
+        // ensure uncategorized links (if any) stay at top
+        const noneSectionIndex = this.sections.indexOf("none");
+        if (noneSectionIndex != -1 && noneSectionIndex != 0) {
+          this.sections.splice(noneSectionIndex, 1);
+          this.sections.unshift("none");
+        }
+        let sections = this.sections;
+
+        // render the sections
+        let weight = containerSettings.sectionBold ? "bold" : "normal";
+        let italic = containerSettings.sectionItalic ? "italic" : "normal";
+        sections.forEach((section, index) => {
+          return linkContainer.insertAdjacentHTML(
+            "beforeend",
+            `
+          ${index == 0 ? "" : `<br />`}
+          <div id="${this.id}-section-${section}">
+            <span class="hiddenButton ${
+              editing ? "" : "hidden"
+            }" onClick="deleteSection(this)">
+              [X]
+            </span>
+            <span class="section"
+              style="color: ${containerSettings.sectionColor};
+                      font-size: ${containerSettings.sectionSize};
+                      font-weight: ${weight};
+                      font-style: ${italic}">
+              ${section == "none" ? " " : section}
+            </span>
+          </div>
+          `
+          );
+        });
+
+        // add "move up/down" buttons to all sections but "none"
+        sections.forEach((section) => {
+          if (section != "none") {
+            let targetSection = document.getElementById(
+              this.id + "-section-" + section
+            );
+            return targetSection.insertAdjacentHTML(
+              "beforeend",
+              `
+              <span class="hiddenButton ${editing ? "" : "hidden"}"
+              onClick="reorderSection(this, 'up')">
+                [up]
+              </span>
+              <span class="hiddenButton ${editing ? "" : "hidden"}"
+              onClick="reorderSection(this, 'down')">
+                [down]
+              </span>
+            `
+            );
+          }
+        });
+
+        // and then load links
+        for (let s = 0; s < sections.length; s++) {
+          for (let l = 0; l < sections[s].length; l++) {
+            let links = sections[s];
+            let targetSection = document.getElementById(
+              this.id + "-section-" + sections[s]
+            );
+            return targetSection.insertAdjacentHTML(
+              "beforeend",
+              `<div id="${this.id}-link-${l}" >
+            <span class="hiddenButton bookmark ${
+              editing ? "" : "hidden"
+            }" onClick="deleteLink(this)">[X]</span>
+
+            <a class="link" href="${links[l].url}">${links[l].label}</a>
+          </div>`
+            );
+          }
+        }
+
+        links.forEach((link, index) => {
+          const targetSection = document.getElementById(link.section);
+          return targetSection.insertAdjacentHTML("beforeend");
+        });
+
+        // set link colors
+        let linkElements = document.getElementsByClassName("link");
+        for (let i = 0; i < linkElements.length; i++) {
+          linkElements[i].style.color = containerSettings.linkColor;
+          linkElements[i].style.fontSize = containerSettings.linkSize + "px";
+        }
+
+        // ensure smooth ux when rerendering
+        if (containerSettings.disableDivider) {
+          document.getElementById("clock").style.marginBottom = "18px";
+        }
+      }
+    }
+
+    /*************************
+     * constructor / init :p *
+     *************************/
+    (() => {
+      window.onbeforeunload = unloadPage;
+
+      /** set up cursors **/
+      cursors = JSON.parse(localStorage.getItem("cursors")) || {};
+      if (cursors.default != undefined) {
+        // apply new default cursor to entire html document
+        document.getElementsByTagName("html")[0].style.cursor =
+          'url("' + cursors.default + '"), auto';
+      }
+
+      /** set wallpaper */
+      wallpaper = JSON.parse(localStorage.getItem("wallpaper")) || "";
+      if (wallpaper.startsWith("#")) {
+        document.body.style.background = wallpaper;
+        document.getElementById("wallpaperColorPicker").value = wallpaper;
+      } else {
+        document.body.style.backgroundImage = "url('" + wallpaper + "')";
+      }
+      repeatWallpaper =
+        JSON.parse(localStorage.getItem("repeatWallpaper")) || false;
+      if (repeatWallpaper) {
+        document.body.style.backgroundSize = "contain";
+        document.getElementById("wallpaperRepeatToggle").checked = true;
+      } else {
+        document.body.style.backgroundSize = "cover";
+      }
+
+      /* init audio + auto-play */
+      audioLink = JSON.parse(localStorage.getItem("audioLink")) || "";
+      document.getElementById("audioSource").src = audioLink;
+      autoplayAudio =
+        JSON.parse(localStorage.getItem("autoplayAudio")) || false;
+      document.getElementById("autoplayAudioToggle").checked = autoplayAudio;
+      if (audioLink != "" && autoplayAudio) {
+        document
+          .getElementById("audio")
+          .play()
+          .catch((error) => {
+            alert(
+              "auto-playing audio won't work unless you whitelist this page in your browser!"
+            );
+          });
+      }
+
+      /** (FROM ADDSETTINGSEVENTLISTENERS) local state setting input listeners */
+      document
+        .getElementById("imageRatioToggle")
+        .addEventListener("change", toggleImageRatio, false);
+      document
+        .getElementById("imageRemovalToggle")
+        .addEventListener("change", toggleImageRemoval, false);
+      document
+        .getElementById("autoplayAudioToggle")
+        .addEventListener("change", toggleAutoplayAudio, false);
+
+      // page wallpaper
+      document
+        .getElementById("wallpaperColorPicker")
+        .addEventListener("input", changeWallpaper, false);
+      document
+        .getElementById("wallpaperRepeatToggle")
+        .addEventListener("change", toggleWallpaperRepeat, false);
+
+      /**
+
+      OLD INIT
+
+      /** load bookmark cookies *
+      sections = JSON.parse(localStorage.getItem("sections")) || [];
+      links = JSON.parse(localStorage.getItem("links")) || [];
+
+      /** load + apply saved (or default) container customization settings *
+      containerSettings =
+        JSON.parse(localStorage.getItem("containerSettings")) ||
+        defaultTextContainerSettings;
+      applyContainerSettings();
+      // render links + sections
+      loadSections();
+
+      /** load image data cookies *
+      let imageValues =
+        JSON.parse(localStorage.getItem("imageMapValues")) || [];
+      for (let i = 0; i < imageValues.length; i++) {
+        imageMap.set(imageValues[i].id, imageValues[i]);
+      }
+
+
+      /** set event listeners for settings menu *
+      addSettingsEventListeners();
+
+      /** load settings menu data */
+      settingsMenuData = JSON.parse(
+        localStorage.getItem("settingsMenuData")
+      ) || {
+        x: "",
+        y: "",
+        width: "",
+        height: "",
+      };
+
+      /** load container data */
+      let containerMapValues =
+        JSON.parse(localStorage.getItem("containerMapValues")) || [];
+      for (let i = 0; i < containerMapValues.length; i++) {
+        containerDataMap.set(containerMapValues[i].id, containerMapValues[i]);
+      }
+      numberOfContainers = containerDataMap.length;
+
+      /** apply saved positions + sizes */
+      setupMovableElements();
+
+      /** load last active settings tab user was on */
+      activeTabId =
+        JSON.parse(localStorage.getItem("activeTabId")) || "instructionsTab";
+      document.getElementById(
+        activeTabId.replace("Tab", "Form")
+      ).style.display = "flex";
+      document.getElementById(activeTabId).classList.add("active");
+
+      /** tab-switching listeners */
+      let tabs = document.getElementsByClassName("tab");
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].addEventListener("click", changeActiveTab, false);
+      }
+    })();
+
+    /**************************
+     * INITIALIZATION HELPERS *
+     **************************/
+
+    /* [re]renders bookmark section data
+    function loadSections() {
+      let linkContainer = document.getElementById("linkContainer");
+      linkContainer.innerHTML = "";
+
+      // ensure uncategorized links (if any) stay at top
+      const noneSectionIndex = sections.indexOf("none");
+      if (noneSectionIndex != -1 && noneSectionIndex != 0) {
+        sections.splice(noneSectionIndex, 1);
+        sections.unshift("none");
+      }
+
+      // render the sections
+      let weight = containerSettings.sectionBold ? "bold" : "normal";
+      let italic = containerSettings.sectionItalic ? "italic" : "normal";
+      sections.forEach((section, index) => {
+        return linkContainer.insertAdjacentHTML(
+          "beforeend",
+          `
+          ${index == 0 ? "" : `<br />`}
+          <div id="${section}">
+            <span class="hiddenButton ${
+              editing ? "" : "hidden"
+            }" onClick="deleteSection(this)">
+              [X]
+            </span>
+            <span class="section"
+              style="color: ${containerSettings.sectionColor};
+                      font-size: ${containerSettings.sectionSize};
+                      font-weight: ${weight};
+                      font-style: ${italic}">
+              ${section == "none" ? " " : section}
+            </span>
+          </div>
+          `
+        );
+      });
+
+      // add "move up/down" buttons to all sections but "none"
+      sections.forEach((section) => {
+        if (section != "none") {
+          let targetSection = document.getElementById(section);
+          return targetSection.insertAdjacentHTML(
+            "beforeend",
+            `
+              <span class="hiddenButton ${editing ? "" : "hidden"}"
+              onClick="reorderSection(this, 'up')">
+                [up]
+              </span>
+              <span class="hiddenButton ${editing ? "" : "hidden"}"
+              onClick="reorderSection(this, 'down')">
+                [down]
+              </span>
+            `
+          );
+        }
+      });
+
+      // and then load links
+      loadLinks();
+    }
+
+    // [re]renders bookmark data
+    function loadLinks() {
+      links.forEach((link, index) => {
+        const targetSection = document.getElementById(link.section);
+        return targetSection.insertAdjacentHTML(
+          "beforeend",
+          `<div id="link-${index}" >
+            <span class="hiddenButton bookmark ${
+              editing ? "" : "hidden"
+            }" onClick="deleteLink(this)">[X]</span>
+
+            <a class="link" href="${link.url}">${link.label}</a>
+          </div>`
+        );
+      });
+
+      // set link colors
+      let linkElements = document.getElementsByClassName("link");
+      for (let i = 0; i < linkElements.length; i++) {
+        linkElements[i].style.color = containerSettings.linkColor;
+        linkElements[i].style.fontSize = containerSettings.linkSize + "px";
+      }
+
+      // ensure smooth ux when rerendering
+      if (containerSettings.disableDivider) {
+        document.getElementById("clock").style.marginBottom = "18px";
+      }
+    }*/
+
+    function setupMovableElements() {
+      /// if user has any floating images saved, put them in the DOM
+      initializeSavedImages();
+
+      // then, set movable elements' saved data
+      let movableElements = document.getElementsByClassName("movable");
+      for (let i = 0; i < movableElements.length; i++) {
+        let element = movableElements[i];
+        let data = containerDataMap.get(element.id);
+
+        // set respective element at the last saved location
+        if (containerDataMap.has(element.id)) {
+          element.style.top = data.y;
+          element.style.left = data.x;
+          element.style.width = data.width + "px";
+          element.style.height = data.height + "px";
+        }
+      }
+
+      // finally, add event listeners
+      for (let i = 0; i < movableElements.length; i++) {
+        // make element movable + resizable
+        movableElements[i].addEventListener(
+          "mousedown",
+          mouseDownMovableElement,
+          true
+        );
+        // prevent context menu when resizing
+        movableElements[i].addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+        });
+
+        // stop resizing element if cursor leaves page
+        document.addEventListener("mouseleave", (mouseLeave) => {
+          if (resizing) {
+            resizing = false;
+            document.removeEventListener("mousemove", resizeElement);
+            storeElementData();
+          }
+        });
+      }
+    }
+
+    /* NOW FOUND IN CONTAINER CLASS
+    function addSettingsEventListeners() {
+      /** tab-switching listeners *
+      let tabs = document.getElementsByClassName("tab");
+      for (let i = 0; i < tabs.length; i++) {
+        tabs[i].addEventListener("click", changeActiveTab, false);
+      }
+
+      /** local state setting inputs *
+      document
+        .getElementById("imageRatioToggle")
+        .addEventListener("change", toggleImageRatio, false);
+      document
+        .getElementById("imageRemovalToggle")
+        .addEventListener("change", toggleImageRemoval, false);
+      document
+        .getElementById("autoplayAudioToggle")
+        .addEventListener("change", toggleAutoplayAudio, false);
+
+      /** cookie / persistent setting inputs *
+      // container color setting listeners
+      document
+        .getElementById("containerColorPicker")
+        .addEventListener("input", changeContainerBackground, false);
+      document
+        .getElementById("containerAlpha")
+        .addEventListener("input", changeContainerBackground, false);
+      // container border setting listeners
+      document
+        .getElementById("borderWidth")
+        .addEventListener("input", changeContainerBorderWidth, false);
+      document
+        .getElementById("borderRadius")
+        .addEventListener("input", changeContainerBorderRadius, false);
+      document
+        .getElementById("borderColorPicker")
+        .addEventListener("input", changeContainerBorderColor, false);
+      // bookmark setting listeners
+      document
+        .getElementById("linkColorPicker")
+        .addEventListener("input", changeLinkColor, false);
+      document
+        .getElementById("linkSize")
+        .addEventListener("input", changeLinkSize, false);
+      // bookmark section setting listeners
+      document
+        .getElementById("sectionColorPicker")
+        .addEventListener("input", changeSectionColor, false);
+      document
+        .getElementById("sectionSize")
+        .addEventListener("input", changeSectionSize, false);
+      document
+        .getElementById("sectionBoldToggle")
+        .addEventListener("change", toggleSectionBold, false);
+      document
+        .getElementById("sectionItalicToggle")
+        .addEventListener("change", toggleSectionItalic, false);
+      // clock setting listeners
+      document
+        .getElementById("clockColorPicker")
+        .addEventListener("input", changeClockColor, false);
+      document
+        .getElementById("clockSize")
+        .addEventListener("input", changeClockSize, false);
+      document
+        .getElementById("clockBoldToggle")
+        .addEventListener("change", toggleClockBold, false);
+      document
+        .getElementById("clockItalicToggle")
+        .addEventListener("change", toggleClockItalic, false);
+      // container divider setting listeners
+      document
+        .getElementById("dividerToggle")
+        .addEventListener("change", disableDivider, false);
+      document
+        .getElementById("dividerColorPicker")
+        .addEventListener("input", changeDividerColor, false);
+      // container text setting listeners
+      document
+        .getElementById("setLeftAlign")
+        .addEventListener("change", changeContainerAlignment, false);
+      document
+        .getElementById("setCenterAlign")
+        .addEventListener("change", changeContainerAlignment, false);
+      document
+        .getElementById("setFontButton")
+        .addEventListener("click", changeFont, false);
+      // container shadow setting listeners
+      document
+        .getElementById("shadowX")
+        .addEventListener("input", changeContainerShadow, false);
+      document
+        .getElementById("shadowY")
+        .addEventListener("input", changeContainerShadow, false);
+      document
+        .getElementById("shadowBlur")
+        .addEventListener("input", changeContainerShadow, false);
+      document
+        .getElementById("shadowColorPicker")
+        .addEventListener("input", changeContainerShadow, false);
+      document
+        .getElementById("shadowAlpha")
+        .addEventListener("input", changeContainerShadow, false);
+
+      // page wallpaper
+      document
+        .getElementById("wallpaperColorPicker")
+        .addEventListener("input", changeWallpaper, false);
+      document
+        .getElementById("wallpaperRepeatToggle")
+        .addEventListener("change", toggleWallpaperRepeat, false);
+    }
+    */
+
+    /** inserts saved images in their saved order (postioning done upon return) */
+    function initializeSavedImages() {
+      let numImages = 1;
+      // render each image in the map!
+      imageMap.forEach((value, test, map) => {
+        let data = containerDataMap.get(value.id);
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          `
+          <img
+            class="movable userImage"
+            id="${value.id}"
+            onmousedown="bringImageToTop(this)"
+            style="z-index: ${numImages}; width: ${data.width}; height: ${data.height};"
+            src="${value.url}"
+            draggable=false
+          />
+        `
+        );
+        numImages++;
+      });
+    }
+
+    /************************
+     * LOCAL STATE MANAGERS *
+     ************************/
+
+    /** event handler for toggling page editing */
+    function toggleEditMode() {
+      const editButton = document.getElementById("editToggle");
+
+      // enable editing
+      if (editing == false) {
+        toggleEditingElements(true);
+        editButton.innerHTML = "save + stop editing";
+
+        // change cursor on movable elements to indicate grabbable
+        let movableElements = document.getElementsByClassName("movable");
+        for (let i = 0; i < movableElements.length; i++) {
+          movableElements[i].classList.add("grabbable");
+        }
+
+        editing = true;
+      }
+      // disable editing + save
+      else {
+        editing = false;
+        editButton.innerHTML = "edit page";
+        toggleEditingElements(false);
+
+        // remove grabbable cursor
+        let movableElements = document.getElementsByClassName("movable");
+        for (let i = 0; i < movableElements.length; i++) {
+          movableElements[i].classList.remove("grabbable");
+        }
+
+        // disable image removal mode active
+        if (removing) {
+          removing = false;
+          document.getElementById("imageRemovalToggle").checked = false;
+          let images = document.getElementsByClassName("userImage");
+          for (let i = 0; i < images.length; i++) {
+            images[i].classList.remove("removable");
+          }
+          document
+            .getElementById("imageRemovalWarning")
+            .classList.add("hidden");
+        }
+
+        // if data was just imported directly to localStorage, don't save current element states
+        if (justImported) {
+          justImported = false;
+          return;
+        }
+
+        // save state of settings menu
+        localStorage.setItem(
+          "settingsMenuData",
+          JSON.stringify(settingsMenuData)
+        );
+
+        // save states of all containers
+        let valueArray = [];
+        containerDataMap.forEach((value) => {
+          valueArray.push(value);
+        });
+        localStorage.setItem("containerMapValues", JSON.stringify(valueArray));
+
+        // save wallpaper info
+        localStorage.setItem("wallpaper", JSON.stringify(wallpaper));
+        localStorage.setItem(
+          "repeatWallpaper",
+          JSON.stringify(repeatWallpaper)
+        );
+
+        // save doodad + gadget cookies
+        localStorage.setItem("audioLink", JSON.stringify(audioLink));
+        localStorage.setItem("autoplayAudio", JSON.stringify(autoplayAudio));
+        localStorage.setItem("cursors", JSON.stringify(cursors));
+
+        // save active settings tab for next session
+        localStorage.setItem("activeTabId", JSON.stringify(activeTabId));
+      }
+    }
+
+    function toggleImageRatio() {
+      keepImageRatio = !document.getElementById("imageRatioToggle").checked;
+    }
+
+    function toggleImageRemoval() {
+      removing = document.getElementById("imageRemovalToggle").checked;
+      let images = document.getElementsByClassName("userImage");
+      if (removing) {
+        for (let i = 0; i < images.length; i++) {
+          // change cursor on images to crosshair
+          images[i].classList.remove("grabbable");
+          images[i].classList.add("removable");
+
+          images[i].addEventListener(
+            "mousedown",
+            mouseDownRemovableElement,
+            false
+          );
+
+          document
+            .getElementById("imageRemovalWarning")
+            .classList.remove("hidden");
+        }
+      } else {
+        for (let i = 0; i < images.length; i++) {
+          // remove crosshair cursor from images
+          images[i].classList.remove("removable");
+          images[i].classList.add("grabbable");
+
+          images[i].removeEventListener(
+            "mousedown",
+            mouseDownRemovableElement,
+            false
+          );
+          document
+            .getElementById("imageRemovalWarning")
+            .classList.add("hidden");
+        }
+      }
+    }
+
+    function toggleEditingElements(show) {
+      const settingsContainer = document.getElementById("settingsContainer");
+      const hiddenButtons = document.getElementsByClassName("hiddenButton");
+
+      // when editing-mode is enabled, certain elements get revealed
+      if (show) {
+        settingsContainer.classList.remove("hidden");
+        for (let i = 0; i < hiddenButtons.length; i++) {
+          hiddenButtons[i].classList.remove("hidden");
+        }
+      } else {
+        settingsContainer.classList.add("hidden");
+        for (let i = 0; i < hiddenButtons.length; i++) {
+          hiddenButtons[i].classList.add("hidden");
+        }
+      }
+    }
+
+    function toggleWallpaperRepeat(checkbox) {
+      repeatWallpaper = this.checked;
+      if (repeatWallpaper) {
+        document.body.style.backgroundSize = "contain";
+      } else {
+        document.body.style.backgroundSize = "cover";
+      }
+    }
+
+    function unloadPage() {
+      if (editing) {
+        return "you are currently editing and changes are unsaved. stay?";
+      }
+    }
+
+    function changeActiveTab(event) {
+      // remove 'active' state from current tab
+      document.getElementById(activeTabId).classList.remove("active");
+
+      document.getElementById(
+        activeTabId.replace("Tab", "Form")
+      ).style.display = "none";
+
+      // set new tab
+      activeTabId = event.target.id;
+      document.getElementById(
+        activeTabId.replace("Tab", "Form")
+      ).style.display = "flex";
+
+      document.getElementById(activeTabId).classList.add("active");
+    }
+
+    /********************************************
+     * DOCUMENT MANAGEMENT / MODIFICATION STUFF *
+     ********************************************/
+
+    function createNewContainer() {
+      let containerName = document.getElementById(
+        "newContainerNameInput"
+      ).value;
+      document.getElementById("newContainerNameInput").value = "";
+
+      if (containerName == "") {
+        containerName =
+          "container-" + (containerDataMap.keys().length + 1).toString();
+      }
+
+      containerDataMap.set(containerName, new Container(containerName));
+    }
+
+    /** upon click release on movable elements, store position data for when saving to localStorage when disabling edit mode */
+    function storeElementData() {
+      let borderWidth = changingElement.style.borderWidth.slice(0, -2) * 2; // slice to remove "px"
+      let element = document.getElementById(changingElement.id);
+      containerDataMap.set(element.id, {
+        id: element.id,
+        x: element.style.left,
+        y: element.style.top,
+        width: element.offsetWidth - borderWidth,
+        height: element.offsetHeight - borderWidth,
+      });
+    }
+
+    function setAudioLink() {
+      let link = document.getElementById("audioLinkInput").value;
+      if (link == "") {
+        return;
+      }
+      audioLink = link;
+    }
+
+    function toggleAutoplayAudio(checkbox) {
+      autoplayAudio = this.checked;
+    }
+
+    function changeWallpaper(event) {
+      // if image set
+      if (event == undefined) {
+        // get background url
+        let url = document.getElementById("wallpaperUrl").value;
+        if (url == "") {
+          alert("must add image url to add background");
+          return;
+        }
+        document.body.style.backgroundImage = "url('" + url + "')";
+        document.getElementById("wallpaperUrl").value = "";
+        wallpaper = url;
+      }
+      // if solid color set
+      else {
+        document.body.style.background = event.target.value;
+        wallpaper = event.target.value;
+      }
+    }
+
+    function moveElement(mouseMove) {
+      if (!moving) {
+        return;
+      }
+
+      // calculate offset from last mouse position to current position (1 frame at a time)
+      let mouseOffsetX = lastMouseX - mouseMove.clientX;
+      let mouseOffsetY = lastMouseY - mouseMove.clientY;
+
+      // save coords of mousepos for use above ^ next frame
+      lastMouseX = mouseMove.clientX;
+      lastMouseY = mouseMove.clientY;
+
+      // move to element same distance as mouse offset
+      changingElement.style.top =
+        changingElement.offsetTop - mouseOffsetY + "px";
+      changingElement.style.left =
+        changingElement.offsetLeft - mouseOffsetX + "px";
+    }
+
+    function resizeElement(mouseMove) {
+      if (!resizing) {
+        return;
+      }
+
+      // calculate offset from last mouse position to current position (1 frame at a time)
+      let mouseOffsetX = lastMouseX - mouseMove.clientX;
+      let mouseOffsetY = lastMouseY - mouseMove.clientY;
+
+      // save coords of mousepos for use above ^ next frame
+      lastMouseX = mouseMove.clientX;
+      lastMouseY = mouseMove.clientY;
+
+      let borderWidth =
+        window.getComputedStyle(changingElement).borderWidth.slice(0, -2) * 2 +
+        window.getComputedStyle(changingElement).padding.slice(0, -2) * 2; // remove "px"
+      let currentWidth = changingElement.offsetWidth - borderWidth;
+      let currentHeight = changingElement.offsetHeight - borderWidth;
+
+      // if proportional image resizing enabled
+      if (changingElement.id.startsWith("img-") && keepImageRatio) {
+        // growing
+        if (mouseOffsetY > 0) {
+          let newWidth = currentWidth * (1 + mouseOffsetY / 100);
+          let newHeight = currentHeight * (1 + mouseOffsetY / 100);
+
+          // determine offset in px (to keep image center while resizing)
+          let offsetX = (currentWidth - newWidth) / 2.0;
+          let offsetY = (currentHeight - newHeight) / 2.0;
+
+          changingElement.style.width = newWidth + "px";
+          changingElement.style.height = newHeight + "px";
+
+          changingElement.style.left =
+            changingElement.offsetLeft + offsetX + "px";
+          changingElement.style.top =
+            changingElement.offsetTop + offsetY + "px";
+        }
+        // shrinking
+        else if (mouseOffsetY < 0) {
+          let newWidth = currentWidth * (1 + mouseOffsetY / 100);
+          let newHeight = currentHeight * (1 + mouseOffsetY / 100);
+
+          // determine offset in px (to keep image center while resizing)
+          let offsetX = (currentWidth - newWidth) / 2.0;
+          let offsetY = (currentHeight - newHeight) / 2.0;
+
+          changingElement.style.width = newWidth + "px";
+          changingElement.style.height = newHeight + "px";
+
+          changingElement.style.left =
+            changingElement.offsetLeft + offsetX + "px";
+          changingElement.style.top =
+            changingElement.offsetTop + offsetY + "px";
+        }
+      }
+      // if resizing container / image freely
+      else {
+        let newHeight = currentHeight - mouseOffsetY;
+        let newWidth = currentWidth - mouseOffsetX;
+        changingElement.style.height = newHeight + "px";
+        changingElement.style.width = newWidth + "px";
+      }
+    }
+
+    function mouseDownMovableElement(mouseDown) {
+      /** MOVEMENT / RESIZING HANDLERS */
+      if (!editing || removing) {
+        return;
+      }
+
+      changingElement = document.getElementById(mouseDown.currentTarget.id);
+
+      // save mouse position prior to drag event
+      lastMouseX = mouseDown.clientX;
+      lastMouseY = mouseDown.clientY;
+
+      // left click drag initiates movement, release on mouse up
+      if (mouseDown.button == 0) {
+        moving = true;
+        document.addEventListener("mousemove", moveElement);
+        document.addEventListener("mouseup", (mouseUp) => {
+          if (moving && mouseUp.button == 0) {
+            moving = false;
+            document.removeEventListener("mousemove", moveElement);
+            storeElementData();
+          }
+        });
+      }
+      // right click drag initiates movement, release on mouse up
+      if (mouseDown.button == 2) {
+        resizing = true;
+        document.addEventListener("mousemove", resizeElement);
+        document.addEventListener("mouseup", (mouseUp) => {
+          if (resizing && mouseUp.button == 2) {
+            resizing = false;
+            document.removeEventListener("mousemove", resizeElement);
+            storeElementData();
+          }
+        });
+      }
+    }
+
+    function setDefaultCursor() {
+      cursors.default = document.getElementById("pointerCursorInput").value;
+      // apply new default cursor to entire html document
+      document.getElementsByTagName("html")[0].style.cursor =
+        'url("' + cursors.default + '"), auto';
+    }
+
+    function setGrabCursor() {
+      cursors.grab = document.getElementById("grabCursorInput").value;
+      // apply new grab cursor to grabbable elements...
+    }
+    /**********************
+     * BOOK MARK HANDLERS *
+     **********************/
+
+    function addLink() {
+      // collect input data from form
+      const form = document.getElementById("bookmarkForm");
+      const formData = new FormData(form);
+
+      const label = formData.get("label");
+      let url = formData.get("url");
+      let section = formData.get("section");
+      document.getElementById("linkInput").value = "";
+      document.getElementById("labelInput").value = "";
+
+      // sanitize input
+      if (!url.startsWith("http")) {
+        url = "https://" + url; // append HTTPS to link if needed
+      }
+      if (label == "" || url == "https://") {
+        alert("you must specify url and label to add a bookmark");
+        return;
+      }
+      if (section == "") {
+        section = "none";
+      }
+
+      // save link (and if new, the section)
+      links.push({
+        label: label,
+        url: url,
+        section: section,
+      });
+
+      if (sections.indexOf(section) == -1) {
+        sections.push(section);
+      }
+
+      loadSections();
+    }
+
+    function reorderSection(buttonPressed, direction) {
+      const section = buttonPressed.parentElement.id;
+      const sectionIndex = sections.indexOf(section);
+
+      // cut out section and re-insert into array
+      sections.splice(sectionIndex, 1);
+      if (direction == "up" && sectionIndex != 0) {
+        sections.splice(sectionIndex - 1, 0, section);
+      } else if (direction == "down" && sectionIndex != sections.length) {
+        sections.splice(sectionIndex + 1, 0, section);
+      }
+
+      // localStorage.setItem("sections", JSON.stringify(sections));
+      loadSections();
+    }
+
+    function deleteSection(buttonPressed) {
+      // remove all links in section (inverse style)
+      const section = buttonPressed.parentElement.id;
+      let newLinks = [];
+      links.forEach((link, index) => {
+        if (link.section != section) {
+          newLinks.push(link);
+        }
+      });
+
+      // remove section from local array
+      sections.splice(sections.indexOf(section), 1);
+
+      // update links + refresh screen
+      links = newLinks;
+      loadSections();
+    }
+
+    function deleteLink(buttonPressed) {
+      // remove the link from local array
+      const linkIndex = buttonPressed.parentElement.id.replace("link-", "");
+      links.splice(linkIndex, 1);
+
+      // determine whether to remove link"s section (if no more links)
+      let removeSection = true;
+      const linkSection = buttonPressed.parentElement.parentElement.id;
+      for (let i = 0; i < links.length; i++) {
+        if (links[i].section == linkSection) {
+          removeSection = false;
+          break;
+        }
+      }
+
+      // remove section (if needed) + save
+      if (removeSection) {
+        sections.splice(sections.indexOf(linkSection), 1);
+      }
+      loadSections();
+    }
+
+    /******************
+     * IMAGE HANDLERS *
+     ******************/
+
+    function addFloatingImage() {
+      // get image url from form
+      const form = document.getElementById("imageAndWallpaperForm");
+      const formData = new FormData(form);
+      let url = formData.get("url");
+
+      if (url == "") {
+        return;
+      }
+
+      // save image info to local arrays (saved for real upon stopping edit)
+      let keys = imageMap.keys();
+      let numImages = 1;
+      for (const key of keys) {
+        if (key.slice(-1) > numImages) {
+          console.log(key);
+          numImages = parseInt(key.slice(-1));
+        }
+      }
+      numImages++;
+      imageMap.set("img-" + numImages, { id: "img-" + numImages, url: url });
+
+      // render image on page
+      let body = document.body;
+      body.insertAdjacentHTML(
+        "beforeend",
+        `
+        <img
+          class="movable userImage"
+          id="img-${numImages}"
+          onmousedown="bringImageToTop(this)"
+          style="z-index: ${numImages};"
+          src="${url}"
+          draggable=false />
+      `
+      );
+
+      changingElement = document.getElementById("img-" + numImages);
+
+      // make image movable + resizable
+      changingElement.addEventListener(
+        "mousedown",
+        mouseDownMovableElement,
+        true
+      );
+      // prevent right click from opening context menu when resizing
+      changingElement.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+      });
+
+      // save image size data (don"t use parentheses when calling storeElementData so it's callback)
+      changingElement.onload = storeElementData;
+
+      form.reset();
+    }
+
+    function bringImageToTop(imageTouched) {
+      // when an image gets clicked or dragged, bring it to top!
+
+      if (editing) {
+        // copy map values to temp list
+        let tempValuesList = [];
+        let orderHelper = [];
+        imageMap.forEach((value, key) => {
+          tempValuesList.push(value);
+          orderHelper.push(value.id);
+        });
+
+        // put clicked image at end of temp array
+        let imageIndex = orderHelper.indexOf(imageTouched.id);
+        tempValuesList.splice(imageIndex, 1);
+        tempValuesList.push(imageMap.get(imageTouched.id));
+
+        // set new z-indexes and repopulate map based on temp array
+        imageMap = new Map();
+        for (let i = 0; i < tempValuesList.length; i++) {
+          let element = document.getElementById(tempValuesList[i].id);
+          element.style.zIndex = i.toString();
+          imageMap.set(tempValuesList[i].id, tempValuesList[i]);
+        }
+      }
+    }
+
+    function mouseDownRemovableElement(mouseDown) {
+      if (!removing) {
+        return;
+      }
+      let imageToRemove = mouseDown.currentTarget.id;
+      containerDataMap.delete(imageToRemove);
+      imageMap.delete(imageToRemove);
+      document.getElementById(imageToRemove).remove();
+    }
+
+    /************************************
+     * CONTAINER CUSTOMIZATION HANDLERS *
+     ************************************/
+
+    function changeContainerBackground(colorChange) {
+      containerSettings.backgroundRgba = hexToRgba(
+        document.getElementById("containerColorPicker").value,
+        document.getElementById("containerAlpha").value
+      );
+
+      document.getElementById("mainContainer").style.backgroundColor =
+        containerSettings.backgroundRgba;
+    }
+
+    function changeLinkColor(colorChange) {
+      containerSettings.linkColor = colorChange.target.value;
+      let linkElements = document.getElementsByClassName("link");
+      for (let i = 0; i < linkElements.length; i++) {
+        linkElements[i].style.color = containerSettings.linkColor;
+      }
+    }
+    function changeLinkSize(sizeChange) {
+      containerSettings.linkSize =
+        sizeChange.target.value == "" ? "0" : sizeChange.target.value;
+
+      let linkElements = document.getElementsByClassName("link");
+      for (let i = 0; i < linkElements.length; i++) {
+        linkElements[i].style.fontSize = containerSettings.linkSize + "px";
+      }
+    }
+
+    function changeSectionColor(colorChange) {
+      containerSettings.sectionColor = colorChange.target.value;
+      let sectionElements = document.getElementsByClassName("section");
+      for (let i = 0; i < sectionElements.length; i++) {
+        sectionElements[i].style.color = containerSettings.sectionColor;
+      }
+    }
+    function changeSectionSize(sizeChange) {
+      containerSettings.sectionSize =
+        sizeChange.target.value == "" ? "0" : sizeChange.target.value;
+
+      let sectionElements = document.getElementsByClassName("section");
+      for (let i = 0; i < sectionElements.length; i++) {
+        sectionElements[i].style.fontSize =
+          containerSettings.sectionSize + "px";
+      }
+    }
+    function toggleSectionBold(checkbox) {
+      containerSettings.sectionBold = this.checked;
+      loadSections();
+    }
+    function toggleSectionItalic(checkbox) {
+      containerSettings.sectionItalic = this.checked;
+      loadSections();
+    }
+
+    // BORDER
+    function changeContainerBorderWidth(borderChange) {
+      containerSettings.borderWidth = borderChange.target.value;
+      document.getElementById("mainContainer").style.borderWidth =
+        containerSettings.borderWidth + "px";
+    }
+    function changeContainerBorderRadius(radiusChange) {
+      containerSettings.borderRadius = radiusChange.target.value;
+      document.getElementById("mainContainer").style.borderRadius =
+        containerSettings.borderRadius + "px";
+    }
+    function changeContainerBorderColor(colorChange) {
+      containerSettings.borderColor = colorChange.target.value;
+      document.getElementById("mainContainer").style.borderColor =
+        containerSettings.borderColor;
+    }
+    // CLOCK
+    function changeClockColor(colorChange) {
+      containerSettings.clockColor = colorChange.target.value;
+      document.getElementById("clock").style.color =
+        containerSettings.clockColor;
+    }
+    function changeClockSize(sizeChange) {
+      containerSettings.clockSize =
+        sizeChange.target.value == "" ? "0" : sizeChange.target.value;
+      document.getElementById("clock").style.fontSize =
+        containerSettings.clockSize + "px";
+    }
+    function toggleClockBold(checkbox) {
+      containerSettings.clockBold = this.checked;
+      if (this.checked) {
+        document.getElementById("clock").style.fontWeight = "bold";
+      } else {
+        document.getElementById("clock").style.fontWeight = "normal";
+      }
+    }
+    function toggleClockBold(checkbox) {
+      containerSettings.clockBold = this.checked;
+      let weight = this.checked ? "bold" : "normal";
+      document.getElementById("clock").style.fontWeight = weight;
+    }
+    function toggleClockItalic(checkbox) {
+      containerSettings.clockItalic = this.checked;
+      let italic = this.checked ? "italic" : "normal";
+      document.getElementById("clock").style.fontStyle = italic;
+    }
+
+    // DIVIDER
+    function changeDividerColor(colorChange) {
+      containerSettings.dividerColor = colorChange.target.value;
+      let divider = document.getElementById("containerDivider");
+      // set multiple places for compatibility
+      divider.style.color = containerSettings.dividerColor;
+      divider.style.backgroundColor = containerSettings.dividerColor;
+      divider.style.borderColor = containerSettings.dividerColor;
+    }
+    function disableDivider(checkbox) {
+      containerSettings.disableDivider = this.checked;
+      document.getElementById("containerDivider").hidden = this.checked;
+
+      if (this.checked && links.length > 0) {
+        document.getElementById("clock").style.marginBottom = "18px";
+      } else {
+        document.getElementById("clock").style.marginBottom = "0px";
+      }
+    }
+    // TEXT
+    function changeContainerAlignment() {
+      if (document.getElementById("setLeftAlign").checked) {
+        containerSettings.centerAlign = false;
+        document.getElementById("mainContainer").style.textAlign = "left";
+      } else if (document.getElementById("setCenterAlign").checked) {
+        containerSettings.centerAlign = true;
+        document.getElementById("mainContainer").style.textAlign = "center";
+      }
+    }
+    function changeFont() {
+      let input = document.getElementById("fontInput").value;
+      if (input == "") {
+        return;
+      }
+
+      // wipe current font tags
+      let oldTags = document.getElementsByTagName("link");
+      for (let i = 0; i < oldTags.length; i++) {
+        oldTags[0].remove();
+      }
+
+      // parse input
+      fontCode = input;
+      fontName = fontCode.slice(fontCode.indexOf("family=") + 7);
+      fontName = fontName.slice(0, fontName.indexOf("&") + 1);
+      fontName = fontName.slice(0, fontName.indexOf(":")).replace("+", " ");
+      // set new font
+      document.head.insertAdjacentHTML("beforeend", fontCode);
+      document.body.style.fontFamily = fontName;
+      document.getElementById("currentFont").innerHTML = fontName;
+    }
+
+    // SHADOW
+    function changeContainerShadow() {
+      containerSettings.shadowX =
+        document.getElementById("shadowX").value == ""
+          ? 0
+          : document.getElementById("shadowX").value;
+      containerSettings.shadowY =
+        document.getElementById("shadowY").value == ""
+          ? 0
+          : document.getElementById("shadowY").value;
+      containerSettings.shadowBlur =
+        document.getElementById("shadowBlur").value == ""
+          ? 0
+          : document.getElementById("shadowBlur").value;
+      containerSettings.shadowRgba = hexToRgba(
+        document.getElementById("shadowColorPicker").value,
+        document.getElementById("shadowAlpha").value
+      );
+
+      let shadow =
+        containerSettings.shadowX +
+        "px " +
+        containerSettings.shadowY +
+        "px " +
+        containerSettings.shadowBlur +
+        "px " +
+        containerSettings.shadowRgba;
+
+      // set shadow
+      document.getElementById("mainContainer").style.boxShadow = shadow;
+    }
+
+    /************************************
+     * RESET / IMPORT & EXPORT HANDLERS *
+     ************************************/
+
+    function wipeBookmarks() {
+      // clear bookmark arrays
+      links = [];
+      sections = [];
+
+      localStorage.setItem("links", JSON.stringify(links));
+      localStorage.setItem("sections", JSON.stringify(sections));
+
+      if (containerSettings.disableDivider) {
+        document.getElementById("clock").style.marginBottom = "0px";
+      }
+
+      // refresh container
+      loadSections();
+    }
+
+    function wipeWallpaper() {
+      document.body.style.backgroundImage = "";
+      document.body.style.background = "";
+      wallpaper = "";
+    }
+
+    function wipeImages() {
+      imageMap = new Map();
+      // wipe images from screen
+      imageElements = document.getElementsByClassName("userImage");
+      for (let i = imageElements.length - 1; i >= 0; i--) {
+        imageElements[i].remove();
+      }
+
+      // remove image position + sizes from element data map
+      let tempMap = new Map();
+      tempMap.set(
+        "settingsContainer",
+        containerDataMap.get("settingsContainer")
+      );
+      tempMap.set("mainContainer", containerDataMap.get("mainContainer"));
+      containerDataMap = tempMap;
+    }
+
+    function wipeContainerSettings() {
+      containerSettings = defaultTextContainerSettings;
+      containerDataMap.get("mainContainer").width = "auto";
+      containerDataMap.get("mainContainer").height = "auto";
+      containerDataMap.get("mainContainer").x = "10px";
+      containerDataMap.get("mainContainer").y = "10px";
+      document.getElementById("mainContainer").style.width = "auto";
+      document.getElementById("mainContainer").style.height = "auto";
+      document.getElementById("mainContainer").style.top = "10px";
+      document.getElementById("mainContainer").style.left = "10px";
+
+      applyContainerSettings();
+      loadSections();
+    }
+
+    function setDefault() {
+      links = [
+        {
+          url: "https://www.youtube.com",
+          label: "youtube",
+          section: "video + picture",
+        },
+        {
+          url: "https://www.twitch.com",
+          label: "twitch",
+          section: "video + picture",
+        },
+        {
+          url: "https://www.instagram.com",
+          label: "insta",
+          section: "video + picture",
+        },
+        {
+          url: "https://www.archive.org",
+          label: "archive",
+          section: "video + picture",
+        },
+        {
+          url: "https://www.soundcloud.com",
+          label: "soundcloud",
+          section: "music",
+        },
+        {
+          url: "https://www.bandcamp.com",
+          label: "bandcamp",
+          section: "music",
+        },
+        {
+          url: "https://www.splice.com",
+          label: "splice",
+          section: "music",
+        },
+        {
+          url: "https://www.usevia.app",
+          label: "via",
+          section: "utils",
+        },
+        {
+          url: "https://www.distrokid.com/home",
+          label: "distrokid",
+          section: "utils",
+        },
+      ];
+
+      sections = ["video + picture", "music", "utils"];
+
+      localStorage.setItem("links", JSON.stringify(links));
+      localStorage.setItem("sections", JSON.stringify(sections));
+
+      loadSections();
+    }
+
+    function resetFont() {
+      let oldTags = document.getElementsByTagName("link");
+      for (let i = 0; i < oldTags.length; i++) {
+        oldTags[0].remove();
+      }
+      document.body.style.fontFamily = "";
+      fontCode = "";
+      fontName = "";
+    }
+
+    function resetCursors() {
+      cursors = {};
+      document.getElementsByTagName("html")[0].style.cursor = "auto";
+    }
+
+    async function exportData() {
+      try {
+        window.focus();
+        await navigator.clipboard.writeText(JSON.stringify(localStorage));
+      } catch (error) {
+        console.error(error.message);
+      }
+      alert(
+        "export to clipboard successful. paste contents to file and keep safe!"
+      );
+    }
+
+    function importData(buttonClick) {
+      let data = document.getElementById("importDataInput").value;
+      if (data == "") {
+        return;
+      }
+
+      try {
+        data = JSON.parse(document.getElementById("importDataInput").value);
+      } catch (error) {
+        alert("please only enter data that was provided by the export button!");
+      }
+
+      for (const [key, value] of Object.entries(data)) {
+        localStorage.setItem(key, value);
+      }
+
+      alert(
+        "data import successful. " +
+          "please refresh the page!" +
+          "\n(you can ignore unsaved changes warning, the imported data has already been saved)"
+      );
+      justImported = true;
+    }
+
+    /*****************
+     * COLOR HELPERS *
+     *****************/
+
+    function hexToRgba(hex, alpha) {
+      const sanitizedHex = hex.replace(/^#/, "");
+      const parsedHex = parseInt(sanitizedHex, 16);
+
+      return (
+        "rgba(" +
+        ((parsedHex >> 16) & 255) +
+        "," +
+        ((parsedHex >> 8) & 255) +
+        "," +
+        (parsedHex & 255) +
+        "," +
+        alpha / 100 +
+        ")"
+      );
+    }
+
+    function rgbToHex(rgb) {
+      const toHex = (c) => {
+        const hex = c.toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+      };
+      return (
+        "#" +
+        toHex(parseInt(rgb[0])) +
+        toHex(parseInt(rgb[1])) +
+        toHex(parseInt(rgb[2]))
+      );
+    }
+  </script>
+</html>
