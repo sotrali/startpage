@@ -633,7 +633,7 @@
           this.loadSavedContainer();
         }
         // new text container content,
-        else if (imageUrl == "") {
+        else if (imageUrl == undefined) {
           this.initializeNewTextContainer();
         }
         // or new image container content
@@ -643,13 +643,19 @@
           this.initializeNewImageContainer();
         }
 
-        // apply cosmetic customizations to container
-        this.applyContainerSettings();
-        // and create container settings UI
+        // apply bookmarks
+        this.loadBookmarks();
+        // then create container options UI in settings menu
         this.insertContainerOptionsMenu();
+        this.applyContainerSettings();
+
         numberOfContainers++;
       }
 
+      /**
+       * creates a basic container shell and lets
+       * loadBookmarks() and applyContainerSettings() do the rest
+       */
       loadSavedContainer() {
         document.body.insertAdjacentHTML(
           "beforeend",
@@ -658,7 +664,6 @@
             </div>
           `
         );
-        this.loadBookmarks();
       }
 
       /**
@@ -805,7 +810,7 @@
       }
 
       /**
-       * creates a default image container
+       * creates a default image container (NEED TO IMPLEMENT DEFAULT IMAGE CONTAINER SETTINGS)
        */
       initializeNewImageContainer() {
         // use default settings
@@ -824,7 +829,7 @@
             src="${this.imageUrl}"
             draggable=false
           />
-          </div>
+          </span>
         `
         );
 
@@ -842,6 +847,8 @@
       initializeNewTextContainer() {
         // use default settings
         this.containerSettings = defaultTextContainerSettings;
+        // set no sections
+        this.sections = {};
 
         // insert default container HTML
         document.body.insertAdjacentHTML(
@@ -895,186 +902,20 @@
       }
 
       /*
-       * applies saved cosmetic customization options to instance
+       * applies saved cosmetic customizations to container
        */
       applyContainerSettings() {
-        /** SET POSITION + SIZE INFORMATION */
+        /** set options relevant to both image and text containers */
+        /** POSITION */
         document.getElementById(this.id).style.top = this.y;
         document.getElementById(this.id).style.left = this.x;
 
+        /** SIZE */
+        const containerSettings = this.containerSettings;
         document.getElementById(this.id).style.width =
-          this.width - 2 * parseInt(this.containerSettings.borderWidth);
+          this.width - 2 * parseInt(containerSettings.borderWidth);
         document.getElementById(this.id).style.height =
-          this.height - 2 * parseInt(this.containerSettings.borderWidth);
-
-        let containerSettings = this.containerSettings;
-
-        /** BACKGROUND COLOR */
-        document.getElementById(this.id).style.backgroundColor =
-          containerSettings.backgroundRgba;
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-bg-color").value =
-          rgbToHex(
-            containerSettings.backgroundRgba
-              .replace("rgba(", "")
-              .slice(0, -1)
-              .split(",")
-              .splice(0, 3)
-          );
-        document.getElementById(this.id + "-settings-bg-alpha").value =
-          containerSettings.backgroundRgba
-            .replace("rgba(", "")
-            .slice(0, -1)
-            .split(",")[3] * 100;
-
-        /**
-        *
-        *
-        * todo
-        * separate section and link font?
-
-        nah per container is good enough
-        *
-        *
-        *
-        *
-        * FONT */
-        if (containerSettings.sectionFontName == "") {
-          document.getElementById(this.id + "-settings-font-name").innerHTML =
-            "system default";
-        } else {
-          document.getElementById(this.id + "-settings-font-name").innerHTML =
-            containerSettings.sectionFontName;
-        }
-        if (containerSettings.sectionFontCode != "") {
-          document.head.insertAdjacentHTML(
-            "beforeend",
-            containerSettings.sectionFontCode
-          );
-          // fill in settings ui
-          document.body.style.fontFamily = containerSettings.sectionFontName;
-        }
-
-        /** TEXT ALIGNMENT */
-        if (containerSettings.centerAlign) {
-          document.getElementById(this.id).style.textAlign = "center";
-        } else {
-          document.getElementById(this.id).style.textAlign = "left";
-        }
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-left-align").checked =
-          !containerSettings.centerAlign;
-        document.getElementById(this.id + "-settings-center-align").checked =
-          containerSettings.centerAlign;
-        /**
-         *
-         *
-         * TODO
-         * need to apply container SECTION + LINK customizations + font
-         *
-         * idea:
-         * when generating sections, give class of this.id + 'section'
-         * (same for link)
-         * then can query for elements by class name here
-         *
-         *
-         *
-         */
-
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-section-font-name").value =
-          containerSettings.sectionFontName;
-        document.getElementById(this.id + "-settings-section-color").value =
-          containerSettings.sectionColor;
-        document.getElementById(this.id + "-settings-section-size").value =
-          containerSettings.sectionSize;
-        document.getElementById(this.id + "-settings-section-bold").checked =
-          containerSettings.sectionBold;
-        document.getElementById(this.id + "-settings-section-italic").checked =
-          containerSettings.sectionItalic;
-
-        document.getElementById(this.id + "-settings-link-color").value =
-          containerSettings.linkColor;
-        document.getElementById(this.id + "-settings-link-size").value =
-          containerSettings.linkSize;
-
-        /** BORDER */
-        document.getElementById(this.id).style.borderStyle = "solid";
-        document.getElementById(this.id).style.borderWidth =
-          containerSettings.borderWidth + "px";
-        document.getElementById(this.id).style.borderRadius =
-          containerSettings.borderRadius + "px";
-        document.getElementById(this.id).style.borderColor =
-          containerSettings.borderColor;
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-border-color").value =
-          containerSettings.borderColor;
-        document.getElementById(this.id + "-settings-border-width").value =
-          containerSettings.borderWidth;
-        document.getElementById(this.id + "-settings-border-radius").value =
-          containerSettings.borderRadius;
-
-        /** CLOCK */
-
-        // TODO EITHER SHOW THE CLOCK OR DONT
-        if (containerSettings.enableClock) {
-        }
-        if (containerSettings.enableDate) {
-        }
-
-        document.getElementById(this.id + "-settings-clock").style.color =
-          containerSettings.clockColor;
-        document.getElementById(this.id + "-clock").style.fontSize =
-          containerSettings.clockSize + "px";
-        if (containerSettings.clockBold) {
-          document.getElementById(this.id + "-clock").style.fontWeight = "bold";
-        }
-        if (containerSettings.clockItalic) {
-          document.getElementById(this.id + "-clock").style.fontStyle =
-            "italic";
-        }
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-date-toggle").checked =
-          containerSettings.enableDate;
-        document.getElementById(this.id + "-settings-clock-toggle").checked =
-          containerSettings.enableClock;
-
-        document.getElementById(this.id + "-settings-clock-color").value =
-          containerSettings.clockColor;
-        document.getElementById(this.id + "-settings-clock-size").value =
-          containerSettings.clockSize;
-        document.getElementById(this.id + "-settings-clock-bold").checked =
-          containerSettings.clockBold;
-        document.getElementById(this.id + "-settings-clock-italic").checked =
-          containerSettings.clockItalic;
-
-        /** DIVIDER */
-        let divider = document.getElementById(this.id + "-divider");
-        if (containerSettings.disableDivider) {
-          document.getElementById(this.id + "-divider").hidden = true;
-
-          /**
-           *
-           * TODO:
-           * need to fix links access here when sections overhaul is done
-           *
-           * vvvvvvvvvvvvv
-           */
-
-          if (links.length > 0) {
-            document.getElementById(this.id + "-clock").style.marginBottom =
-              "18px";
-          }
-        } else {
-          divider.style.color = containerSettings.dividerColor;
-          divider.style.backgroundColor = containerSettings.dividerColor;
-          divider.style.borderColor = containerSettings.dividerColor;
-        }
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-divider-toggle").checked =
-          containerSettings.disableDivider;
-        document.getElementById(this.id + "-settings-divider-color").value =
-          containerSettings.dividerColor;
+          this.height - 2 * parseInt(containerSettings.borderWidth);
 
         /** SHADOW / GLOW */
         document.getElementById(this.id).style.boxShadow =
@@ -1105,6 +946,150 @@
             .replace("rgba(", "")
             .slice(0, -1)
             .split(",")[3] * 100;
+
+        /** BORDER */
+        document.getElementById(this.id).style.borderStyle = "solid";
+        document.getElementById(this.id).style.borderWidth =
+          containerSettings.borderWidth + "px";
+        document.getElementById(this.id).style.borderRadius =
+          containerSettings.borderRadius + "px";
+        document.getElementById(this.id).style.borderColor =
+          containerSettings.borderColor;
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-border-color").value =
+          containerSettings.borderColor;
+        document.getElementById(this.id + "-settings-border-width").value =
+          containerSettings.borderWidth;
+        document.getElementById(this.id + "-settings-border-radius").value =
+          containerSettings.borderRadius;
+
+        /** if this is an image container, set the IMAGE SOURCE and then we are done */
+        if (this.imageUrl != undefined) {
+          document.getElementById(this.id).src = this.imageUrl;
+          return;
+        }
+        /** otherwise, this is a text-based container and there are more options to set: */
+
+        /** FONT */
+        if (containerSettings.sectionFontName == "") {
+          document.getElementById(this.id + "-settings-font-name").innerHTML =
+            "system default";
+        } else {
+          document.getElementById(this.id + "-settings-font-name").innerHTML =
+            containerSettings.sectionFontName;
+        }
+        if (containerSettings.sectionFontCode != "") {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            containerSettings.sectionFontCode
+          );
+          // fill in settings ui
+          document.getElementById(this.id).style.fontFamily =
+            containerSettings.sectionFontName;
+        }
+
+        /** TEXT ALIGNMENT */
+        if (containerSettings.centerAlign) {
+          document.getElementById(this.id).style.textAlign = "center";
+        } else {
+          document.getElementById(this.id).style.textAlign = "left";
+        }
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-left-align").checked =
+          !containerSettings.centerAlign;
+        document.getElementById(this.id + "-settings-center-align").checked =
+          containerSettings.centerAlign;
+
+        /** SECTION CUSTOMIZATION */
+        // (weight, italic, colors, etc. are all set upon render in loadBookmarks())
+        // fill-in settings ui
+
+        // (FONT NEEDS WORK)
+        // document.getElementById(this.id + "-settings-section-font-name").value =
+        //   containerSettings.sectionFontName;
+        document.getElementById(this.id + "-settings-section-color").value =
+          containerSettings.sectionColor;
+        document.getElementById(this.id + "-settings-section-size").value =
+          containerSettings.sectionSize;
+        document.getElementById(this.id + "-settings-section-bold").checked =
+          containerSettings.sectionBold;
+        document.getElementById(this.id + "-settings-section-italic").checked =
+          containerSettings.sectionItalic;
+
+        document.getElementById(this.id + "-settings-link-color").value =
+          containerSettings.linkColor;
+        document.getElementById(this.id + "-settings-link-size").value =
+          containerSettings.linkSize;
+
+        /** BACKGROUND COLOR */
+        document.getElementById(this.id).style.backgroundColor =
+          containerSettings.backgroundRgba;
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-bg-color").value =
+          rgbToHex(
+            containerSettings.backgroundRgba
+              .replace("rgba(", "")
+              .slice(0, -1)
+              .split(",")
+              .splice(0, 3)
+          );
+        document.getElementById(this.id + "-settings-bg-alpha").value =
+          containerSettings.backgroundRgba
+            .replace("rgba(", "")
+            .slice(0, -1)
+            .split(",")[3] * 100;
+
+        /** CLOCK */
+        // TODO EITHER SHOW THE CLOCK OR DONT
+        if (containerSettings.enableClock) {
+        }
+        if (containerSettings.enableDate) {
+        }
+        document.getElementById(this.id + "-settings-clock").style.color =
+          containerSettings.clockColor;
+        document.getElementById(this.id + "-clock").style.fontSize =
+          containerSettings.clockSize + "px";
+        if (containerSettings.clockBold) {
+          document.getElementById(this.id + "-clock").style.fontWeight = "bold";
+        }
+        if (containerSettings.clockItalic) {
+          document.getElementById(this.id + "-clock").style.fontStyle =
+            "italic";
+        }
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-date-toggle").checked =
+          containerSettings.enableDate;
+        document.getElementById(this.id + "-settings-clock-toggle").checked =
+          containerSettings.enableClock;
+
+        document.getElementById(this.id + "-settings-clock-color").value =
+          containerSettings.clockColor;
+        document.getElementById(this.id + "-settings-clock-size").value =
+          containerSettings.clockSize;
+        document.getElementById(this.id + "-settings-clock-bold").checked =
+          containerSettings.clockBold;
+        document.getElementById(this.id + "-settings-clock-italic").checked =
+          containerSettings.clockItalic;
+
+        /** DIVIDER */
+        let divider = document.getElementById(this.id + "-divider");
+        if (containerSettings.disableDivider) {
+          document.getElementById(this.id + "-divider").hidden = true;
+          // if there are links in this container, add room under the divider
+          if (Object.keys(this.sections).length > 0) {
+            document.getElementById(this.id + "-clock").style.marginBottom =
+              "18px";
+          }
+        } else {
+          divider.style.color = containerSettings.dividerColor;
+          divider.style.backgroundColor = containerSettings.dividerColor;
+          divider.style.borderColor = containerSettings.dividerColor;
+        }
+        // fill-in settings ui
+        document.getElementById(this.id + "-settings-divider-toggle").checked =
+          containerSettings.disableDivider;
+        document.getElementById(this.id + "-settings-divider-color").value =
+          containerSettings.dividerColor;
       }
 
       /**
@@ -1205,45 +1190,61 @@
        */
       loadBookmarks() {
         let containerSettings = this.containerSettings;
-
         let linkContainer = document.getElementById(this.id);
         linkContainer.innerHTML = "";
 
         // ensure uncategorized links (if any) stay at top
-        const noneSectionIndex = this.sections.indexOf("none");
+        const noneSectionIndex = Object.keys(this.sections).indexOf("none");
         if (noneSectionIndex != -1 && noneSectionIndex != 0) {
           this.sections.splice(noneSectionIndex, 1);
           this.sections.unshift("none");
         }
-        let sections = this.sections;
 
         // render the sections
+        let sectionNames = Object.keys(this.sections);
         let weight = containerSettings.sectionBold ? "bold" : "normal";
         let italic = containerSettings.sectionItalic ? "italic" : "normal";
-        sections.forEach((section, index) => {
-          return linkContainer.insertAdjacentHTML(
+
+        for (let i = 0; i < sectionNames.length; i++) {
+          linkContainer.insertAdjacentHTML(
             "beforeend",
             `
-          ${index == 0 ? "" : `<br />`}
-          <div id="${this.id}-section-${section}">
-            <span class="hiddenButton ${
-              editing ? "" : "hidden"
-            }" onClick="deleteSection(this)">
-              [X]
-            </span>
-            <span class="section"
-              style="color: ${containerSettings.sectionColor};
-                      font-size: ${containerSettings.sectionSize};
-                      font-weight: ${weight};
-                      font-style: ${italic}">
-              ${section == "none" ? " " : section}
-            </span>
-          </div>
-          `
-          );
-        });
+              ${index == 0 ? "" : `<br />`}
+              <div id="${this.id}-section-${sectionNames[i]}">
+                <span 
+                  class="hiddenButton ${editing ? "" : "hidden"}" 
+                  onClick="deleteSection(this)"
+                >
+                  [X]
+                </span>
+                <span 
+                  class="section"
+                  style="color: ${containerSettings.sectionColor};
+                          font-size: ${containerSettings.sectionSize};
+                          font-weight: ${weight};
+                          font-style: ${italic}"
+                >
+                  ${sectionNames[i] == "none" ? " " : sectionNames[i]}
+                </span>
 
-        // add "move up/down" buttons to all sections but "none"
+                <span 
+                  class="hiddenButton ${editing ? "" : "hidden"}"
+                  onClick="reorderSection(this, 'up')"
+                >
+                  [up]
+                </span>
+                <span 
+                  class="hiddenButton ${editing ? "" : "hidden"}"
+                  onClick="reorderSection(this, 'down')"
+                >
+                  [down]
+                </span>
+              </div>
+            `
+          );
+        }
+
+        /* add "move up/down" buttons to all sections but "none"
         sections.forEach((section) => {
           if (section != "none") {
             let targetSection = document.getElementById(
@@ -1252,43 +1253,43 @@
             return targetSection.insertAdjacentHTML(
               "beforeend",
               `
-              <span class="hiddenButton ${editing ? "" : "hidden"}"
-              onClick="reorderSection(this, 'up')">
-                [up]
-              </span>
-              <span class="hiddenButton ${editing ? "" : "hidden"}"
-              onClick="reorderSection(this, 'down')">
-                [down]
-              </span>
-            `
+              
+              `
             );
           }
-        });
+        });*/
 
         // and then load links
+        let sections = Object.values(this.sections);
+
         for (let s = 0; s < sections.length; s++) {
           for (let l = 0; l < sections[s].length; l++) {
-            let links = sections[s];
             let targetSection = document.getElementById(
-              this.id + "-section-" + sections[s]
+              this.id + "-section-" + sectionNames[s]
             );
-            return targetSection.insertAdjacentHTML(
-              "beforeend",
-              `<div id="${this.id}-link-${l}" >
-            <span class="hiddenButton bookmark ${
-              editing ? "" : "hidden"
-            }" onClick="deleteLink(this)">[X]</span>
 
-            <a class="link" href="${links[l].url}">${links[l].label}</a>
-          </div>`
+            targetSection.insertAdjacentHTML(
+              "beforeend",
+              `
+                <div id="${this.id}-${sectionNames[s]}-${l}" >
+                  <span 
+                    class="hiddenButton bookmark ${editing ? "" : "hidden"}" 
+                    onClick="deleteLink(this)"
+                  >
+                    [X]
+                  </span>
+
+                  <a 
+                    class="link" 
+                    href="${sections[s][l].url}"
+                  >
+                    ${sections[s][l].label}
+                  </a>
+                </div>
+              `
             );
           }
         }
-
-        links.forEach((link, index) => {
-          const targetSection = document.getElementById(link.section);
-          return targetSection.insertAdjacentHTML("beforeend");
-        });
 
         // set link colors
         let linkElements = document.getElementsByClassName("link");
@@ -1438,100 +1439,23 @@
      * INITIALIZATION HELPERS *
      **************************/
 
-    /* [re]renders bookmark section data
-    function loadSections() {
-      let linkContainer = document.getElementById("linkContainer");
-      linkContainer.innerHTML = "";
-
-      // ensure uncategorized links (if any) stay at top
-      const noneSectionIndex = sections.indexOf("none");
-      if (noneSectionIndex != -1 && noneSectionIndex != 0) {
-        sections.splice(noneSectionIndex, 1);
-        sections.unshift("none");
-      }
-
-      // render the sections
-      let weight = containerSettings.sectionBold ? "bold" : "normal";
-      let italic = containerSettings.sectionItalic ? "italic" : "normal";
-      sections.forEach((section, index) => {
-        return linkContainer.insertAdjacentHTML(
-          "beforeend",
-          `
-          ${index == 0 ? "" : `<br />`}
-          <div id="${section}">
-            <span class="hiddenButton ${
-              editing ? "" : "hidden"
-            }" onClick="deleteSection(this)">
-              [X]
-            </span>
-            <span class="section"
-              style="color: ${containerSettings.sectionColor};
-                      font-size: ${containerSettings.sectionSize};
-                      font-weight: ${weight};
-                      font-style: ${italic}">
-              ${section == "none" ? " " : section}
-            </span>
-          </div>
-          `
-        );
-      });
-
-      // add "move up/down" buttons to all sections but "none"
-      sections.forEach((section) => {
-        if (section != "none") {
-          let targetSection = document.getElementById(section);
-          return targetSection.insertAdjacentHTML(
-            "beforeend",
-            `
-              <span class="hiddenButton ${editing ? "" : "hidden"}"
-              onClick="reorderSection(this, 'up')">
-                [up]
-              </span>
-              <span class="hiddenButton ${editing ? "" : "hidden"}"
-              onClick="reorderSection(this, 'down')">
-                [down]
-              </span>
-            `
-          );
-        }
-      });
-
-      // and then load links
-      loadLinks();
-    }
-
-    // [re]renders bookmark data
-    function loadLinks() {
-      links.forEach((link, index) => {
-        const targetSection = document.getElementById(link.section);
-        return targetSection.insertAdjacentHTML(
-          "beforeend",
-          `<div id="link-${index}" >
-            <span class="hiddenButton bookmark ${
-              editing ? "" : "hidden"
-            }" onClick="deleteLink(this)">[X]</span>
-
-            <a class="link" href="${link.url}">${link.label}</a>
-          </div>`
-        );
-      });
-
-      // set link colors
-      let linkElements = document.getElementsByClassName("link");
-      for (let i = 0; i < linkElements.length; i++) {
-        linkElements[i].style.color = containerSettings.linkColor;
-        linkElements[i].style.fontSize = containerSettings.linkSize + "px";
-      }
-
-      // ensure smooth ux when rerendering
-      if (containerSettings.disableDivider) {
-        document.getElementById("clock").style.marginBottom = "18px";
-      }
-    }*/
-
     function setupMovableElements() {
-      /// if user has any floating images saved, put them in the DOM
-      initializeSavedImages();
+      // if user has any floating images saved, put them in the DOM
+      // initializeSavedImages();
+
+      // I think this whole function is going to be changed.
+      // we're no longer going through a map of stuff and setting
+      // things manually. we have helpers in the Container class
+      // to handle this kinda ish for us.
+
+      // send in the saved container data into the Container Constructor
+      // and let it handle the rest
+
+      // however, this requires that the map of containers is being
+      // saved properly. make sure the ToggleEdit function is saving
+      // all of the Container fields properly. we may need to make an
+      // Container.export() function for easier JSON-ification to
+      // be stored in localStorage.
 
       // then, set movable elements' saved data
       let movableElements = document.getElementsByClassName("movable");
@@ -1686,7 +1610,7 @@
     }
     */
 
-    /** inserts saved images in their saved order (postioning done upon return) */
+    /** inserts saved images in their saved order (postioning done upon return) 
     function initializeSavedImages() {
       let numImages = 1;
       // render each image in the map!
@@ -1707,55 +1631,25 @@
         );
         numImages++;
       });
-    }
+    }*/
 
     /************************
      * LOCAL STATE MANAGERS *
      ************************/
 
-    /** event handler for toggling page editing */
+    /** primary event handler for toggling page editing */
     function toggleEditMode() {
-      const editButton = document.getElementById("editToggle");
-
-      // enable editing
+      // enable editing mode (reveal hidden elements)
       if (editing == false) {
-        toggleEditingElements(true);
-        editButton.innerHTML = "save + stop editing";
-
-        // change cursor on movable elements to indicate grabbable
-        let movableElements = document.getElementsByClassName("movable");
-        for (let i = 0; i < movableElements.length; i++) {
-          movableElements[i].classList.add("grabbable");
-        }
-
         editing = true;
+        toggleEditingElements(true);
       }
-      // disable editing + save
+      // disable editing mode + save element data
       else {
         editing = false;
-        editButton.innerHTML = "edit page";
         toggleEditingElements(false);
 
-        // remove grabbable cursor
-        let movableElements = document.getElementsByClassName("movable");
-        for (let i = 0; i < movableElements.length; i++) {
-          movableElements[i].classList.remove("grabbable");
-        }
-
-        // disable image removal mode active
-        if (removing) {
-          removing = false;
-          document.getElementById("imageRemovalToggle").checked = false;
-          let images = document.getElementsByClassName("userImage");
-          for (let i = 0; i < images.length; i++) {
-            images[i].classList.remove("removable");
-          }
-          document
-            .getElementById("imageRemovalWarning")
-            .classList.add("hidden");
-        }
-
-        // if data was just imported directly to localStorage, don't save current element states
+        // if data was just imported directly to localStorage, don't save current element states (would overwrite import)
         if (justImported) {
           justImported = false;
           return;
@@ -1832,17 +1726,51 @@
       }
     }
 
+    /** handles the revealing/concealing of elements part of toggling edit mode */
     function toggleEditingElements(show) {
+      const editButton = document.getElementById("editToggle");
       const settingsContainer = document.getElementById("settingsContainer");
       const hiddenButtons = document.getElementsByClassName("hiddenButton");
 
-      // when editing-mode is enabled, certain elements get revealed
+      /** when editing-mode is enabled, */
       if (show) {
+        editButton.innerHTML = "save + stop editing";
+
+        // reveal settings container
         settingsContainer.classList.remove("hidden");
         for (let i = 0; i < hiddenButtons.length; i++) {
           hiddenButtons[i].classList.remove("hidden");
         }
+
+        // change cursor on movable elements to indicate grabbable
+        let movableElements = document.getElementsByClassName("movable");
+        for (let i = 0; i < movableElements.length; i++) {
+          movableElements[i].classList.add("grabbable");
+        }
       } else {
+        // otherwise, set back to normal:
+        editButton.innerHTML = "edit page";
+
+        // remove grabbable cursor
+        let movableElements = document.getElementsByClassName("movable");
+        for (let i = 0; i < movableElements.length; i++) {
+          movableElements[i].classList.remove("grabbable");
+        }
+
+        // disable image removal mode active
+        if (removing) {
+          removing = false;
+          document.getElementById("imageRemovalToggle").checked = false;
+          let images = document.getElementsByClassName("userImage");
+          for (let i = 0; i < images.length; i++) {
+            images[i].classList.remove("removable");
+          }
+          document
+            .getElementById("imageRemovalWarning")
+            .classList.add("hidden");
+        }
+
+        // hide the settings container
         settingsContainer.classList.add("hidden");
         for (let i = 0; i < hiddenButtons.length; i++) {
           hiddenButtons[i].classList.add("hidden");
@@ -1897,7 +1825,19 @@
           "container-" + (containerDataMap.keys().length + 1).toString();
       }
 
-      containerDataMap.set(containerName, new Container(containerName));
+      containerDataMap.set(
+        containerName,
+        new Container(
+          containerName,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined
+        )
+      );
     }
 
     /** upon click release on movable elements, store position data for when saving to localStorage when disabling edit mode */
