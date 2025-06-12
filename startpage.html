@@ -249,52 +249,9 @@
         </div>
 
         <form id="bookmarkForm" onsubmit="return false">
-          <div class="formTitle">add bookmarks</div>
-          <div>
-            <label> enter url: </label>
-            <input id="linkInput" type="text" name="url" />
-          </div>
-          <div>
-            <label> enter label: </label>
-            <input id="labelInput" type="text" name="label" />
-          </div>
-          <div>
-            <label> enter section (optional): </label>
-            <input type="text" name="section" />
-          </div>
-          <button onclick="addLink()">add link</button>
-
+          
           <br />
 
-          <div class="formTitle">customize sections</div>
-          <div>
-            <label>set section size (px): </label>
-            <input id="sectionSize" />
-          </div>
-          <div>
-            <label>set section color: </label>
-            <input id="sectionColorPicker" type="color" />
-          </div>
-          <div>
-            <label for="sectionBoldToggle">bold sections?</label>
-            <input id="sectionBoldToggle" type="checkbox" />
-          </div>
-          <div>
-            <label for="sectionItalicToggle">italic sections?</label>
-            <input id="sectionItalicToggle" type="checkbox" />
-          </div>
-
-          <br />
-
-          <div class="formTitle">customize sections</div>
-          <div>
-            <label>set link size (px): </label>
-            <input id="linkSize" />
-          </div>
-          <div>
-            <label>set link color: </label>
-            <input id="linkColorPicker" type="color" />
-          </div>
         </form>
 
         <form id="addContainerForm" onsubmit="return false">
@@ -310,92 +267,6 @@
         </form>
 
         <form id="containerCustomizationForm" onsubmit="return false">
-          <div class="formTitle">change text</div>
-          <div>
-            <label>change font (see instructions for more info):</label>
-            <input id="fontInput" />
-            <button id="setFontButton">set font</button>
-            <label>current font: </label><span id="currentFont"></span>
-          </div>
-          <div>
-            align text:
-            <label for="setLeftAlign">left</label>
-            <input id="setLeftAlign" type="radio" name="align" />
-            <label for="setCenterAlign">center</label>
-            <input id="setCenterAlign" type="radio" name="align" />
-          </div>
-          <br />
-
-          <div class="formTitle">change background</div>
-          <div>
-            <label>set background color: </label>
-            <input id="containerColorPicker" type="color" />
-          </div>
-          <div>
-            <label>set background opacity (%): </label>
-            <input id="containerAlpha" />
-          </div>
-          <br />
-
-          <div class="formTitle">change border + shape</div>
-          <div>
-            <label>set border color: </label>
-            <input id="borderColorPicker" type="color" />
-          </div>
-          <div>
-            <label>set border width (px): </label>
-            <input id="borderWidth" placeholder="0 for none" />
-          </div>
-          <div>
-            <label>set border radius / roundedness (px): </label>
-            <input id="borderRadius" placeholder="0 for square" />
-          </div>
-          <br />
-
-          <div class="formTitle">change date + clock</div>
-          <div>
-            <label>set date + time color: </label>
-            <input id="clockColorPicker" type="color" />
-          </div>
-          <div>
-            <label>set date + time font size (px): </label>
-            <input id="clockSize" />
-          </div>
-          <div>
-            <label for="clockBoldToggle">bold?</label>
-            <input id="clockBoldToggle" type="checkbox" />
-          </div>
-          <div>
-            <label for="clockItalicToggle">italic?</label>
-            <input id="clockItalicToggle" type="checkbox" />
-          </div>
-          <br />
-
-          <div class="formTitle">change divider</div>
-          <div>
-            <label for="dividerToggle">disable divider: </label>
-            <input id="dividerToggle" type="checkbox" />
-          </div>
-          <div>
-            <label>set divider color: </label>
-            <input id="dividerColorPicker" type="color" />
-          </div>
-          <br />
-
-          <div class="formTitle">change shadow / glow</div>
-          <div>
-            shadow settings:<br />
-            <label>x-offset (px): </label><br />
-            <input id="shadowX" placeholder="all 0 for none" /><br />
-            <label>y-offset (px): </label><br />
-            <input id="shadowY" placeholder="all 0 for none" /><br />
-            <label>blur radius / fuzziness (px): </label><br />
-            <input id="shadowBlur" placeholder="all 0 for none" /><br />
-            <label>shadow color: </label><br />
-            <input id="shadowColorPicker" type="color" /><br />
-            <label>shadow opacity:</label>
-            <input id="shadowAlpha" />
-          </div>
         </form>
 
         <form id="imageAndWallpaperForm" onsubmit="return false">
@@ -647,6 +518,7 @@
         this.loadBookmarks();
         // then create container options UI in settings menu
         this.insertContainerOptionsMenu();
+        setTimeout(() => { console.log("waiting"); }, 10000);
         this.applyContainerSettings();
 
         numberOfContainers++;
@@ -673,138 +545,191 @@
         document.getElementById("addContainerForm").insertAdjacentHTML(
           "beforeend",
           `
-          <div id=${this.id + "-settings-form"}>
-            <div class="formTitle">change background</div>
-            <div>
-                <label>set background color: </label>
-                <input id=${this.id + "-settings-bg-color"} type="color" />
+            <div id=${this.id + "-bookmark-form"}>
+
+              <div class="formTitle">add bookmarks</div>
+              <div>
+                <label> enter url: </label>
+                <input id=${this.id + "-url-input"} type="text" name="url" />
+              </div>
+              <div>
+                <label> enter label: </label>
+                <input id=${this.id + "-label-input"} type="text" name="label" />
+              </div>
+              <div>
+                <label> enter section (optional): </label>
+                <input id=${this.id + "-section-input"} type="text" name="section" />
+              </div>
+
+              <button onclick="addLink(${this.id})">add link</button>
+
             </div>
-            <div>
-                <label>set background opacity (%): </label>
-                <input id=${this.id + "-settings-bg-alpha"} />
-            </div>
-            <br />
-            <div class="formTitle">change text</div>
-            <div>
-                <label>change font (see instructions for more info):</label>
-                <input  id=${this.id + "-settings-font-input"} />
-                <button id=${
-                  this.id + "-settings-set-font-button"
-                }>set font</button>
-                <label>current font:</label><span id=${
-                  this.id + "-settings-font-name"
-                }></span>
-            </div>
+
             <br />
 
-            <div>
-                align text:
+            <div id=${this.id + "-settings-form"}>
+
+              <div class="formTitle">change background</div>
+              <div>
+                  <label>set background color: </label>
+                  <input id=${this.id + "-settings-bg-color"} type="color" />
+              </div>
+              <div>
+                  <label>set background opacity (%): </label>
+                  <input id=${this.id + "-settings-bg-alpha"} />
+              </div>
+
+              <br />
+
+              <div class="formTitle">change text</div>
+              <div>
+                  <label>change font (see instructions for more info):</label>
+                  <input  id=${this.id + "-settings-font-input"} />
+                  <button id=${
+                    this.id + "-settings-set-font-button"
+                  }>set font</button>
+                  <label>current font:</label><span id=${
+                    this.id + "-settings-font-name"
+                  }></span>
+              </div>
+
+              <br />
+
+              <div class="formTitle">align text:</div>
+              <div>
                 <label for=${this.id + "-settings-left-align"}>left</label>
-                <input id=${
-                  this.id + "-settings-left-align"
-                } type="radio" name="align" />
-                <label for=${this.id + "-settings-center-align"}>center</label>
-                <input id=${
-                  this.id + "-settings-center-align"
-                } type="radio" name="align" />
-            </div>
-            <br />
+                  <input id=${
+                    this.id + "-settings-left-align"
+                  } type="radio" name="align" />
+                  <label for=${this.id + "-settings-center-align"}>center</label>
+                  <input id=${
+                    this.id + "-settings-center-align"
+                  } type="radio" name="align" />
+              </div>
 
-            ` +
-            /*
-             *
-             * TODO
-             * MOVE THE SECTION COLOR AMD STUFF HERE
-             *
-             *
-             */
-            `
-            <div class="formTitle">change border + shape</div>
-            <div>
-                <label>set border color: </label>
-                <input id=${this.id + "-settings-border-color"} type="color" />
-            </div>
-            <div>
-                <label>set border width (px): </label>
-                <input id=${
-                  this.id + "-settings-border-width"
-                } placeholder="0 for none" />
-            </div>
-            <div>
-                <label>set container roundedness (px): </label>
-                <input id=${
-                  this.id + "-settings-border-radius"
-                } placeholder="0 for square" />
-            </div>
-            <br />
+              <br />
 
-            <div class="formTitle">change date + clock</div>
-            <div>
-                <label>show date?</label>
-                <input id=${this.id + "-settings-date-toggle"} />
-            </div>
-            <div>
-                <label>show clock?</label>
-                <input id=${this.id + "-settings-clock-toggle"} />
-            </div>
-            <div>
-                <label>set date + time color: </label>
-                <input id=${this.id + "-settings-clock-color"} type="color" />
-            </div>
-            <div>
-                <label>set date + time font size (px): </label>
-                <input id=${this.id + "-settings-clock-size"} />
-            </div>
-            <div>
-                <label for=${this.id + "-settings-clock-bold"}>bold?</label>
-                <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
-            </div>
-            <div>
-                <label for=${this.id + "-settings-clock-italic"}>italic?</label>
-                <input id=${
-                  this.id + "-settings-clock-italic"
-                } type="checkbox" />
-            </div>
-            <br />
+              <div class="formTitle">customize sections</div>
+              <div>
+                <label>set section size (px): </label>
+                <input id=${this.id + "-settings-section-size"} />
+              </div>
+              <div>
+                <label>set section color: </label>
+                <input id=${this.id + "-settings-section-color"} type="color" />
+              </div>
+              <div>
+                <label for="sectionBoldToggle">bold sections?</label>
+                <input id=${this.id + "-settings-section-bold"} type="checkbox" />
+              </div>
+              <div>
+                <label for="sectionItalicToggle">italic sections?</label>
+                <input id=${this.id + "-settings-section-italic"} type="checkbox" />
+              </div>
 
-            <div class="formTitle">change divider</div>
-            <div>
-                <label for=${
-                  this.id + "-settings-divider-toggle"
-                }>disable divider: </label>
-                <input id=${
-                  this.id + "-settings-divider-toggle"
-                } type="checkbox" />
-            </div>
-            <div>
-                <label>set divider color: </label>
-                <input id=${this.id + "-settings-divider-color"} type="color" />
-            </div>
-            <br />
+              <br />
 
-            <div class="formTitle">change shadow / glow</div>
-            <div>
-                shadow settings:<br />
-                <label>x-offset (px): </label><br />
-                <input id=${
-                  this.id + "-settings-shadow-x"
-                } placeholder="all 0 for none" /><br />
-                <label>y-offset (px): </label><br />
-                <input id=${
-                  this.id + "-settings-shadow-y"
-                } placeholder="all 0 for none" /><br />
-                <label>blur radius / fuzziness (px): </label><br />
-                <input id=${
-                  this.id + "-settings-shadow-blur"
-                } placeholder="all 0 for none" /><br />
-                <label>shadow color: </label><br />
-                <input id=${
-                  this.id + "-settings-shadow-color"
-                } type="color" /><br />
-                <label>shadow opacity:</label>
-                <input id=${this.id + "-settings-shadow-alpha"} />
+              <div class="formTitle">customize links</div>
+              <div>
+                <label>set link size (px): </label>
+                <input id=${this.id + "-settings-link-size"} />
+              </div>
+              <div>
+                <label>set link color: </label>
+                <input id=${this.id + "-settings-link-color"} type="color" />
+              </div>
+
+              <br />
+
+              <div class="formTitle">change border + shape</div>
+              <div>
+                  <label>set border color: </label>
+                  <input id=${this.id + "-settings-border-color"} type="color" />
+              </div>
+              <div>
+                  <label>set border width (px): </label>
+                  <input id=${
+                    this.id + "-settings-border-width"
+                  } placeholder="0 for none" />
+              </div>
+              <div>
+                  <label>set container roundedness (px): </label>
+                  <input id=${
+                    this.id + "-settings-border-radius"
+                  } placeholder="0 for square" />
+              </div>
+  
+              <br />
+
+              <div class="formTitle">change date + clock</div>
+              <div>
+                  <label>show date?</label>
+                  <input id=${this.id + "-settings-date-toggle"} />
+              </div>
+              <div>
+                  <label>show clock?</label>
+                  <input id=${this.id + "-settings-clock-toggle"} />
+              </div>
+              <div>
+                  <label>set date + time color: </label>
+                  <input id=${this.id + "-settings-clock-color"} type="color" />
+              </div>
+              <div>
+                  <label>set date + time font size (px): </label>
+                  <input id=${this.id + "-settings-clock-size"} />
+              </div>
+              <div>
+                  <label for=${this.id + "-settings-clock-bold"}>bold?</label>
+                  <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
+              </div>
+              <div>
+                  <label for=${this.id + "-settings-clock-italic"}>italic?</label>
+                  <input id=${
+                    this.id + "-settings-clock-italic"
+                  } type="checkbox" />
+              </div>
+
+              <br />
+
+              <div class="formTitle">change divider</div>
+              <div>
+                  <label for=${
+                    this.id + "-settings-divider-toggle"
+                  }>disable divider: </label>
+                  <input id=${
+                    this.id + "-settings-divider-toggle"
+                  } type="checkbox" />
+              </div>
+              <div>
+                  <label>set divider color: </label>
+                  <input id=${this.id + "-settings-divider-color"} type="color" />
+              </div>
+
+              <br />
+
+              <div class="formTitle">change shadow / glow</div>
+              <div>
+                  shadow settings:<br />
+                  <label>x-offset (px): </label><br />
+                  <input id=${
+                    this.id + "-settings-shadow-x"
+                  } placeholder="all 0 for none" /><br />
+                  <label>y-offset (px): </label><br />
+                  <input id=${
+                    this.id + "-settings-shadow-y"
+                  } placeholder="all 0 for none" /><br />
+                  <label>blur radius / fuzziness (px): </label><br />
+                  <input id=${
+                    this.id + "-settings-shadow-blur"
+                  } placeholder="all 0 for none" /><br />
+                  <label>shadow color: </label><br />
+                  <input id=${
+                    this.id + "-settings-shadow-color"
+                  } type="color" /><br />
+                  <label>shadow opacity:</label>
+                  <input id=${this.id + "-settings-shadow-alpha"} />
+              </div>
             </div>
-          </div>
           `
         );
       }
@@ -854,15 +779,15 @@
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-            <div class="movable" id="${this.id}">
+            <div class="movable" id=${this.id}>
             <div style="margin: auto">
-              <div id="${this.id}-clock">
-                <span id="${this.id}-date"></span>
+              <div id=${this.id + "-clock"}>
+                <span id=${this.id + "-date"}></span>
                 <br />
-                <span id="${this.id}-time"></span>
+                <span id=${this.id + "-time"}></span>
               </div>
-              <hr id="${this.id}-divider" />
-              <div id="${this.id}-sections"></div>
+              <hr id=${this.id + "-divider"} />
+              <div id=${this.id + "-sections"} ></div>
             </div>
         `
         );
@@ -1045,7 +970,7 @@
         }
         if (containerSettings.enableDate) {
         }
-        document.getElementById(this.id + "-settings-clock").style.color =
+        document.getElementById(this.id + "-clock").style.color =
           containerSettings.clockColor;
         document.getElementById(this.id + "-clock").style.fontSize =
           containerSettings.clockSize + "px";
