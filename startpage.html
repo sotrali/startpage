@@ -520,7 +520,12 @@
         this.insertContainerOptionsMenu();
         setTimeout(() => { console.log("waiting"); }, 10000);
         this.applyContainerSettings();
+        
+        // establish necessary event listeners
+        this.addContainerEventListeners()
+        this.addSettingsEventListeners();
 
+        // done!
         numberOfContainers++;
       }
 
@@ -538,6 +543,99 @@
         );
       }
 
+      /**
+       * creates a default image container (NEED TO IMPLEMENT DEFAULT IMAGE CONTAINER SETTINGS)
+       */
+      initializeNewImageContainer() {
+        // use default settings
+        this.containerSettings = defaultImageContainerSettings;
+
+        // insert default container HTML
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          `
+          <span>
+          <img
+            class="movable userImage"
+            id="${this.id}"
+            onmousedown="bringImageToTop(this)"
+            style="z-index: ${numberOfContainers};"
+            src="${this.imageUrl}"
+            draggable=false
+          />
+          </span>
+        `
+        );
+
+        // save position fields
+        let newContainer = document.getElementById(this.id);
+        this.x = newContainer.offsetLeft;
+        this.y = newContainer.offsetTop;
+        this.height = newContainer.offsetHeight;
+        this.width = newContainer.offsetWidth;
+      }
+
+      /**
+       * creates a default text container
+       */
+      initializeNewTextContainer() {
+        // use default settings
+        this.containerSettings = defaultTextContainerSettings;
+        // set no sections
+        this.sections = {};
+
+        // insert default container HTML
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          `
+            <div class="movable" id=${this.id}>
+            <div style="margin: auto">
+              <div id=${this.id + "-clock"}>
+                <span id=${this.id + "-date"}></span>
+                <br />
+                <span id=${this.id + "-time"}></span>
+              </div>
+              <hr id=${this.id + "-divider"} />
+              <div id=${this.id + "-sections"} ></div>
+            </div>
+            </div>
+        `
+        );
+
+        // save position fields
+        let newContainer = document.getElementById(this.id);
+        this.x = newContainer.offsetLeft;
+        this.y = newContainer.offsetTop;
+        this.height = newContainer.offsetHeight;
+        this.width = newContainer.offsetWidth;
+
+        /** set up the time */
+        const timeFormat = new Intl.DateTimeFormat([], {
+          timeZone: "America/New_York",
+          hour12: false,
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+        });
+        // set time immediately so it shows upon load
+        document.getElementById(this.id + "-time").innerText =
+          timeFormat.format(new Date());
+        // set time on interval to continue to update
+        setInterval(() => {
+          document.getElementById(this.id + "-time").innerText =
+            timeFormat.format(new Date());
+        }, 1000);
+
+        /** set up date */
+        const dateFormat = new Intl.DateTimeFormat([], {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        });
+        document.getElementById(this.id + "-date").innerText =
+          dateFormat.format(new Date());
+      }
+      
       /**
        * creates container options menu in page settings menu
        */
@@ -734,97 +832,6 @@
         );
       }
 
-      /**
-       * creates a default image container (NEED TO IMPLEMENT DEFAULT IMAGE CONTAINER SETTINGS)
-       */
-      initializeNewImageContainer() {
-        // use default settings
-        this.containerSettings = defaultImageContainerSettings;
-
-        // insert default container HTML
-        document.body.insertAdjacentHTML(
-          "beforeend",
-          `
-          <span>
-          <img
-            class="movable userImage"
-            id="${this.id}"
-            onmousedown="bringImageToTop(this)"
-            style="z-index: ${numberOfContainers};"
-            src="${this.imageUrl}"
-            draggable=false
-          />
-          </span>
-        `
-        );
-
-        // save position fields
-        let newContainer = document.getElementById(this.id);
-        this.x = newContainer.offsetLeft;
-        this.y = newContainer.offsetTop;
-        this.height = newContainer.offsetHeight;
-        this.width = newContainer.offsetWidth;
-      }
-
-      /**
-       * creates a default text container
-       */
-      initializeNewTextContainer() {
-        // use default settings
-        this.containerSettings = defaultTextContainerSettings;
-        // set no sections
-        this.sections = {};
-
-        // insert default container HTML
-        document.body.insertAdjacentHTML(
-          "beforeend",
-          `
-            <div class="movable" id=${this.id}>
-            <div style="margin: auto">
-              <div id=${this.id + "-clock"}>
-                <span id=${this.id + "-date"}></span>
-                <br />
-                <span id=${this.id + "-time"}></span>
-              </div>
-              <hr id=${this.id + "-divider"} />
-              <div id=${this.id + "-sections"} ></div>
-            </div>
-        `
-        );
-
-        // save position fields
-        let newContainer = document.getElementById(this.id);
-        this.x = newContainer.offsetLeft;
-        this.y = newContainer.offsetTop;
-        this.height = newContainer.offsetHeight;
-        this.width = newContainer.offsetWidth;
-
-        /** set up the time */
-        const timeFormat = new Intl.DateTimeFormat([], {
-          timeZone: "America/New_York",
-          hour12: false,
-          hour: "numeric",
-          minute: "numeric",
-          second: "numeric",
-        });
-        // set time immediately so it shows upon load
-        document.getElementById(this.id + "-time").innerText =
-          timeFormat.format(new Date());
-        // set time on interval to continue to update
-        setInterval(() => {
-          document.getElementById(this.id + "-time").innerText =
-            timeFormat.format(new Date());
-        }, 1000);
-
-        /** set up date */
-        const dateFormat = new Intl.DateTimeFormat([], {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-        });
-        document.getElementById(this.id + "-date").innerText =
-          dateFormat.format(new Date());
-      }
 
       /*
        * applies saved cosmetic customizations to container
@@ -1018,7 +1025,34 @@
       }
 
       /**
-       * applies event listeners on all of the
+       * applies event listeners for the container
+      */
+      addContainerEventListeners() {
+        let container = document.getElementById(this.id);
+
+        // make element movable + resizable
+        container.addEventListener(
+          "mousedown",
+          mouseDownMovableElement,
+          true
+        );
+        // prevent context menu when resizing
+        container.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+        });
+
+        // stop resizing element if cursor leaves page
+        document.addEventListener("mouseleave", (mouseLeave) => {
+          if (resizing) {
+            resizing = false;
+            document.removeEventListener("mousemove", resizeElement);
+            storeElementData();
+          }
+        });
+      }
+
+      /**
+       * applies event listeners on container options inputs in settings menu
        */
       addSettingsEventListeners() {
         // container color setting listeners
@@ -1115,7 +1149,7 @@
        */
       loadBookmarks() {
         let containerSettings = this.containerSettings;
-        let linkContainer = document.getElementById(this.id);
+        let linkContainer = document.getElementById(this.id + "-sections");
         linkContainer.innerHTML = "";
 
         // ensure uncategorized links (if any) stay at top
@@ -1235,6 +1269,12 @@
      *************************/
     (() => {
       window.onbeforeunload = unloadPage;
+      
+      document.body.addEventListener("keydown", (e) => {
+        if (e.key == "e" && !editing) {
+          toggleEditMode();
+        }
+     });
 
       /** set up cursors **/
       cursors = JSON.parse(localStorage.getItem("cursors")) || {};
@@ -1343,6 +1383,7 @@
       numberOfContainers = containerDataMap.length;
 
       /** apply saved positions + sizes */
+      // NEEDED TO SETUP SETTINGS CONTAINER.. REWORK
       setupMovableElements();
 
       /** load last active settings tab user was on */
@@ -1363,7 +1404,6 @@
     /**************************
      * INITIALIZATION HELPERS *
      **************************/
-
     function setupMovableElements() {
       // if user has any floating images saved, put them in the DOM
       // initializeSavedImages();
@@ -2143,13 +2183,25 @@
      ************************************/
 
     function changeContainerBackground(colorChange) {
-      containerSettings.backgroundRgba = hexToRgba(
+      // DONT GET ELEMENT, GET CONTAINER FROM DATAMAP.... NEED TO FIX FOR INIT ANYWAYS
+      let container = document.getElementById(
+        colorChange.currentTarget.id.split("-")[0]
+      );
+
+      container.containerSettings.backgroundRgba = hexToRgba(
+        document.getElementById(container.id + "-settings-bg-color").value,
+        document.getElementById(container.id + "-settings-bg-alpha").value
+      );
+
+/*      container.containerSettings.backgroundRgba = hexToRgba(
         document.getElementById("containerColorPicker").value,
         document.getElementById("containerAlpha").value
       );
-
       document.getElementById("mainContainer").style.backgroundColor =
         containerSettings.backgroundRgba;
+*/
+      container.style.backgroundColor =
+        container.containerSettings.backgroundRgba;
     }
 
     function changeLinkColor(colorChange) {
