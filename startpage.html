@@ -492,7 +492,7 @@
       ) {
         this.id = name.replace(" ", "-");
         // if initializing saved container content,
-        if (containerSettings != undefined) {
+        if (x !== undefined && y !== undefined) {
           this.x = x;
           this.y = y;
           this.height = height;
@@ -518,12 +518,14 @@
         this.loadBookmarks();
         // then create container options UI in settings menu
         this.insertContainerOptionsMenu();
-        setTimeout(() => { console.log("waiting"); }, 10000);
+        setTimeout(() => { console.log("waiting"); }, 100);
         this.applyContainerSettings();
         
         // establish necessary event listeners
         this.addContainerEventListeners()
         this.addSettingsEventListeners();
+
+        // and save
 
         // done!
         numberOfContainers++;
@@ -537,10 +539,45 @@
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-            <div id="${this.id}">
+            <div class="movable" id=${this.id}>
+            <div style="margin: auto">
+              <div id=${this.id + "-clock"}>
+                <span id=${this.id + "-date"}></span>
+                <br />
+                <span id=${this.id + "-time"}></span>
+              </div>
+              <hr id=${this.id + "-divider"} />
+              <div id=${this.id + "-sections"} ></div>
+            </div>
             </div>
           `
         );
+
+        /** set up the time */
+        const timeFormat = new Intl.DateTimeFormat([], {
+          timeZone: "America/New_York",
+          hour12: false,
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+        });
+        // set time immediately so it shows upon load
+        document.getElementById(this.id + "-time").innerText =
+          timeFormat.format(new Date());
+        // set time on interval to continue to update
+        setInterval(() => {
+          document.getElementById(this.id + "-time").innerText =
+            timeFormat.format(new Date());
+        }, 1000);
+
+        /** set up date */
+        const dateFormat = new Intl.DateTimeFormat([], {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        });
+        document.getElementById(this.id + "-date").innerText =
+          dateFormat.format(new Date());
       }
 
       /**
@@ -602,13 +639,6 @@
         `
         );
 
-        // save position fields
-        let newContainer = document.getElementById(this.id);
-        this.x = newContainer.offsetLeft;
-        this.y = newContainer.offsetTop;
-        this.height = newContainer.offsetHeight;
-        this.width = newContainer.offsetWidth;
-
         /** set up the time */
         const timeFormat = new Intl.DateTimeFormat([], {
           timeZone: "America/New_York",
@@ -633,7 +663,14 @@
           month: "long",
         });
         document.getElementById(this.id + "-date").innerText =
-          dateFormat.format(new Date());
+         dateFormat.format(new Date());
+
+        // save position fields
+        let newContainer = document.getElementById(this.id);
+        this.x = newContainer.offsetLeft;
+        this.y = newContainer.offsetTop;
+        this.height = newContainer.offsetHeight;
+        this.width = newContainer.offsetWidth;
       }
       
       /**
@@ -837,6 +874,8 @@
        * applies saved cosmetic customizations to container
        */
       applyContainerSettings() {
+        console.log(this.containerSettings);
+
         /** set options relevant to both image and text containers */
         /** POSITION */
         document.getElementById(this.id).style.top = this.y;
@@ -844,10 +883,10 @@
 
         /** SIZE */
         const containerSettings = this.containerSettings;
-        document.getElementById(this.id).style.width =
-          this.width - 2 * parseInt(containerSettings.borderWidth);
-        document.getElementById(this.id).style.height =
-          this.height - 2 * parseInt(containerSettings.borderWidth);
+        document.getElementById(this.id).style.width = this.width;
+          // this.width - 2 * parseInt(containerSettings.borderWidth);
+        document.getElementById(this.id).style.height = this.height;
+          // this.height - 2 * parseInt(containerSettings.borderWidth);
 
         /** SHADOW / GLOW */
         document.getElementById(this.id).style.boxShadow =
@@ -1148,6 +1187,9 @@
        * [re]loads saved bookmark sections + links for container
        */
       loadBookmarks() {
+        if (this.sections == undefined) {
+          return;
+        }
         let containerSettings = this.containerSettings;
         let linkContainer = document.getElementById(this.id + "-sections");
         linkContainer.innerHTML = "";
@@ -1378,7 +1420,21 @@
       let containerMapValues =
         JSON.parse(localStorage.getItem("containerMapValues")) || [];
       for (let i = 0; i < containerMapValues.length; i++) {
-        containerDataMap.set(containerMapValues[i].id, containerMapValues[i]);
+        // containerDataMap.set(containerMapValues[i].id, containerMapValues[i]);
+        console.log(containerMapValues[i].containerSettings);
+        console.log(containerMapValues[i].x);
+        if (containerMapValues[i].id != "settingsContainer") {
+          containerDataMap.set(containerMapValues[i].id, new Container(
+           containerMapValues[i].id,
+           containerMapValues[i].x,
+           containerMapValues[i].y,
+           containerMapValues[i].height,
+           containerMapValues[i].width,
+           containerMapValues[i].imageUrl,
+           containerMapValues[i].containerSettings,
+           containerMapValues[i].sections
+          ));
+        }
       }
       numberOfContainers = containerDataMap.length;
 
@@ -1608,11 +1664,14 @@
       if (editing == false) {
         editing = true;
         toggleEditingElements(true);
+
       }
       // disable editing mode + save element data
       else {
         editing = false;
         toggleEditingElements(false);
+        document.getElementById("editToggle").innerHTML = "saving";
+
 
         // if data was just imported directly to localStorage, don't save current element states (would overwrite import)
         if (justImported) {
@@ -1628,8 +1687,9 @@
 
         // save states of all containers
         let valueArray = [];
-        containerDataMap.forEach((value) => {
+        containerDataMap.values().forEach((value) => {
           valueArray.push(value);
+          console.log(value);
         });
         localStorage.setItem("containerMapValues", JSON.stringify(valueArray));
 
@@ -1647,9 +1707,11 @@
 
         // save active settings tab for next session
         localStorage.setItem("activeTabId", JSON.stringify(activeTabId));
+
+        document.getElementById("editToggle").innerHTML = "edit page";
       }
     }
-
+  
     function toggleImageRatio() {
       keepImageRatio = !document.getElementById("imageRatioToggle").checked;
     }
@@ -1713,9 +1775,6 @@
           movableElements[i].classList.add("grabbable");
         }
       } else {
-        // otherwise, set back to normal:
-        editButton.innerHTML = "edit page";
-
         // remove grabbable cursor
         let movableElements = document.getElementsByClassName("movable");
         for (let i = 0; i < movableElements.length; i++) {
@@ -1785,6 +1844,7 @@
       ).value;
       document.getElementById("newContainerNameInput").value = "";
 
+      // generate generic unnamed name
       if (containerName == "") {
         containerName =
           "container-" + (containerDataMap.keys().length + 1).toString();
@@ -1809,13 +1869,16 @@
     function storeElementData() {
       let borderWidth = changingElement.style.borderWidth.slice(0, -2) * 2; // slice to remove "px"
       let element = document.getElementById(changingElement.id);
-      containerDataMap.set(element.id, {
-        id: element.id,
-        x: element.style.left,
-        y: element.style.top,
-        width: element.offsetWidth - borderWidth,
-        height: element.offsetHeight - borderWidth,
-      });
+      if (changingElement.id == "settingsContainer") {
+
+      }
+      else {
+        let container = containerDataMap.get(element.id);
+        container.x = element.style.left;
+        container.y = element.style.top;
+        container.width = element.offsetWidth - borderWidth;
+        container.height = element.offsetHeight - borderWidth;
+     }
     }
 
     function setAudioLink() {
