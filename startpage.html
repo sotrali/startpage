@@ -254,7 +254,7 @@
 
         </form>
 
-        <form id="addContainerForm" onsubmit="return false">
+        <form id="addContainerForm">
           <div class="formTitle">add new containers / layers</div>
           <input
             id="newContainerNameInput"
@@ -680,9 +680,7 @@
         document.getElementById("addContainerForm").insertAdjacentHTML(
           "beforeend",
           `
-            <div id=${this.id + "-bookmark-form"}>
-
-              <div class="formTitle">add bookmarks</div>
+            <div id=${this.id + "-bookmark-form"} class="formTitle">add bookmarks</div>
               <div>
                 <label> enter url: </label>
                 <input id=${this.id + "-url-input"} type="text" name="url" />
@@ -2051,16 +2049,30 @@
      * BOOK MARK HANDLERS *
      **********************/
 
-    function addLink() {
+    function addLink(containerElement) {
+      let containerId = containerElement.id.split("-")[0];
+      console.log(containerId);
+      let container = containerDataMap.get(containerId);
+
+      /**
+
+
+
+      change this to collect data directly from input.value
+      we aren't using a form anymore
+
+
+      **/
+
       // collect input data from form
-      const form = document.getElementById("bookmarkForm");
+      const form = document.getElementById(containerId + "-bookmark-form");
       const formData = new FormData(form);
 
       const label = formData.get("label");
       let url = formData.get("url");
       let section = formData.get("section");
-      document.getElementById("linkInput").value = "";
-      document.getElementById("labelInput").value = "";
+      document.getElementById(containerId + "url-input").value = "";
+      document.getElementById(containerId + "label-input").value = "";
 
       // sanitize input
       if (!url.startsWith("http")) {
@@ -2075,12 +2087,18 @@
       }
 
       // save link (and if new, the section)
-      links.push({
-        label: label,
-        url: url,
-        section: section,
-      });
+      let tempIndex = Object.keys(container.sections).indexOf(section); 
+      if (tempIndex =! -1) {
+        let tempSectionLinks = Object.values(container.sections)[tempIndex];
+        tempSectionLinks.push({
+          label: label,
+          url: url
+        });
+        console.log(container.sections);
+      }
+      else {
 
+      }
       if (sections.indexOf(section) == -1) {
         sections.push(section);
       }
@@ -2246,24 +2264,15 @@
      ************************************/
 
     function changeContainerBackground(colorChange) {
-      // DONT GET ELEMENT, GET CONTAINER FROM DATAMAP.... NEED TO FIX FOR INIT ANYWAYS
-      let container = document.getElementById(
-        colorChange.currentTarget.id.split("-")[0]
-      );
+      let containerId = colorChange.currentTarget.id.split("-")[0];
+      let container = containerDataMap.get(containerId);
 
       container.containerSettings.backgroundRgba = hexToRgba(
         document.getElementById(container.id + "-settings-bg-color").value,
         document.getElementById(container.id + "-settings-bg-alpha").value
       );
 
-/*      container.containerSettings.backgroundRgba = hexToRgba(
-        document.getElementById("containerColorPicker").value,
-        document.getElementById("containerAlpha").value
-      );
-      document.getElementById("mainContainer").style.backgroundColor =
-        containerSettings.backgroundRgba;
-*/
-      container.style.backgroundColor =
+      document.getElementById(containerId).style.backgroundColor =
         container.containerSettings.backgroundRgba;
     }
 
