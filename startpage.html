@@ -254,7 +254,7 @@
 
         </form>
 
-        <form id="addContainerForm">
+        <form id="addContainerForm" onsubmit="return false">
           <div class="formTitle">add new containers / layers</div>
           <input
             id="newContainerNameInput"
@@ -518,7 +518,6 @@
         this.loadBookmarks();
         // then create container options UI in settings menu
         this.insertContainerOptionsMenu();
-        setTimeout(() => { console.log("waiting"); }, 100);
         this.applyContainerSettings();
         
         // establish necessary event listeners
@@ -1203,12 +1202,11 @@
         let sectionNames = Object.keys(this.sections);
         let weight = containerSettings.sectionBold ? "bold" : "normal";
         let italic = containerSettings.sectionItalic ? "italic" : "normal";
-
         for (let i = 0; i < sectionNames.length; i++) {
           linkContainer.insertAdjacentHTML(
             "beforeend",
             `
-              ${index == 0 ? "" : `<br />`}
+              ${i == 0 ? "" : `<br />`}
               <div id="${this.id}-section-${sectionNames[i]}">
                 <span 
                   class="hiddenButton ${editing ? "" : "hidden"}" 
@@ -1243,24 +1241,8 @@
           );
         }
 
-        /* add "move up/down" buttons to all sections but "none"
-        sections.forEach((section) => {
-          if (section != "none") {
-            let targetSection = document.getElementById(
-              this.id + "-section-" + section
-            );
-            return targetSection.insertAdjacentHTML(
-              "beforeend",
-              `
-              
-              `
-            );
-          }
-        });*/
-
-        // and then load links
+        // and then render the links
         let sections = Object.values(this.sections);
-
         for (let s = 0; s < sections.length; s++) {
           for (let l = 0; l < sections[s].length; l++) {
             let targetSection = document.getElementById(
@@ -1279,7 +1261,7 @@
                   </span>
 
                   <a 
-                    class="link" 
+                    class="${this.id}-link" 
                     href="${sections[s][l].url}"
                   >
                     ${sections[s][l].label}
@@ -1291,7 +1273,7 @@
         }
 
         // set link colors
-        let linkElements = document.getElementsByClassName("link");
+        let linkElements = document.getElementsByClassName(this.id + "-link");
         for (let i = 0; i < linkElements.length; i++) {
           linkElements[i].style.color = containerSettings.linkColor;
           linkElements[i].style.fontSize = containerSettings.linkSize + "px";
@@ -1420,7 +1402,6 @@
       for (let i = 0; i < containerMapValues.length; i++) {
         // containerDataMap.set(containerMapValues[i].id, containerMapValues[i]);
         console.log(containerMapValues[i].containerSettings);
-        console.log(containerMapValues[i].x);
         if (containerMapValues[i].id != "settingsContainer") {
           containerDataMap.set(containerMapValues[i].id, new Container(
            containerMapValues[i].id,
@@ -2051,28 +2032,12 @@
 
     function addLink(containerElement) {
       let containerId = containerElement.id.split("-")[0];
-      console.log(containerId);
       let container = containerDataMap.get(containerId);
 
-      /**
-
-
-
-      change this to collect data directly from input.value
-      we aren't using a form anymore
-
-
-      **/
-
       // collect input data from form
-      const form = document.getElementById(containerId + "-bookmark-form");
-      const formData = new FormData(form);
-
-      const label = formData.get("label");
-      let url = formData.get("url");
-      let section = formData.get("section");
-      document.getElementById(containerId + "url-input").value = "";
-      document.getElementById(containerId + "label-input").value = "";
+      let url = document.getElementById(containerId + "-url-input").value;
+      let label = document.getElementById(containerId + "-label-input").value;
+      let section = document.getElementById(containerId + "-section-input").value;
 
       // sanitize input
       if (!url.startsWith("http")) {
@@ -2094,16 +2059,21 @@
           label: label,
           url: url
         });
-        console.log(container.sections);
       }
       else {
-
+        let tempSectionLinks = [];
+        tempSectionLinks.push({
+          label: label,
+          url: url
+        });
+        container.sections[section] = tempSectionLinks;
       }
-      if (sections.indexOf(section) == -1) {
-        sections.push(section);
-      }
+      console.log(container.sections);
 
-      loadSections();
+      // reset inputs + render
+      document.getElementById(containerId + "-url-input").value = "";
+      document.getElementById(containerId + "-label-input").value = "";
+      container.loadBookmarks();
     }
 
     function reorderSection(buttonPressed, direction) {
@@ -2277,7 +2247,10 @@
     }
 
     function changeLinkColor(colorChange) {
-      containerSettings.linkColor = colorChange.target.value;
+      let containerId = colorChange.currentTarget.id.split("-")[0];
+      let container = containerDataMap.get(containerId);
+
+      container.containerSettings.linkColor = colorChange.target.value;
       let linkElements = document.getElementsByClassName("link");
       for (let i = 0; i < linkElements.length; i++) {
         linkElements[i].style.color = containerSettings.linkColor;
