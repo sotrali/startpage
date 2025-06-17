@@ -27,7 +27,7 @@
         position: fixed;
       }
 
-      #mainContainer {
+      .container {
         z-index: 998;
         display: flex;
         align-items: center;
@@ -43,6 +43,9 @@
         background-color: rgba(173, 165, 165, 0.8);
         z-index: 999;
 
+        user-select: none;
+        
+
         border: solid black 2px;
         border-radius: 10px;
         padding: 10px;
@@ -52,7 +55,8 @@
         top: 2rem;
         align-self: flex-end;
 
-        overflow: auto;
+        height: 25rem;
+        overflow: scroll;
       }
 
       /*
@@ -180,9 +184,7 @@
 
       <div id="settingsContainer" class="movable settingsContainer hidden">
         <div id="tabList">
-          <span class="tab" id="bookmarkTab">bookmarks</span>
           <span class="tab" id="addContainerTab">containers / layers</span>
-          <span class="tab" id="containerCustomizationTab">container</span>
           <span class="tab" id="imageAndWallpaperTab">images + wallpaper</span>
           <span class="tab" id="audioTab">audio</span>
           <span class="tab" id="globalSettingsTab">global settings</span>
@@ -248,12 +250,6 @@
           </p>
         </div>
 
-        <form id="bookmarkForm" onsubmit="return false">
-          
-          <br />
-
-        </form>
-
         <form id="addContainerForm" onsubmit="return false">
           <div class="formTitle">add new containers / layers</div>
           <input
@@ -264,9 +260,6 @@
           <button id="newContainerCreateButton" onclick="createNewContainer()">
             create new container
           </button>
-        </form>
-
-        <form id="containerCustomizationForm" onsubmit="return false">
         </form>
 
         <form id="imageAndWallpaperForm" onsubmit="return false">
@@ -373,7 +366,7 @@
 
   <script>
     // cookie holder for coordinates + size of settings menu
-    let settingsMenuData;
+    let settingsMenuData = {};
 
     // cookie holder for coordinates + size of containers
     let containerDataMap = new Map(); // key: element.id | values: {x:, y:, width:, height:, containerSettings}
@@ -538,7 +531,7 @@
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-            <div class="movable" id=${this.id}>
+            <div class="movable container" id=${this.id}>
             <div style="margin: auto">
               <div id=${this.id + "-clock"}>
                 <span id=${this.id + "-date"}></span>
@@ -624,7 +617,7 @@
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-            <div class="movable" id=${this.id}>
+            <div class="movable container" id=${this.id}>
             <div style="margin: auto">
               <div id=${this.id + "-clock"}>
                 <span id=${this.id + "-date"}></span>
@@ -871,8 +864,6 @@
        * applies saved cosmetic customizations to container
        */
       applyContainerSettings() {
-        console.log(this.containerSettings);
-
         /** set options relevant to both image and text containers */
         /** POSITION */
         document.getElementById(this.id).style.top = this.y;
@@ -1184,25 +1175,45 @@
        * [re]loads saved bookmark sections + links for container
        */
       loadBookmarks() {
-        if (this.sections == undefined) {
+        if (Object.keys(this.sections).length == 0) {
           return;
         }
+        console.log(this.sections);
         let containerSettings = this.containerSettings;
         let linkContainer = document.getElementById(this.id + "-sections");
         linkContainer.innerHTML = "";
 
         // ensure uncategorized links (if any) stay at top
-        const noneSectionIndex = Object.keys(this.sections).indexOf("none");
+        this.sections.none.order = 0;
+
+/**        const noneSectionIndex = Object.keys(this.sections).indexOf("none");
         if (noneSectionIndex != -1 && noneSectionIndex != 0) {
           this.sections.splice(noneSectionIndex, 1);
           this.sections.unshift("none");
         }
+*/
+        // organize sections into proper order
+        let sectionNames = Object.keys(this.sections);
+        let sectionData = Object.values(this.sections);
+        let orderedSectionNames = [];
+        let orderedSectionData = [];
+
+        for (let i = 0; i < sectionNames.length; i++) {
+          for(let j = 0; j < sectionNames.length; j++) {
+            if (sectionData[j].order == i) {
+              orderedSectionNames.push(sectionNames[i]);
+              orderedSectionData.push(sectionData[i]);
+            }
+            else {
+              continue;
+            }
+          }
+        }
 
         // render the sections
-        let sectionNames = Object.keys(this.sections);
         let weight = containerSettings.sectionBold ? "bold" : "normal";
         let italic = containerSettings.sectionItalic ? "italic" : "normal";
-        for (let i = 0; i < sectionNames.length; i++) {
+        for (let i = 0; i < orderedSectionNames.length; i++) {
           linkContainer.insertAdjacentHTML(
             "beforeend",
             `
@@ -1242,17 +1253,16 @@
         }
 
         // and then render the links
-        let sections = Object.values(this.sections);
-        for (let s = 0; s < sections.length; s++) {
-          for (let l = 0; l < sections[s].length; l++) {
+        for (let s = 0; s < orderedSectionNames.length; s++) {
+          for (let l = 0; l < orderedSectionData[s].links.length; l++) {
             let targetSection = document.getElementById(
-              this.id + "-section-" + sectionNames[s]
+              this.id + "-section-" + orderedSectionNames[s]
             );
 
             targetSection.insertAdjacentHTML(
               "beforeend",
               `
-                <div id="${this.id}-${sectionNames[s]}-${l}" >
+                <div id="${this.id}-${orderedSectionNames[s]}-${l}" >
                   <span 
                     class="hiddenButton bookmark ${editing ? "" : "hidden"}" 
                     onClick="deleteLink(this)"
@@ -1262,9 +1272,9 @@
 
                   <a 
                     class="${this.id}-link" 
-                    href="${sections[s][l].url}"
+                    href="${orderedSectionData[s].links[l].url}"
                   >
-                    ${sections[s][l].label}
+                    ${orderedSectionData[s].links[l].label}
                   </a>
                 </div>
               `
@@ -1360,20 +1370,7 @@
         .addEventListener("change", toggleWallpaperRepeat, false);
 
       /**
-
       OLD INIT
-
-      /** load bookmark cookies *
-      sections = JSON.parse(localStorage.getItem("sections")) || [];
-      links = JSON.parse(localStorage.getItem("links")) || [];
-
-      /** load + apply saved (or default) container customization settings *
-      containerSettings =
-        JSON.parse(localStorage.getItem("containerSettings")) ||
-        defaultTextContainerSettings;
-      applyContainerSettings();
-      // render links + sections
-      loadSections();
 
       /** load image data cookies *
       let imageValues =
@@ -1395,13 +1392,13 @@
         width: "",
         height: "",
       };
+      setupSettingsMenu();
 
       /** load container data */
       let containerMapValues =
         JSON.parse(localStorage.getItem("containerMapValues")) || [];
       for (let i = 0; i < containerMapValues.length; i++) {
         // containerDataMap.set(containerMapValues[i].id, containerMapValues[i]);
-        console.log(containerMapValues[i].containerSettings);
         if (containerMapValues[i].id != "settingsContainer") {
           containerDataMap.set(containerMapValues[i].id, new Container(
            containerMapValues[i].id,
@@ -1416,10 +1413,6 @@
         }
       }
       numberOfContainers = containerDataMap.length;
-
-      /** apply saved positions + sizes */
-      // NEEDED TO SETUP SETTINGS CONTAINER.. REWORK
-      setupMovableElements();
 
       /** load last active settings tab user was on */
       activeTabId =
@@ -1439,176 +1432,38 @@
     /**************************
      * INITIALIZATION HELPERS *
      **************************/
-    function setupMovableElements() {
-      // if user has any floating images saved, put them in the DOM
-      // initializeSavedImages();
+    function setupSettingsMenu() {
+      let settingsContainer = document.getElementById("settingsContainer");
 
-      // I think this whole function is going to be changed.
-      // we're no longer going through a map of stuff and setting
-      // things manually. we have helpers in the Container class
-      // to handle this kinda ish for us.
+      /* set at the last saved location */
+      settingsContainer.style.top    = settingsMenuData.y;
+      settingsContainer.style.left   = settingsMenuData.x;
+      settingsContainer.style.width  = settingsMenuData.width + "px";
+      settingsContainer.style.height = settingsMenuData.height + "px";
 
-      // send in the saved container data into the Container Constructor
-      // and let it handle the rest
+      /* add event listeners */
 
-      // however, this requires that the map of containers is being
-      // saved properly. make sure the ToggleEdit function is saving
-      // all of the Container fields properly. we may need to make an
-      // Container.export() function for easier JSON-ification to
-      // be stored in localStorage.
+      // moving / resizing
+      settingsContainer.addEventListener(
+        "mousedown",
+        mouseDownMovableElement,
+        true
+      );
+      
+      // prevent context menu when resizing
+      settingsContainer.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+      });
 
-      // then, set movable elements' saved data
-      let movableElements = document.getElementsByClassName("movable");
-      for (let i = 0; i < movableElements.length; i++) {
-        let element = movableElements[i];
-        let data = containerDataMap.get(element.id);
-
-        // set respective element at the last saved location
-        if (containerDataMap.has(element.id)) {
-          element.style.top = data.y;
-          element.style.left = data.x;
-          element.style.width = data.width + "px";
-          element.style.height = data.height + "px";
+      // stop resizing element if cursor leaves page
+      document.addEventListener("mouseleave", (mouseLeave) => {
+        if (resizing) {
+          resizing = false;
+          document.removeEventListener("mousemove", resizeElement);
+          storeElementData();
         }
-      }
-
-      // finally, add event listeners
-      for (let i = 0; i < movableElements.length; i++) {
-        // make element movable + resizable
-        movableElements[i].addEventListener(
-          "mousedown",
-          mouseDownMovableElement,
-          true
-        );
-        // prevent context menu when resizing
-        movableElements[i].addEventListener("contextmenu", (e) => {
-          e.preventDefault();
-        });
-
-        // stop resizing element if cursor leaves page
-        document.addEventListener("mouseleave", (mouseLeave) => {
-          if (resizing) {
-            resizing = false;
-            document.removeEventListener("mousemove", resizeElement);
-            storeElementData();
-          }
-        });
-      }
+      });
     }
-
-    /* NOW FOUND IN CONTAINER CLASS
-    function addSettingsEventListeners() {
-      /** tab-switching listeners *
-      let tabs = document.getElementsByClassName("tab");
-      for (let i = 0; i < tabs.length; i++) {
-        tabs[i].addEventListener("click", changeActiveTab, false);
-      }
-
-      /** local state setting inputs *
-      document
-        .getElementById("imageRatioToggle")
-        .addEventListener("change", toggleImageRatio, false);
-      document
-        .getElementById("imageRemovalToggle")
-        .addEventListener("change", toggleImageRemoval, false);
-      document
-        .getElementById("autoplayAudioToggle")
-        .addEventListener("change", toggleAutoplayAudio, false);
-
-      /** cookie / persistent setting inputs *
-      // container color setting listeners
-      document
-        .getElementById("containerColorPicker")
-        .addEventListener("input", changeContainerBackground, false);
-      document
-        .getElementById("containerAlpha")
-        .addEventListener("input", changeContainerBackground, false);
-      // container border setting listeners
-      document
-        .getElementById("borderWidth")
-        .addEventListener("input", changeContainerBorderWidth, false);
-      document
-        .getElementById("borderRadius")
-        .addEventListener("input", changeContainerBorderRadius, false);
-      document
-        .getElementById("borderColorPicker")
-        .addEventListener("input", changeContainerBorderColor, false);
-      // bookmark setting listeners
-      document
-        .getElementById("linkColorPicker")
-        .addEventListener("input", changeLinkColor, false);
-      document
-        .getElementById("linkSize")
-        .addEventListener("input", changeLinkSize, false);
-      // bookmark section setting listeners
-      document
-        .getElementById("sectionColorPicker")
-        .addEventListener("input", changeSectionColor, false);
-      document
-        .getElementById("sectionSize")
-        .addEventListener("input", changeSectionSize, false);
-      document
-        .getElementById("sectionBoldToggle")
-        .addEventListener("change", toggleSectionBold, false);
-      document
-        .getElementById("sectionItalicToggle")
-        .addEventListener("change", toggleSectionItalic, false);
-      // clock setting listeners
-      document
-        .getElementById("clockColorPicker")
-        .addEventListener("input", changeClockColor, false);
-      document
-        .getElementById("clockSize")
-        .addEventListener("input", changeClockSize, false);
-      document
-        .getElementById("clockBoldToggle")
-        .addEventListener("change", toggleClockBold, false);
-      document
-        .getElementById("clockItalicToggle")
-        .addEventListener("change", toggleClockItalic, false);
-      // container divider setting listeners
-      document
-        .getElementById("dividerToggle")
-        .addEventListener("change", disableDivider, false);
-      document
-        .getElementById("dividerColorPicker")
-        .addEventListener("input", changeDividerColor, false);
-      // container text setting listeners
-      document
-        .getElementById("setLeftAlign")
-        .addEventListener("change", changeContainerAlignment, false);
-      document
-        .getElementById("setCenterAlign")
-        .addEventListener("change", changeContainerAlignment, false);
-      document
-        .getElementById("setFontButton")
-        .addEventListener("click", changeFont, false);
-      // container shadow setting listeners
-      document
-        .getElementById("shadowX")
-        .addEventListener("input", changeContainerShadow, false);
-      document
-        .getElementById("shadowY")
-        .addEventListener("input", changeContainerShadow, false);
-      document
-        .getElementById("shadowBlur")
-        .addEventListener("input", changeContainerShadow, false);
-      document
-        .getElementById("shadowColorPicker")
-        .addEventListener("input", changeContainerShadow, false);
-      document
-        .getElementById("shadowAlpha")
-        .addEventListener("input", changeContainerShadow, false);
-
-      // page wallpaper
-      document
-        .getElementById("wallpaperColorPicker")
-        .addEventListener("input", changeWallpaper, false);
-      document
-        .getElementById("wallpaperRepeatToggle")
-        .addEventListener("change", toggleWallpaperRepeat, false);
-    }
-    */
 
     /** inserts saved images in their saved order (postioning done upon return) 
     function initializeSavedImages() {
@@ -1668,7 +1523,6 @@
         let valueArray = [];
         containerDataMap.values().forEach((value) => {
           valueArray.push(value);
-          console.log(value);
         });
         localStorage.setItem("containerMapValues", JSON.stringify(valueArray));
 
@@ -1848,8 +1702,13 @@
     function storeElementData() {
       let borderWidth = changingElement.style.borderWidth.slice(0, -2) * 2; // slice to remove "px"
       let element = document.getElementById(changingElement.id);
-      if (changingElement.id == "settingsContainer") {
 
+      if (changingElement.id == "settingsContainer") {
+        console.log("saving settings cont");
+        settingsMenuData.x = element.style.left;
+        settingsMenuData.y = element.style.top;
+        settingsMenuData.width = element.offsetWidth;
+        settingsMenuData.height = element.offsetHeight;
       }
       else {
         let container = containerDataMap.get(element.id);
@@ -2053,8 +1912,8 @@
 
       // save link (and if new, the section)
       let tempIndex = Object.keys(container.sections).indexOf(section); 
-      if (tempIndex =! -1) {
-        let tempSectionLinks = Object.values(container.sections)[tempIndex];
+      if (tempIndex != -1) {
+        let tempSectionLinks = Object.values(container.sections)[tempIndex].links;
         tempSectionLinks.push({
           label: label,
           url: url
@@ -2066,9 +1925,10 @@
           label: label,
           url: url
         });
-        container.sections[section] = tempSectionLinks;
+        container.sections[section] = {}
+        container.sections[section].links = tempSectionLinks;
+        container.sections[section].order = Object.keys(container.sections).length + 1;
       }
-      console.log(container.sections);
 
       // reset inputs + render
       document.getElementById(containerId + "-url-input").value = "";
@@ -2077,16 +1937,84 @@
     }
 
     function reorderSection(buttonPressed, direction) {
-      const section = buttonPressed.parentElement.id;
-      const sectionIndex = sections.indexOf(section);
+      /*
 
-      // cut out section and re-insert into array
-      sections.splice(sectionIndex, 1);
+
+
+
+
+         i need to redo container section structure from:
+
+          sections: {
+            label1 : {links:[], order:num},
+            label2 : {links:[], order:num},
+            ...
+          }
+
+          to:
+
+          sections: {
+            0 : {label:"none", links:[]},
+            1 : {label:"example", links:[]},
+            ...
+          }
+
+          that seems kinda obvious in hindsight... oh well
+
+          i will need to redo how the rendering works,
+          but i think that it will make reordering so much easier:
+
+
+          let copy = sections[currentIndex];
+
+          if move up,
+            sections[currentIndex] = sections[currentIndex+1];
+            sections[currentIndex+1] = copy;
+          if move down,
+            sections[currentIndex] = sections[currentIndex-1];
+            sections[currentIndex-1] = copy;
+ 
+
+
+          i will need to revisit any area that checks for
+          section id via a split() call too, as i'm going
+          to be changing the section element id convention
+          from:
+          "container-section-label"
+          "container-section-0"
+
+
+
+
+
+
+
+         */
+      let temp = buttonPressed.parentElement.id.split("-");
+      let sectionId = temp[temp.length - 1];
+      let containerId = temp[0];
+
+      let container = containerDataMap.get(containerId);
+      let containerIndex = container.sections.order;
+
+      // first, increment section
+      let numberOfSections = Object.keys(container.sections).length;
+      for (let i  = 0; i < numberOfSections; i++) {
+        if (direction == "up" && sectionIndex != 0) {
+          
+        }
+        else if (direction == "down" && sectionIndex != numberOfSections - 1) {
+
+        }
+      }
+
+      /* cut out section and re-insert into array
+      container.sections.splice(sectionIndex, 1);
       if (direction == "up" && sectionIndex != 0) {
         sections.splice(sectionIndex - 1, 0, section);
       } else if (direction == "down" && sectionIndex != sections.length) {
         sections.splice(sectionIndex + 1, 0, section);
-      }
+      }*/
 
       // localStorage.setItem("sections", JSON.stringify(sections));
       loadSections();
