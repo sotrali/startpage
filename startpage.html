@@ -1178,47 +1178,24 @@
         if (Object.keys(this.sections).length == 0) {
           return;
         }
+
+        console.log('loading bookmarks...');
         console.log(this.sections);
         let containerSettings = this.containerSettings;
         let linkContainer = document.getElementById(this.id + "-sections");
         linkContainer.innerHTML = "";
 
-        // ensure uncategorized links (if any) stay at top
-        this.sections.none.order = 0;
-
-/**        const noneSectionIndex = Object.keys(this.sections).indexOf("none");
-        if (noneSectionIndex != -1 && noneSectionIndex != 0) {
-          this.sections.splice(noneSectionIndex, 1);
-          this.sections.unshift("none");
-        }
-*/
-        // organize sections into proper order
-        let sectionNames = Object.keys(this.sections);
         let sectionData = Object.values(this.sections);
-        let orderedSectionNames = [];
-        let orderedSectionData = [];
-
-        for (let i = 0; i < sectionNames.length; i++) {
-          for(let j = 0; j < sectionNames.length; j++) {
-            if (sectionData[j].order == i) {
-              orderedSectionNames.push(sectionNames[i]);
-              orderedSectionData.push(sectionData[i]);
-            }
-            else {
-              continue;
-            }
-          }
-        }
 
         // render the sections
         let weight = containerSettings.sectionBold ? "bold" : "normal";
         let italic = containerSettings.sectionItalic ? "italic" : "normal";
-        for (let i = 0; i < orderedSectionNames.length; i++) {
+        for (let i = 0; i < sectionData.length; i++) {
           linkContainer.insertAdjacentHTML(
             "beforeend",
             `
               ${i == 0 ? "" : `<br />`}
-              <div id="${this.id}-section-${sectionNames[i]}">
+              <div id="${this.id}-section-${i}">
                 <span 
                   class="hiddenButton ${editing ? "" : "hidden"}" 
                   onClick="deleteSection(this)"
@@ -1232,7 +1209,7 @@
                           font-weight: ${weight};
                           font-style: ${italic}"
                 >
-                  ${sectionNames[i] == "none" ? " " : sectionNames[i]}
+                  ${sectionData[i].label}
                 </span>
 
                 <span 
@@ -1253,16 +1230,16 @@
         }
 
         // and then render the links
-        for (let s = 0; s < orderedSectionNames.length; s++) {
-          for (let l = 0; l < orderedSectionData[s].links.length; l++) {
+        for (let s = 0; s < sectionData.length; s++) {
+          for (let l = 0; l < sectionData[s].links.length; l++) {
             let targetSection = document.getElementById(
-              this.id + "-section-" + orderedSectionNames[s]
+              this.id + "-section-" + s
             );
 
             targetSection.insertAdjacentHTML(
               "beforeend",
               `
-                <div id="${this.id}-${orderedSectionNames[s]}-${l}" >
+                <div id="${this.id}-section-${s}-link-${l}" >
                   <span 
                     class="hiddenButton bookmark ${editing ? "" : "hidden"}" 
                     onClick="deleteLink(this)"
@@ -1272,9 +1249,9 @@
 
                   <a 
                     class="${this.id}-link" 
-                    href="${orderedSectionData[s].links[l].url}"
+                    href="${sectionData[s].links[l].url}"
                   >
-                    ${orderedSectionData[s].links[l].label}
+                    ${sectionData[s].links[l].label}
                   </a>
                 </div>
               `
@@ -1893,7 +1870,7 @@
       let containerId = containerElement.id.split("-")[0];
       let container = containerDataMap.get(containerId);
 
-      // collect input data from form
+      // collect data from inputs
       let url = document.getElementById(containerId + "-url-input").value;
       let label = document.getElementById(containerId + "-label-input").value;
       let section = document.getElementById(containerId + "-section-input").value;
@@ -1906,12 +1883,16 @@
         alert("you must specify url and label to add a bookmark");
         return;
       }
-      if (section == "") {
-        section = "none";
+
+      // store new link in container
+      let sectionData = Object.values(container.sections);
+      let sectionLabels = [];
+      for (let i = 0; i < sectionData.length; i++) {
+        sectionLabels.push(sectionData[i].label);
       }
 
-      // save link (and if new, the section)
-      let tempIndex = Object.keys(container.sections).indexOf(section); 
+      let tempIndex = sectionLabels.indexOf(section); 
+      // existing section
       if (tempIndex != -1) {
         let tempSectionLinks = Object.values(container.sections)[tempIndex].links;
         tempSectionLinks.push({
@@ -1919,15 +1900,16 @@
           url: url
         });
       }
+      // creating new section
       else {
         let tempSectionLinks = [];
         tempSectionLinks.push({
           label: label,
           url: url
         });
-        container.sections[section] = {}
-        container.sections[section].links = tempSectionLinks;
-        container.sections[section].order = Object.keys(container.sections).length + 1;
+        container.sections[sectionData.length] = {}
+        container.sections[sectionData.length].links = tempSectionLinks;
+        container.sections[sectionData.length].label = section;
       }
 
       // reset inputs + render
@@ -1937,105 +1919,38 @@
     }
 
     function reorderSection(buttonPressed, direction) {
-      /*
-
-
-
-
-
-         i need to redo container section structure from:
-
-          sections: {
-            label1 : {links:[], order:num},
-            label2 : {links:[], order:num},
-            ...
-          }
-
-          to:
-
-          sections: {
-            0 : {label:"none", links:[]},
-            1 : {label:"example", links:[]},
-            ...
-          }
-
-          that seems kinda obvious in hindsight... oh well
-
-          i will need to redo how the rendering works,
-          but i think that it will make reordering so much easier:
-
-
-          let copy = sections[currentIndex];
-
-          if move up,
-            sections[currentIndex] = sections[currentIndex+1];
-            sections[currentIndex+1] = copy;
-          if move down,
-            sections[currentIndex] = sections[currentIndex-1];
-            sections[currentIndex-1] = copy;
- 
-
-
-          i will need to revisit any area that checks for
-          section id via a split() call too, as i'm going
-          to be changing the section element id convention
-          from:
-          "container-section-label"
-          "container-section-0"
-
-
-
-
-
-
-
-         */
       let temp = buttonPressed.parentElement.id.split("-");
-      let sectionId = temp[temp.length - 1];
-      let containerId = temp[0];
+      let sectionId = parseInt(temp[temp.length - 1]);
+      let container = containerDataMap.get(temp[0]);
 
-      let container = containerDataMap.get(containerId);
-      let containerIndex = container.sections.order;
-
-      // first, increment section
-      let numberOfSections = Object.keys(container.sections).length;
-      for (let i  = 0; i < numberOfSections; i++) {
-        if (direction == "up" && sectionIndex != 0) {
-          
-        }
-        else if (direction == "down" && sectionIndex != numberOfSections - 1) {
-
-        }
+      let copy = container.sections[sectionId];
+      if (direction == "up" && sectionId != 0) {
+        container.sections[sectionId]     = container.sections[sectionId - 1]; 
+        container.sections[sectionId - 1] = copy;
+      } else if (direction == "down" && (sectionId + 1) != Object.keys(container.sections[sectionId]).length) {
+        container.sections[sectionId]     = container.sections[sectionId + 1]; 
+        container.sections[sectionId + 1] = copy;
       }
 
-      /* cut out section and re-insert into array
-      container.sections.splice(sectionIndex, 1);
-      if (direction == "up" && sectionIndex != 0) {
-        sections.splice(sectionIndex - 1, 0, section);
-      } else if (direction == "down" && sectionIndex != sections.length) {
-        sections.splice(sectionIndex + 1, 0, section);
-      }*/
-
-      // localStorage.setItem("sections", JSON.stringify(sections));
-      loadSections();
+      container.loadBookmarks();
     }
 
     function deleteSection(buttonPressed) {
-      // remove all links in section (inverse style)
-      const section = buttonPressed.parentElement.id;
-      let newLinks = [];
-      links.forEach((link, index) => {
-        if (link.section != section) {
-          newLinks.push(link);
-        }
-      });
+      let temp = buttonPressed.parentElement.id.split("-");
+      let sectionId = parseInt(temp[temp.length - 1]);
+      let container = containerDataMap.get(temp[0]);
 
-      // remove section from local array
-      sections.splice(sections.indexOf(section), 1);
+      // go through sections, starting with one to delete
+      let numSections = Object.keys(container.sections).length;
+      console.log(numSections);
+      for (let i = sectionId; i < numSections; i++) {
+        container.sections[i] = container.sections[i+1];
+      }
+      // trim last section index that is no longer needed
+      delete container.sections[numSections - 1];
 
-      // update links + refresh screen
-      links = newLinks;
-      loadSections();
+      // refresh screen
+      container.loadBookmarks();
     }
 
     function deleteLink(buttonPressed) {
