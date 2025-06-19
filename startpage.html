@@ -871,9 +871,9 @@
 
         /** SIZE */
         const containerSettings = this.containerSettings;
-        document.getElementById(this.id).style.width = this.width;
+        document.getElementById(this.id).style.width = this.width + "px";
           // this.width - 2 * parseInt(containerSettings.borderWidth);
-        document.getElementById(this.id).style.height = this.height;
+        document.getElementById(this.id).style.height = this.height + "px";
           // this.height - 2 * parseInt(containerSettings.borderWidth);
 
         /** SHADOW / GLOW */
@@ -1175,15 +1175,13 @@
        * [re]loads saved bookmark sections + links for container
        */
       loadBookmarks() {
-        if (Object.keys(this.sections).length == 0) {
-          return;
-        }
-
-        console.log('loading bookmarks...');
-        console.log(this.sections);
         let containerSettings = this.containerSettings;
         let linkContainer = document.getElementById(this.id + "-sections");
         linkContainer.innerHTML = "";
+
+        if (Object.keys(this.sections).length == 0) {
+          return;
+        }
 
         let sectionData = Object.values(this.sections);
 
@@ -1927,7 +1925,9 @@
       if (direction == "up" && sectionId != 0) {
         container.sections[sectionId]     = container.sections[sectionId - 1]; 
         container.sections[sectionId - 1] = copy;
-      } else if (direction == "down" && (sectionId + 1) != Object.keys(container.sections[sectionId]).length) {
+      } else if (direction == "down" && (sectionId + 1) != Object.keys(container.sections).length) {
+        console.log(sectionId);
+        console.log(Object.keys(container.sections).length);
         container.sections[sectionId]     = container.sections[sectionId + 1]; 
         container.sections[sectionId + 1] = copy;
       }
@@ -1942,7 +1942,6 @@
 
       // go through sections, starting with one to delete
       let numSections = Object.keys(container.sections).length;
-      console.log(numSections);
       for (let i = sectionId; i < numSections; i++) {
         container.sections[i] = container.sections[i+1];
       }
