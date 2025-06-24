@@ -672,7 +672,8 @@
         document.getElementById("addContainerForm").insertAdjacentHTML(
           "beforeend",
           `
-            <div id=${this.id + "-bookmark-form"} class="formTitle">add bookmarks</div>
+            <div id=${this.id + "-bookmark-menu"} >
+              <h1 class="formTitle">add bookmarks</h1>
               <div>
                 <label> enter url: </label>
                 <input id=${this.id + "-url-input"} type="text" name="url" />
@@ -692,31 +693,36 @@
 
             <br />
 
-            <div id=${this.id + "-settings-form"}>
+            <div id=${this.id + "-customization-menu"}>
+              <h1 class="formTitle">customize layer</h1>
 
-              <div class="formTitle">change background</div>
-              <div>
-                  <label>set background color: </label>
-                  <input id=${this.id + "-settings-bg-color"} type="color" />
-              </div>
-              <div>
-                  <label>set background opacity (%): </label>
-                  <input id=${this.id + "-settings-bg-alpha"} />
-              </div>
+              <span id=${this.id + "-background-options"}>
+                <p class="formTitle">change background</p>
+                <div>
+                    <label>set background color: </label>
+                    <input id=${this.id + "-settings-bg-color"} type="color" />
+                </div>
+                <div>
+                    <label>set background opacity (%): </label>
+                    <input id=${this.id + "-settings-bg-alpha"} />
+                </div>
+              </span>
 
               <br />
 
-              <div class="formTitle">change text</div>
-              <div>
-                  <label>change font (see instructions for more info):</label>
-                  <input  id=${this.id + "-settings-font-input"} />
-                  <button id=${
-                    this.id + "-settings-set-font-button"
-                  }>set font</button>
-                  <label>current font:</label><span id=${
-                    this.id + "-settings-font-name"
-                  }></span>
-              </div>
+              <span id=${this.id + "-text-options"}>
+                <h1 class="formTitle">change text</h1>
+                <div>
+                    <label>change font (see instructions for more info):</label>
+                    <input  id=${this.id + "-settings-font-input"} />
+                    <button id=${
+                      this.id + "-settings-set-font-button"
+                    }>set font</button>
+                    <label>current font:</label><span id=${
+                      this.id + "-settings-font-name"
+                    }></span>
+                </div>
+              </span>
 
               <br />
 
