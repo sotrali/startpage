@@ -111,6 +111,21 @@
       input[type="radio"] {
         width: auto;
       }
+  
+      .expandableMenuToggle {
+        cursor: pointer;
+        padding 18px;
+        width: 100%;
+      }
+      .expanded, .expandableMenuToggle:hover {
+        background-color: rgba(173, 165, 165, 0.8);
+      }
+
+      .expandableMenu {
+        display: none;
+        padding: 0 18px;
+        border-left: 2px solid black;
+      }
 
       #instructionsTab {
       }
@@ -172,7 +187,7 @@
 
       <div id="settingsContainer" class="movable settingsContainer hidden">
         <div id="tabList">
-          <span class="tab" id="addContainerTab">containers / layers</span>
+          <span class="tab" id="containerTab">containers / layers</span>
           <span class="tab" id="imageAndWallpaperTab">images + wallpaper</span>
           <span class="tab" id="audioTab">audio</span>
           <span class="tab" id="globalSettingsTab">global settings</span>
@@ -482,6 +497,11 @@
         containerSettings,
         sections
       ) {
+        /**
+        * TODO
+        * check if id is already used
+        * ensure there are no brackets in the name
+        */
         this.name = name;
         this.id = name.replace(" ", "-");
 
@@ -669,91 +689,70 @@
       /**
        * creates container options menu in page settings menu
        */
-      insertContainerSettingsListing() {
-        document.getElementById("containers").insertAdjacentHTML(
-          "beforeend",
-          `
           /**
             * TODO: 
-            * make the menus intially invisible
-            * implement a toggle visibility function
-            * add the classes for menu layer depths for easier distinction later
-            * brainstorm best approach to UI/UX for these nested menus
             * --> remove "images" from wallpaper tab
             * ----> furthermore, condense all global settings into one tab
             * ----- including wallpaper, audio, cursor
             * add toggles for each settings menu
             * rename settings form div ids (see "note to self")
             */
+
+
+      insertContainerSettingsListing() {
+        document.getElementById("containers").insertAdjacentHTML(
+          "beforeend",
+          `
           <div class="containerListing" id=${this.id + "-container-listing"}>
-          <p onclick="toggleContainerSettingsMenu(this)">${this.name} [expand]</p>
-          <div class="settingsMenu" id=${this.id + "-settings-menu"}>
-            <div id=${this.id + "-bookmark-menu"} >
-              <h1 class="formTitle">add bookmarks</h1>
-              <div>
-                <label> enter url: </label>
-                <input id=${this.id + "-url-input"} type="text" name="url" />
-              </div>
-              <div>
-                <label> enter label: </label>
-                <input id=${this.id + "-label-input"} type="text" name="label" />
-              </div>
-              <div>
-                <label> enter section (optional): </label>
-                <input id=${this.id + "-section-input"} type="text" name="section" />
-              </div>
+
+          <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}</p>
+          <div class="expandableMenu" id=${this.id + "-settings-menu"}>
+
+            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: bookmarks</h1>
+            <div class="expandableMenu" id=${this.id + "-bookmark-menu"} >
+              <label> enter url: </label>
+              <input id=${this.id + "-url-input"} type="text" name="url" />
+
+              <label> enter label: </label>
+              <input id=${this.id + "-label-input"} type="text" name="label" />
+
+              <label> enter section (optional): </label>
+              <input id=${this.id + "-section-input"} type="text" name="section" />
+
+              <br /><br />
 
               <button onclick="addLink(${this.id})">add link</button>
             </div>
 
-            <br />
+            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: customize background color</p>
+            <div class="expandableMenu">
+                  <label>set background color: </label>
+                  <input id=${this.id + "-settings-bg-color"} type="color" />
 
-            <div id=${this.id + "-customization-menu"}>
-              <h1 class="formTitle">customize layer</h1>
+                  <label>set background opacity (%): </label>
+                  <input id=${this.id + "-settings-bg-alpha"} />
+            </div>
 
-              <span id=${this.id + "-background-options"}>
-                <p class="formTitle">change background</p>
-                <div>
-                    <label>set background color: </label>
-                    <input id=${this.id + "-settings-bg-color"} type="color" />
-                </div>
-                <div>
-                    <label>set background opacity (%): </label>
-                    <input id=${this.id + "-settings-bg-alpha"} />
-                </div>
-              </span>
+            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: text settings</p>
+            <div class="expandableMenu">
+              <label>change font (see instructions for more info):</label>
+              <input  id=${this.id + "-settings-font-input"} />
+              <button id=${this.id + "-settings-set-font-button"}>set font</button>
+              
+              <label>current font:</label>
+              <span id=${this.id + "-settings-font-name"}></span>
 
+              <br /><br />
+              <label>align text:</label>
               <br />
+              <label for=${this.id + "-settings-left-align"}>left</label>
+              <input id=${this.id + "-settings-left-align"} type="radio" name="align" />
+              <label for=${this.id + "-settings-center-align"}>center</label>
+              <input id=${this.id + "-settings-center-align"} type="radio" name="align" />
+            </div>
 
-              <span id=${this.id + "-text-options"}>
-                <h1 class="formTitle">change text</h1>
-                <div>
-                    <label>change font (see instructions for more info):</label>
-                    <input  id=${this.id + "-settings-font-input"} />
-                    <button id=${
-                      this.id + "-settings-set-font-button"
-                    }>set font</button>
-                    <label>current font:</label><span id=${
-                      this.id + "-settings-font-name"
-                    }></span>
-                </div>
-              </span>
 
-              <br />
 
-              <div class="formTitle">align text:</div>
-              <div>
-                <label for=${this.id + "-settings-left-align"}>left</label>
-                  <input id=${
-                    this.id + "-settings-left-align"
-                  } type="radio" name="align" />
-                  <label for=${this.id + "-settings-center-align"}>center</label>
-                  <input id=${
-                    this.id + "-settings-center-align"
-                  } type="radio" name="align" />
-              </div>
-
-              <br />
 
               <div class="formTitle">customize sections</div>
               <div>
@@ -1543,6 +1542,21 @@
       }
     }
   
+    function toggleExpandableMenu(toggleButton) {
+      toggleButton.classList.toggle("expanded");
+      let toggleButtonLabel = toggleButton.innerText;
+      let menuContent = toggleButton.nextElementSibling;
+
+      console.log(toggleButtonLabel);
+      if (menuContent.style.display === "block") {
+        menuContent.style.display = "none";
+        toggleButton.innerHTML = toggleButtonLabel.replace("-", "+");
+      } else {
+        menuContent.style.display = "block";
+        toggleButton.innerHTML = toggleButtonLabel.replace("+", "-");
+      }
+    }
+
     function toggleImageRatio() {
       keepImageRatio = !document.getElementById("imageRatioToggle").checked;
     }
