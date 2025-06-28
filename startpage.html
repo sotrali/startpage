@@ -2154,19 +2154,28 @@
 
     // BORDER
     function changeContainerBorderWidth(borderChange) {
-      containerSettings.borderWidth = borderChange.target.value;
-      document.getElementById("mainContainer").style.borderWidth =
-        containerSettings.borderWidth + "px";
+      let containerId = borderChange.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.borderWidth = borderChange.target.value;
+      document.getElementById(containerId).style.borderWidth =
+        container.containerSettings.borderWidth + "px";
     }
     function changeContainerBorderRadius(radiusChange) {
-      containerSettings.borderRadius = radiusChange.target.value;
-      document.getElementById("mainContainer").style.borderRadius =
-        containerSettings.borderRadius + "px";
+      let containerId = radiusChange.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.borderRadius = radiusChange.target.value;
+      document.getElementById(containerId).style.borderRadius =
+        container.containerSettings.borderRadius + "px";
     }
     function changeContainerBorderColor(colorChange) {
-      containerSettings.borderColor = colorChange.target.value;
-      document.getElementById("mainContainer").style.borderColor =
-        containerSettings.borderColor;
+      let containerId = colorChange.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.borderColor = colorChange.target.value;
+      document.getElementById(containerId).style.borderColor =
+        container.containerSettings.borderColor;
     }
     // CLOCK
     function changeClockColor(colorChange) {
