@@ -728,7 +728,7 @@
 
               <br /><br />
 
-              <button onclick="addLink(${this.id})">add link</button>
+              <button id=${this.id + "-add-link-button"} onclick="addLink(this)">add link</button>
             </div>
 
 
@@ -1187,9 +1187,9 @@
                   [X]
                 </span>
                 <span 
-                  class="section"
+                  class=${this.id + "-section"}
                   style="color: ${containerSettings.sectionColor};
-                          font-size: ${containerSettings.sectionSize};
+                          font-size: ${containerSettings.sectionSize + "px"};
                           font-weight: ${weight};
                           font-style: ${italic}"
                 >
@@ -1234,6 +1234,8 @@
                   <a 
                     class="${this.id}-link" 
                     href="${sectionData[s].links[l].url}"
+                    style="color: ${containerSettings.linkColor};
+                            font-size: ${containerSettings.linkSize + "px"};"
                   >
                     ${sectionData[s].links[l].label}
                   </a>
@@ -1241,13 +1243,6 @@
               `
             );
           }
-        }
-
-        // set link colors
-        let linkElements = document.getElementsByClassName(this.id + "-link");
-        for (let i = 0; i < linkElements.length; i++) {
-          linkElements[i].style.color = containerSettings.linkColor;
-          linkElements[i].style.fontSize = containerSettings.linkSize + "px";
         }
 
         // ensure smooth ux when rerendering
@@ -1511,7 +1506,6 @@
       let toggleButtonLabel = toggleButton.innerText;
       let menuContent = toggleButton.nextElementSibling;
 
-      console.log(toggleButtonLabel);
       if (menuContent.style.display === "block") {
         menuContent.style.display = "none";
         toggleButton.innerHTML = toggleButtonLabel.replace("-", "+");
@@ -1680,7 +1674,6 @@
       let element = document.getElementById(changingElement.id);
 
       if (changingElement.id == "settingsContainer") {
-        console.log("saving settings cont");
         settingsMenuData.x = element.style.left;
         settingsMenuData.y = element.style.top;
         settingsMenuData.width = element.offsetWidth;
@@ -1866,9 +1859,11 @@
      **********************/
 
     function addLink(containerElement) {
+      console.log(containerElement)
       let containerId = containerElement.id.split("-")[0];
       let container = containerDataMap.get(containerId);
 
+      console.log(containerId);
       // collect data from inputs
       let url = document.getElementById(containerId + "-url-input").value;
       let label = document.getElementById(containerId + "-label-input").value;
@@ -2094,45 +2089,67 @@
       let container = containerDataMap.get(containerId);
 
       container.containerSettings.linkColor = colorChange.target.value;
-      let linkElements = document.getElementsByClassName("link");
+
+      let linkElements = document.getElementsByClassName(container.id + "-link");
       for (let i = 0; i < linkElements.length; i++) {
-        linkElements[i].style.color = containerSettings.linkColor;
+        linkElements[i].style.color = container.containerSettings.linkColor;
       }
     }
     function changeLinkSize(sizeChange) {
-      containerSettings.linkSize =
+      let containerId = sizeChange.currentTarget.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.linkSize =
         sizeChange.target.value == "" ? "0" : sizeChange.target.value;
 
-      let linkElements = document.getElementsByClassName("link");
+      let linkElements = document.getElementsByClassName(container.id + "-link");
       for (let i = 0; i < linkElements.length; i++) {
-        linkElements[i].style.fontSize = containerSettings.linkSize + "px";
+        linkElements[i].style.fontSize = container.containerSettings.linkSize + "px";
       }
     }
 
     function changeSectionColor(colorChange) {
-      containerSettings.sectionColor = colorChange.target.value;
-      let sectionElements = document.getElementsByClassName("section");
+      let containerId = colorChange.currentTarget.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.sectionColor = colorChange.target.value;
+      let sectionElements = document.getElementsByClassName(container.id + "-section");
       for (let i = 0; i < sectionElements.length; i++) {
-        sectionElements[i].style.color = containerSettings.sectionColor;
+        sectionElements[i].style.color = container.containerSettings.sectionColor;
       }
     }
     function changeSectionSize(sizeChange) {
-      containerSettings.sectionSize =
+      let containerId = sizeChange.currentTarget.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.sectionSize =
         sizeChange.target.value == "" ? "0" : sizeChange.target.value;
 
-      let sectionElements = document.getElementsByClassName("section");
+      let sectionElements = document.getElementsByClassName(container.id + "-section");
       for (let i = 0; i < sectionElements.length; i++) {
-        sectionElements[i].style.fontSize =
-          containerSettings.sectionSize + "px";
+        sectionElements[i].style.fontSize = container.containerSettings.sectionSize + "px";
       }
+      console.log(container.containerSettings.sectionSize);
     }
-    function toggleSectionBold(checkbox) {
-      containerSettings.sectionBold = this.checked;
-      loadSections();
+    function toggleSectionBold(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      let sectionElements = document.getElementsByClassName(container.id + "-section");
+      for (let i = 0; i < sectionElements.length; i++) {
+        sectionElements[i].style.fontWeight = checkboxChanged.target.checked ? "bold" : "normal";
+      }
+      container.containerSettings.sectionBold = checkboxChanged.target.checked;
     }
-    function toggleSectionItalic(checkbox) {
-      containerSettings.sectionItalic = this.checked;
-      loadSections();
+    function toggleSectionItalic(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      let sectionElements = document.getElementsByClassName(container.id + "-section");
+      for (let i = 0; i < sectionElements.length; i++) {
+        sectionElements[i].style.fontStyle = checkboxChanged.target.checked ? "italic" : "normal";
+      }
+      container.containerSettings.sectionItalic = checkboxChanged.target.checked;
     }
 
     // BORDER
