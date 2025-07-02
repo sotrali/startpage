@@ -2250,7 +2250,7 @@
       let containerId = alignmentChanged.target.id.split("-")[0];
       let container   = containerDataMap.get(containerId);
 
-     if (document.getElementById(containerId + "-settings-left-align").checked) {
+      if (document.getElementById(containerId + "-settings-left-align").checked) {
         container.containerSettings.centerAlign = false;
         document.getElementById(containerId).style.textAlign = "left";
       } else if (document.getElementById(containerId + "-settings-center-align").checked) {
@@ -2267,14 +2267,14 @@
         return;
       }
 
-      // parse input
+      // parse input to extract name of font
       fontCode = input;
       fontName = fontCode.slice(fontCode.indexOf("family=") + 7);
       if (fontName.indexOf("&") != -1) {
         fontName = fontName.slice(0, fontName.indexOf("&") + 1);
       }
       fontName = fontName.slice(0, fontName.indexOf(":")).replaceAll("+", " ");
-      // set new font
+      // set font on container
       document.head.insertAdjacentHTML("beforeend", fontCode);
       document.getElementById(containerId).style.fontFamily = fontName;
       document.getElementById(containerId + "-settings-font-name").innerHTML = fontName;
@@ -2283,35 +2283,38 @@
     }
 
     // SHADOW
-    function changeContainerShadow() {
-      containerSettings.shadowX =
-        document.getElementById("shadowX").value == ""
+    function changeContainerShadow(valueChanged) {
+      let containerId = valueChanged.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.shadowX =
+        document.getElementById(containerId + "-settings-shadow-x").value == ""
           ? 0
-          : document.getElementById("shadowX").value;
-      containerSettings.shadowY =
-        document.getElementById("shadowY").value == ""
+          : document.getElementById(containerId + "-settings-shadow-x").value;
+      container.containerSettings.shadowY =
+        document.getElementById(containerId + "-settings-shadow-y").value == ""
           ? 0
-          : document.getElementById("shadowY").value;
-      containerSettings.shadowBlur =
-        document.getElementById("shadowBlur").value == ""
+          : document.getElementById(containerId + "-settings-shadow-y").value;
+      container.containerSettings.shadowBlur =
+        document.getElementById(containerId + "-settings-shadow-blur").value == ""
           ? 0
-          : document.getElementById("shadowBlur").value;
-      containerSettings.shadowRgba = hexToRgba(
-        document.getElementById("shadowColorPicker").value,
-        document.getElementById("shadowAlpha").value
+          : document.getElementById(containerId + "-settings-shadow-blur").value;
+      container.containerSettings.shadowRgba = hexToRgba(
+        document.getElementById(containerId + "-settings-shadow-color").value,
+        document.getElementById(containerId + "-settings-shadow-alpha").value
       );
 
       let shadow =
-        containerSettings.shadowX +
+        container.containerSettings.shadowX +
         "px " +
-        containerSettings.shadowY +
+        container.containerSettings.shadowY +
         "px " +
-        containerSettings.shadowBlur +
+        container.containerSettings.shadowBlur +
         "px " +
-        containerSettings.shadowRgba;
+        container.containerSettings.shadowRgba;
 
       // set shadow
-      document.getElementById("mainContainer").style.boxShadow = shadow;
+      document.getElementById(containerId).style.boxShadow = shadow;
     }
 
     /************************************
