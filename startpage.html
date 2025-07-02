@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>startpage</title>
     <style>
       /*
       * GENERAL STATE HELPERS
@@ -114,7 +115,7 @@
   
       .expandableMenuToggle {
         cursor: pointer;
-        padding 18px;
+        padding: 18px;
         width: 100%;
       }
       .expandableMenuToggle.active, .expandableMenuToggle:hover {
@@ -132,17 +133,6 @@
         width: 100%;
         background-color: rgba(173, 165, 165, 0.8);
         font-style: italic;
-      }
-
-      #instructionsTab {
-      }
-      #bookmarkForm {
-      }
-      #linkCustomizationForm {
-      }
-      #containerCustomizationForm {
-      }
-      #resetForm {
       }
 
       #editToggle {
@@ -323,10 +313,7 @@
         </form>
 
         <form id="ioForm" onsubmit="return false">
-          <label
-            >use the button below to copy your current configuration to your
-            clipboard<br/ >(you should save this somewhere)</label
-          >
+          <label>use the button below to copy your current configuration to your clipboard<br />(you should save this somewhere)</label>
           <button onclick="exportData()">export data</button><br />
 
           <input id="importDataInput" />
@@ -401,24 +388,25 @@
       borderWidth: "5",
       borderRadius: "0",
       borderColor: "grey",
-      sectionFontName: "",
-      sectionFontCode: "",
+      fontName: "",
+      fontCode: "",
       sectionColor: "",
       sectionSize: "16",
       sectionItalic: false,
       sectionBold: false,
       linkColor: "",
       linkSize: "16",
-      enableDate: true,
-      enableClock: true,
-      /*
+            /*
        *
        * IMPLEMENT CLOCK TOGGLE LOGIC
        */
+      enableDate: true,
+      enableClock: true,
       clockColor: "",
       clockSize: "16",
       clockBold: false,
       clockItalic: false,
+
       disableDivider: false,
       dividerColor: "",
       centerAlign: false,
@@ -434,8 +422,8 @@
       borderWidth: "0",
       borderRadius: "0",
       borderColor: "grey",
-      sectionFontName: "",
-      sectionFontCode: "",
+      fontName: "",
+      : "",
       sectionColor: "",
       sectionSize: "16",
       sectionItalic: false,
@@ -604,8 +592,8 @@
        * creates a default image container (NEED TO IMPLEMENT DEFAULT IMAGE CONTAINER SETTINGS)
        */
       initializeNewImageContainer() {
-        // use default settings
-        this.containerSettings = defaultImageContainerSettings;
+        // deep copy default settings
+        this.containerSettings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
 
         // insert default container HTML
         document.body.insertAdjacentHTML(
@@ -636,8 +624,8 @@
        * creates a default text container
        */
       initializeNewTextContainer() {
-        // use default settings
-        this.containerSettings = defaultTextContainerSettings;
+        // deep copy default settings
+        this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
         // set no sections
         this.sections = {};
 
@@ -698,9 +686,9 @@
        */
           /**
             * TODO: 
-            * --> remove "images" from wallpaper tab
-            * ----> furthermore, condense all global settings into one tab
-            * ----- including wallpaper, audio, cursor
+            * -> remove "images" from wallpaper tab
+            * -> furthermore, condense all global settings into one tab
+            * - including wallpaper, audio, cursor
             * add toggles for each settings menu
             * rename settings form div ids (see "note to self")
             */
@@ -762,10 +750,10 @@
               <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: date / clock settings</p>
               <div class="expandableMenu">
                 <label>show date?</label>
-                <input id=${this.id + "-settings-date-toggle"} />
+                <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
                 
                 <label>show clock?</label>
-                <input id=${this.id + "-settings-clock-toggle"} />
+                <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
 
                 <label>set date + time color: </label>
                 <input id=${this.id + "-settings-clock-color"} type="color" />
@@ -856,7 +844,7 @@
         document.getElementById(this.id).style.left = this.x;
 
         /** SIZE */
-        const containerSettings = this.containerSettings;
+        let containerSettings = this.containerSettings;
         document.getElementById(this.id).style.width = this.width + "px";
           // this.width - 2 * parseInt(containerSettings.borderWidth);
         document.getElementById(this.id).style.height = this.height + "px";
@@ -916,21 +904,21 @@
         /** otherwise, this is a text-based container and there are more options to set: */
 
         /** FONT */
-        if (containerSettings.sectionFontName == "") {
+        if (containerSettings.fontName == "") {
           document.getElementById(this.id + "-settings-font-name").innerHTML =
             "system default";
         } else {
           document.getElementById(this.id + "-settings-font-name").innerHTML =
-            containerSettings.sectionFontName;
+            containerSettings.fontName;
         }
-        if (containerSettings.sectionFontCode != "") {
+        if (containerSettings.fontCode != "") {
           document.head.insertAdjacentHTML(
             "beforeend",
-            containerSettings.sectionFontCode
+            containerSettings.fontCode
           );
           // fill in settings ui
           document.getElementById(this.id).style.fontFamily =
-            containerSettings.sectionFontName;
+            containerSettings.fontName;
         }
 
         /** TEXT ALIGNMENT */
@@ -951,7 +939,7 @@
 
         // (FONT NEEDS WORK)
         // document.getElementById(this.id + "-settings-section-font-name").value =
-        //   containerSettings.sectionFontName;
+        //   containerSettings.fontName;
         document.getElementById(this.id + "-settings-section-color").value =
           containerSettings.sectionColor;
         document.getElementById(this.id + "-settings-section-size").value =
@@ -987,8 +975,10 @@
         /** CLOCK */
         // TODO EITHER SHOW THE CLOCK OR DONT
         if (containerSettings.enableClock) {
+          // get container's clock element, set display to none
         }
         if (containerSettings.enableDate) {
+          // get container's date element, set display to none
         }
         document.getElementById(this.id + "-clock").style.color =
           containerSettings.clockColor;
@@ -1247,7 +1237,7 @@
 
         // ensure smooth ux when rerendering
         if (containerSettings.disableDivider) {
-          document.getElementById("clock").style.marginBottom = "18px";
+          document.getElementById(this.id + "-clock").style.marginBottom = "18px";
         }
       }
     }
@@ -1479,6 +1469,7 @@
         let valueArray = [];
         containerDataMap.values().forEach((value) => {
           valueArray.push(value);
+          console.log(value);
         });
         localStorage.setItem("containerMapValues", JSON.stringify(valueArray));
 
@@ -2075,9 +2066,11 @@
       let containerId = colorChange.currentTarget.id.split("-")[0];
       let container = containerDataMap.get(containerId);
 
+      console.log(container);
+
       container.containerSettings.backgroundRgba = hexToRgba(
-        document.getElementById(container.id + "-settings-bg-color").value,
-        document.getElementById(container.id + "-settings-bg-alpha").value
+        document.getElementById(containerId + "-settings-bg-color").value,
+        document.getElementById(containerId + "-settings-bg-alpha").value
       );
 
       document.getElementById(containerId).style.backgroundColor =
@@ -2210,54 +2203,64 @@
 
     // DIVIDER
     function changeDividerColor(colorChange) {
-      containerSettings.dividerColor = colorChange.target.value;
-      let divider = document.getElementById("containerDivider");
-      // set multiple places for compatibility
-      divider.style.color = containerSettings.dividerColor;
-      divider.style.backgroundColor = containerSettings.dividerColor;
-      divider.style.borderColor = containerSettings.dividerColor;
-    }
-    function disableDivider(checkbox) {
-      containerSettings.disableDivider = this.checked;
-      document.getElementById("containerDivider").hidden = this.checked;
+      let containerId = colorChange.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
 
-      if (this.checked && links.length > 0) {
-        document.getElementById("clock").style.marginBottom = "18px";
+     container.containerSettings.dividerColor = colorChange.target.value;
+      let divider = document.getElementById(containerId + "-divider");
+      // set multiple places for compatibility
+      divider.style.color = container.containerSettings.dividerColor;
+      divider.style.backgroundColor = container.containerSettings.dividerColor;
+      divider.style.borderColor = container.containerSettings.dividerColor;
+    }
+    function disableDivider(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.disableDivider = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-divider").hidden = checkboxChanged.target.checked;
+
+      if (checkboxChanged.target.checked && Object.keys(container.sections).length > 0) {
+        document.getElementById(containerId + "-clock").style.marginBottom = "18px";
       } else {
-        document.getElementById("clock").style.marginBottom = "0px";
+        document.getElementById(containerId + "-clock").style.marginBottom = "0px";
       }
     }
     // TEXT
-    function changeContainerAlignment() {
-      if (document.getElementById("setLeftAlign").checked) {
-        containerSettings.centerAlign = false;
-        document.getElementById("mainContainer").style.textAlign = "left";
-      } else if (document.getElementById("setCenterAlign").checked) {
-        containerSettings.centerAlign = true;
-        document.getElementById("mainContainer").style.textAlign = "center";
+    function changeContainerAlignment(alignmentChanged) {
+      let containerId = alignmentChanged.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+     if (document.getElementById(containerId + "-settings-left-align").checked) {
+        container.containerSettings.centerAlign = false;
+        document.getElementById(containerId).style.textAlign = "left";
+      } else if (document.getElementById(containerId + "-settings-center-align").checked) {
+        container.containerSettings.centerAlign = true;
+        document.getElementById(containerId).style.textAlign = "center";
       }
     }
-    function changeFont() {
-      let input = document.getElementById("fontInput").value;
+    function changeFont(buttonClicked) {
+      let containerId = buttonClicked.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      let input = document.getElementById(containerId + "-settings-font-input").value;
       if (input == "") {
         return;
-      }
-
-      // wipe current font tags
-      let oldTags = document.getElementsByTagName("link");
-      for (let i = 0; i < oldTags.length; i++) {
-        oldTags[0].remove();
       }
 
       // parse input
       fontCode = input;
       fontName = fontCode.slice(fontCode.indexOf("family=") + 7);
-      fontName = fontName.slice(0, fontName.indexOf("&") + 1);
-      fontName = fontName.slice(0, fontName.indexOf(":")).replace("+", " ");
+      if (fontName.indexOf("&") != -1) {
+        fontName = fontName.slice(0, fontName.indexOf("&") + 1);
+      }
+      fontName = fontName.slice(0, fontName.indexOf(":")).replaceAll("+", " ");
       // set new font
       document.head.insertAdjacentHTML("beforeend", fontCode);
-      document.body.style.fontFamily = fontName;
-      document.getElementById("currentFont").innerHTML = fontName;
+      document.getElementById(containerId).style.fontFamily = fontName;
+      document.getElementById(containerId + "-settings-font-name").innerHTML = fontName;
+      container.containerSettings.fontCode = fontCode;
+      container.containerSettings.fontName = fontName;
     }
 
     // SHADOW
