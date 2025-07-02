@@ -402,10 +402,10 @@
        */
       enableDate: true,
       enableClock: true,
-      clockColor: "",
-      clockSize: "16",
-      clockBold: false,
-      clockItalic: false,
+      headerColor: "",
+      headerSize: "16",
+      headerBold: false,
+      headerItalic: false,
 
       disableDivider: false,
       dividerColor: "",
@@ -549,10 +549,10 @@
           `
             <div class="movable container" id=${this.id}>
             <div style="margin: auto">
-              <div id=${this.id + "-clock"}>
+              <div id=${this.id + "-header"}>
                 <span id=${this.id + "-date"}></span>
                 <br />
-                <span id=${this.id + "-time"}></span>
+                <span id=${this.id + "-clock"}></span>
               </div>
               <hr id=${this.id + "-divider"} />
               <div id=${this.id + "-sections"} ></div>
@@ -570,11 +570,11 @@
           second: "numeric",
         });
         // set time immediately so it shows upon load
-        document.getElementById(this.id + "-time").innerText =
+        document.getElementById(this.id + "-clock").innerText =
           timeFormat.format(new Date());
         // set time on interval to continue to update
         setInterval(() => {
-          document.getElementById(this.id + "-time").innerText =
+          document.getElementById(this.id + "-clock").innerText =
             timeFormat.format(new Date());
         }, 1000);
 
@@ -635,10 +635,10 @@
           `
             <div class="movable container" id=${this.id}>
             <div style="margin: auto">
-              <div id=${this.id + "-clock"}>
+              <div id=${this.id + "-header"}>
                 <span id=${this.id + "-date"}></span>
                 <br />
-                <span id=${this.id + "-time"}></span>
+                <span id=${this.id + "-clock"}></span>
               </div>
               <hr id=${this.id + "-divider"} />
               <div id=${this.id + "-sections"} ></div>
@@ -656,11 +656,11 @@
           second: "numeric",
         });
         // set time immediately so it shows upon load
-        document.getElementById(this.id + "-time").innerText =
+        document.getElementById(this.id + "-clock").innerText =
           timeFormat.format(new Date());
         // set time on interval to continue to update
         setInterval(() => {
-          document.getElementById(this.id + "-time").innerText =
+          document.getElementById(this.id + "-clock").innerText =
             timeFormat.format(new Date());
         }, 1000);
 
@@ -972,25 +972,22 @@
             .slice(0, -1)
             .split(",")[3] * 100;
 
-        /** CLOCK */
+        /** HEADER  */
         // TODO EITHER SHOW THE CLOCK OR DONT
-        if (containerSettings.enableClock) {
-          // get container's clock element, set display to none
-        }
-        if (containerSettings.enableDate) {
-          // get container's date element, set display to none
-        }
-        document.getElementById(this.id + "-clock").style.color =
-          containerSettings.clockColor;
-        document.getElementById(this.id + "-clock").style.fontSize =
-          containerSettings.clockSize + "px";
-        if (containerSettings.clockBold) {
-          document.getElementById(this.id + "-clock").style.fontWeight = "bold";
-        }
-        if (containerSettings.clockItalic) {
-          document.getElementById(this.id + "-clock").style.fontStyle =
-            "italic";
-        }
+        document.getElementById(this.id + "-date").style.display = 
+            containerSettings.enableDate ? "inline" : "none";
+        document.getElementById(this.id + "-clock").style.display = 
+            containerSettings.enableClock ? "inline" : "none";
+
+        document.getElementById(this.id + "-header").style.color =
+          containerSettings.headerColor;
+        document.getElementById(this.id + "-header").style.fontSize =
+          containerSettings.headerSize + "px";
+        document.getElementById(this.id + "-header").style.fontWeight =
+          containerSettings.headerBold ? "bold" : "normal";
+        document.getElementById(this.id + "-header").style.fontStyle =
+          containerSettings.headerItalic ? "italic" : "normal";
+
         // fill-in settings ui
         document.getElementById(this.id + "-settings-date-toggle").checked =
           containerSettings.enableDate;
@@ -998,13 +995,13 @@
           containerSettings.enableClock;
 
         document.getElementById(this.id + "-settings-clock-color").value =
-          containerSettings.clockColor;
+          containerSettings.headerColor;
         document.getElementById(this.id + "-settings-clock-size").value =
-          containerSettings.clockSize;
+          containerSettings.headerSize;
         document.getElementById(this.id + "-settings-clock-bold").checked =
-          containerSettings.clockBold;
+          containerSettings.headerBold;
         document.getElementById(this.id + "-settings-clock-italic").checked =
-          containerSettings.clockItalic;
+          containerSettings.headerItalic;
 
         /** DIVIDER */
         let divider = document.getElementById(this.id + "-divider");
@@ -1012,7 +1009,7 @@
           document.getElementById(this.id + "-divider").hidden = true;
           // if there are links in this container, add room under the divider
           if (Object.keys(this.sections).length > 0) {
-            document.getElementById(this.id + "-clock").style.marginBottom =
+            document.getElementById(this.id + "-header").style.marginBottom =
               "18px";
           }
         } else {
@@ -1106,22 +1103,24 @@
           .getElementById(this.id + "-settings-link-size")
           .addEventListener("input", changeLinkSize, false);
         // clock setting listeners
-
-        // TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        // ADD CLOCK and DATE TOGGLE HERE
-
+        document
+          .getElementById(this.id + "-settings-date-toggle")
+          .addEventListener("input", toggleDate, false);
+        document
+          .getElementById(this.id + "-settings-clock-toggle")
+          .addEventListener("input", toggleClock, false);
         document
           .getElementById(this.id + "-settings-clock-color")
-          .addEventListener("input", changeClockColor, false);
+          .addEventListener("input", changeHeaderColor, false);
         document
           .getElementById(this.id + "-settings-clock-size")
-          .addEventListener("input", changeClockSize, false);
+          .addEventListener("input", changeHeaderSize, false);
         document
           .getElementById(this.id + "-settings-clock-bold")
-          .addEventListener("change", toggleClockBold, false);
+          .addEventListener("change", toggleHeaderBold, false);
         document
           .getElementById(this.id + "-settings-clock-italic")
-          .addEventListener("change", toggleClockItalic, false);
+          .addEventListener("change", toggleHeaderItalic, false);
         // container divider setting listeners
         document
           .getElementById(this.id + "-settings-divider-toggle")
@@ -1237,7 +1236,7 @@
 
         // ensure smooth ux when rerendering
         if (containerSettings.disableDivider) {
-          document.getElementById(this.id + "-clock").style.marginBottom = "18px";
+          document.getElementById(this.id + "-header").style.marginBottom = "18px";
         }
       }
     }
@@ -2128,7 +2127,7 @@
       let containerId = checkboxChanged.target.id.split("-")[0];
       let container   = containerDataMap.get(containerId);
 
-      let sectionElements = document.getElementsByClassName(container.id + "-section");
+      let sectionElements = document.getElementsByClassName(containerId + "-section");
       for (let i = 0; i < sectionElements.length; i++) {
         sectionElements[i].style.fontWeight = checkboxChanged.target.checked ? "bold" : "normal";
       }
@@ -2138,7 +2137,7 @@
       let containerId = checkboxChanged.target.id.split("-")[0];
       let container   = containerDataMap.get(containerId);
 
-      let sectionElements = document.getElementsByClassName(container.id + "-section");
+      let sectionElements = document.getElementsByClassName(containerId + "-section");
       for (let i = 0; i < sectionElements.length; i++) {
         sectionElements[i].style.fontStyle = checkboxChanged.target.checked ? "italic" : "normal";
       }
@@ -2171,34 +2170,54 @@
         container.containerSettings.borderColor;
     }
     // CLOCK
-    function changeClockColor(colorChange) {
-      containerSettings.clockColor = colorChange.target.value;
-      document.getElementById("clock").style.color =
-        containerSettings.clockColor;
+    function toggleDate(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.enableDate = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-date").style.display = 
+        checkboxChanged.target.checked ? "inline" : "none";
     }
-    function changeClockSize(sizeChange) {
-      containerSettings.clockSize =
+    function toggleClock(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.enableClock = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-clock").style.display = 
+        checkboxChanged.target.checked ? "inline" : "none";
+    }
+    function changeHeaderColor(colorChange) {
+      let containerId = colorChange.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+     container.containerSettings.headerColor = colorChange.target.value;
+      document.getElementById(containerId + "-header").style.color =
+        container.containerSettings.headerColor;
+    }
+    function changeHeaderSize(sizeChange) {
+      let containerId = sizeChange.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.headerSize =
         sizeChange.target.value == "" ? "0" : sizeChange.target.value;
-      document.getElementById("clock").style.fontSize =
-        containerSettings.clockSize + "px";
+      document.getElementById(containerId + "-header").style.fontSize =
+        container.containerSettings.headerSize + "px";
     }
-    function toggleClockBold(checkbox) {
-      containerSettings.clockBold = this.checked;
-      if (this.checked) {
-        document.getElementById("clock").style.fontWeight = "bold";
-      } else {
-        document.getElementById("clock").style.fontWeight = "normal";
-      }
+    function toggleHeaderBold(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.headerBold = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-header").style.fontWeight = 
+        checkboxChanged.target.checked ? "bold" : "normal";
     }
-    function toggleClockBold(checkbox) {
-      containerSettings.clockBold = this.checked;
-      let weight = this.checked ? "bold" : "normal";
-      document.getElementById("clock").style.fontWeight = weight;
-    }
-    function toggleClockItalic(checkbox) {
-      containerSettings.clockItalic = this.checked;
-      let italic = this.checked ? "italic" : "normal";
-      document.getElementById("clock").style.fontStyle = italic;
+    function toggleHeaderItalic(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.containerSettings.headerItalic = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-header").style.fontStyle = 
+        checkboxChanged.target.checked ? "italic" : "normal";
     }
 
     // DIVIDER
