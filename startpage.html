@@ -634,15 +634,15 @@
           "beforeend",
           `
             <div class="movable container" id=${this.id}>
-            <div style="margin: auto">
-              <div id=${this.id + "-header"}>
-                <span id=${this.id + "-date"}></span>
-                <br />
-                <span id=${this.id + "-clock"}></span>
+              <div>
+                <div id=${this.id + "-header"}>
+                  <span id=${this.id + "-date"}></span>
+                  <br />
+                  <span id=${this.id + "-clock"}></span>
+                </div>
+                <hr id=${this.id + "-divider"} />
+                <div id=${this.id + "-sections"} ></div>
               </div>
-              <hr id=${this.id + "-divider"} />
-              <div id=${this.id + "-sections"} ></div>
-            </div>
             </div>
         `
         );
@@ -747,24 +747,28 @@
             <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: customize layer</p>
             <div class="expandableMenu">
 
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: date / clock settings</p>
+              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: header settings</p>
               <div class="expandableMenu">
                 <label>show date?</label>
                 <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
+                <br />
                 
                 <label>show clock?</label>
                 <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
+                <br /><br />
 
-                <label>set date + time color: </label>
+                <label>set header text color: </label>
                 <input id=${this.id + "-settings-clock-color"} type="color" />
+                <br /><br />
 
-                <label>set date + time font size (px): </label>
+                <label>set header font size (px): </label>
                 <input id=${this.id + "-settings-clock-size"} />
+                <br />
 
-                <label for=${this.id + "-settings-clock-bold"}>bold?</label>
+                <label for=${this.id + "-settings-clock-bold"}>bold header?</label>
                 <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
 
-                <label for=${this.id + "-settings-clock-italic"}>italic?</label>
+                <label for=${this.id + "-settings-clock-italic"}>italic header?</label>
                 <input id=${this.id + "-settings-clock-italic"} type="checkbox" />
               </div>
 
@@ -933,13 +937,22 @@
         document.getElementById(this.id + "-settings-center-align").checked =
           containerSettings.centerAlign;
 
-        /** SECTION CUSTOMIZATION */
-        // (weight, italic, colors, etc. are all set upon render in loadBookmarks())
+        /** BOOKMARK CUSTOMIZATION */
+        // apply link customization
+        let linkElements = document.getElementsByClassName(this.id + "-link");
+        for (let i = 0; i < linkElements.length; i++) {
+          linkElements[i].style.color = containerSettings.linkColor;
+          linkElements[i].style.fontSize = containerSettings.linkSize + "px";
+        }
+        // apply section customization
+        let sectionElements = document.getElementsByClassName(this.id + "-section");
+        for (let i = 0; i < sectionElements.length; i++) {
+          sectionElements[i].style.color = containerSettings.sectionColor;
+          sectionElements[i].style.fontSize = containerSettings.sectionSize + "px";
+          sectionElements[i].style.fontWeight = containerSettings.sectionBold ? "bold" : "normal";
+          sectionElements[i].style.fontStyle = containerSettings.sectionItalic ? "italic" : "normal";
+        }
         // fill-in settings ui
-
-        // (FONT NEEDS WORK)
-        // document.getElementById(this.id + "-settings-section-font-name").value =
-        //   containerSettings.fontName;
         document.getElementById(this.id + "-settings-section-color").value =
           containerSettings.sectionColor;
         document.getElementById(this.id + "-settings-section-size").value =
@@ -973,12 +986,12 @@
             .split(",")[3] * 100;
 
         /** HEADER  */
-        // TODO EITHER SHOW THE CLOCK OR DONT
+        // show header elements
         document.getElementById(this.id + "-date").style.display = 
             containerSettings.enableDate ? "inline" : "none";
         document.getElementById(this.id + "-clock").style.display = 
             containerSettings.enableClock ? "inline" : "none";
-
+        // apply header customizations
         document.getElementById(this.id + "-header").style.color =
           containerSettings.headerColor;
         document.getElementById(this.id + "-header").style.fontSize =
@@ -987,13 +1000,11 @@
           containerSettings.headerBold ? "bold" : "normal";
         document.getElementById(this.id + "-header").style.fontStyle =
           containerSettings.headerItalic ? "italic" : "normal";
-
         // fill-in settings ui
         document.getElementById(this.id + "-settings-date-toggle").checked =
           containerSettings.enableDate;
         document.getElementById(this.id + "-settings-clock-toggle").checked =
           containerSettings.enableClock;
-
         document.getElementById(this.id + "-settings-clock-color").value =
           containerSettings.headerColor;
         document.getElementById(this.id + "-settings-clock-size").value =
@@ -1161,8 +1172,6 @@
         let sectionData = Object.values(this.sections);
 
         // render the sections
-        let weight = containerSettings.sectionBold ? "bold" : "normal";
-        let italic = containerSettings.sectionItalic ? "italic" : "normal";
         for (let i = 0; i < sectionData.length; i++) {
           linkContainer.insertAdjacentHTML(
             "beforeend",
@@ -1175,13 +1184,7 @@
                 >
                   [X]
                 </span>
-                <span 
-                  class=${this.id + "-section"}
-                  style="color: ${containerSettings.sectionColor};
-                          font-size: ${containerSettings.sectionSize + "px"};
-                          font-weight: ${weight};
-                          font-style: ${italic}"
-                >
+                <span class=${this.id + "-section"}>
                   ${sectionData[i].label}
                 </span>
 
@@ -1223,8 +1226,6 @@
                   <a 
                     class="${this.id}-link" 
                     href="${sectionData[s].links[l].url}"
-                    style="color: ${containerSettings.linkColor};
-                            font-size: ${containerSettings.linkSize + "px"};"
                   >
                     ${sectionData[s].links[l].label}
                   </a>
