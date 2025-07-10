@@ -115,7 +115,7 @@
   
       .expandableMenuToggle {
         cursor: pointer;
-        padding: 18px;
+        padding: 0px 18px;
         width: 100%;
       }
       .expandableMenuToggle.active, .expandableMenuToggle:hover {
@@ -135,25 +135,16 @@
         font-style: italic;
       }
 
+      hr {
+        width: 75%;
+      }
+
       #editToggle {
         z-index: 999;
         position: fixed;
         font-size: 0.75rem;
       }
       #editToggle:hover {
-        cursor: pointer;
-      }
-
-      .hiddenButton {
-        display: inline;
-        visibility: visible;
-        font-style: italic;
-      }
-      .hiddenButton.hidden {
-        visibility: hidden;
-        display: none;
-      }
-      .hiddenButton:hover {
         cursor: pointer;
       }
 
@@ -407,7 +398,7 @@
       headerBold: false,
       headerItalic: false,
 
-      disableDivider: false,
+      enableDivider: true,
       dividerColor: "",
       centerAlign: false,
       shadowX: "0",
@@ -439,7 +430,7 @@
       clockSize: "16",
       clockBold: false,
       clockItalic: false,
-      disableDivider: false,
+      enableDivider: false,
       dividerColor: "",
       centerAlign: false,
       shadowX: "0",
@@ -498,7 +489,7 @@
         * ensure there are no brackets in the name
         */
         this.name = name;
-        this.id = name.replace(" ", "-");
+        this.id = name.replace(" ", "-").toLowerCase();
 
         // if initializing saved container content,
         if (x !== undefined && y !== undefined) {
@@ -523,13 +514,11 @@
           this.initializeNewImageContainer();
         }
 
-        // apply bookmarks
         this.loadBookmarks();
-        // then create container options UI in settings menu
-        this.insertContainerSettingsListing();
-        this.applyContainerSettings();
         
-        // establish necessary event listeners
+        this.createSettingsMenuListing();
+        this.applySettings();
+        
         this.addContainerEventListeners()
         this.addSettingsMenuEventListeners();
 
@@ -541,7 +530,7 @@
 
       /**
        * creates a basic container shell and lets
-       * loadBookmarks() and applyContainerSettings() do the rest
+       * loadBookmarks() and applySettings() do the rest
        */
       loadSavedContainer() {
         document.body.insertAdjacentHTML(
@@ -693,107 +682,197 @@
             * rename settings form div ids (see "note to self")
             */
 
+      loadBookmarkListings() {
+        if (Object.keys(this.sections).length == 0) {
+          return;
+        }
 
-      insertContainerSettingsListing() {
+        let sectionData = Object.values(this.sections);
+        let containerSettings = this.containerSettings;
+
+        let bookmarkListings = document.getElementById(this.id + "-bookmark-listings");
+
+        console.log(sectionData);
+        
+        // [re]render the section listings
+        bookmarkListings.innerHTML = "";
+        for (let i = 0; i < sectionData.length; i++) {
+          console.log(i);
+          bookmarkListings.insertAdjacentHTML(
+            "beforeend",
+            `
+              ${i == 0 ? "" : `<br />`}
+              <div id="${this.id}-section-listing-${i}">
+                <span onClick="deleteSection(this)">
+                  [X]
+                </span>
+
+                <span class=${this.id + "-section-listing"}>
+                  ${sectionData[i].label}
+                </span>
+
+                ${i > 1 ? `
+                  <span onClick="reorderSection(this, 'up')">
+                    [up]
+                  </span>
+                ` : ``}
+                ${i > 0 ? `
+                <span onClick="reorderSection(this, 'down')">
+                    [down]
+                  </span>
+                ` : ``}
+              </div>
+            `
+          );
+        }
+
+        // [re]render the link listings
+        for (let s = 0; s < sectionData.length; s++) {
+          for (let l = 0; l < sectionData[s].links.length; l++) {
+            console.log('s: ' + s);
+            let targetSection = document.getElementById(
+              this.id + "-section-listing-" + s
+            );
+
+            targetSection.insertAdjacentHTML(
+              "beforeend",
+              `
+                <div id="${this.id}-section-${s}-link-${l}-listing" >
+                  <span onClick="deleteLink(this)">
+                    [X]
+                  </span>
+                  <a 
+                    class="${this.id}-link" 
+                    href="${sectionData[s].links[l].url}"
+                  >
+                    ${sectionData[s].links[l].label}
+                  </a>
+                </div>
+              `
+            );
+          }
+        }
+      }
+
+      createSettingsMenuListing() {
         document.getElementById("containers").insertAdjacentHTML(
           "beforeend",
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-          <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">- ${this.name}</p>
+          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">- ${this.name}</p>
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
-            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: bookmarks</h1>
+            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: bookmarks</p>
             <div class="expandableMenu" id=${this.id + "-bookmark-menu"} >
-              <label> enter url: </label>
-              <input id=${this.id + "-url-input"} type="text" name="url" />
 
-              <label> enter label: </label>
-              <input id=${this.id + "-label-input"} type="text" name="label" />
-
-              <label> enter section (optional): </label>
-              <input id=${this.id + "-section-input"} type="text" name="section" />
-
-              <br /><br />
-
-              <button id=${this.id + "-add-link-button"} onclick="addLink(this)">add link</button>
-            </div>
-
-
-            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: customize bookmarks</p>
-            <div class="expandableMenu">
-              <p class="menuHeader">section text options</p>
-                <label>set section size (px): </label>
-                <input id=${this.id + "-settings-section-size"} />
-
-                <label>set section color: </label>
-                <input id=${this.id + "-settings-section-color"} type="color" />
-
-                <label for="sectionBoldToggle">bold sections?</label>
-                <input id=${this.id + "-settings-section-bold"} type="checkbox" />
-
-                <label for="sectionItalicToggle">italic sections?</label>
-                <input id=${this.id + "-settings-section-italic"} type="checkbox" />
-
-              <p class="menuHeader">bookmark text options</p>
-                <label>set link size (px): </label>
-                <input id=${this.id + "-settings-link-size"} />
-
-                <label>set link color: </label>
-                <input id=${this.id + "-settings-link-color"} type="color" />
-            </div>
-
-
-            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: customize layer</p>
-            <div class="expandableMenu">
-
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: header settings</p>
-              <div class="expandableMenu">
-                <label>show date?</label>
-                <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
-                <br />
-                
-                <label>show clock?</label>
-                <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
-                <br /><br />
-
-                <label>set header text color: </label>
-                <input id=${this.id + "-settings-clock-color"} type="color" />
-                <br /><br />
-
-                <label>set header font size (px): </label>
-                <input id=${this.id + "-settings-clock-size"} />
-                <br />
-
-                <label for=${this.id + "-settings-clock-bold"}>bold header?</label>
-                <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
-
-                <label for=${this.id + "-settings-clock-italic"}>italic header?</label>
-                <input id=${this.id + "-settings-clock-italic"} type="checkbox" />
+              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ manage bookmarks / sections</p>
+              <div class="expandableMenu" id=${this.id + "-bookmark-listings"} >
+                ${Object.keys(this.sections).length == 0 ? `<p>(no bookmarks)</p>` : ``}
               </div>
 
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: text settings</p>
-              <div class="expandableMenu">
-                <label>change font (see instructions for more info):</label>
-                <input  id=${this.id + "-settings-font-input"} />
-                <button id=${this.id + "-settings-set-font-button"}>set font</button>
-                
-                <label>current font:</label>
-                <span id=${this.id + "-settings-font-name"}></span>
+              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ add new bookmarks / sections</p>
+              <div class="expandableMenu" id=${this.id + "-add-bookmark-menu"} >
+
+                <label> enter url: </label>
+                <input id=${this.id + "-url-input"} type="text" name="url" />
+
+                <label> enter label: </label>
+                <input id=${this.id + "-label-input"} type="text" name="label" />
+
+                <label> enter section (optional): </label>
+                <input id=${this.id + "-section-input"} type="text" name="section" />
 
                 <br /><br />
-                <label>align text:</label>
-                <br />
-                <label for=${this.id + "-settings-left-align"}>left</label>
-                <input id=${this.id + "-settings-left-align"} type="radio" name="align" />
-                <label for=${this.id + "-settings-center-align"}>center</label>
-                <input id=${this.id + "-settings-center-align"} type="radio" name="align" />
+
+                <button id=${this.id + "-add-link-button"} onclick="addLink(this)">add link</button>
               </div>
 
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.id}: color + shape settings</p>
+            </div>
+            
+
+            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: customize</p>
+            <div class="expandableMenu">
+
+              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: header options</p>
+              <div class="expandableMenu">
+                <p class="menuHeader">date + time options</p>
+                  <label for=${this.id + "-settings-date-toggle"}>show date?</label>
+                  <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
+                  <br />
+                  
+                  <label>show clock?</label>
+                  <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
+
+                <br /><br />
+
+                <p class="menuHeader">divider options</p>
+                  <label for=${this.id + "-settings-divider-toggle"}>show divider?</label>
+                  <input id=${this.id + "-settings-divider-toggle"} type="checkbox" />
+                  <br />
+
+                  <label>set divider color: </label>
+                  <input id=${this.id + "-settings-divider-color"} type="color" />
+              </div>
+
+              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: text options</p>
+              <div class="expandableMenu">
+                <p class="menuHeader">header text options</p>
+                  <label>set header text color: </label>
+                  <input id=${this.id + "-settings-clock-color"} type="color" />
+                  <br /><br />
+
+                  <label>set header font size (px): </label>
+                  <input id=${this.id + "-settings-clock-size"} />
+                  <br />
+
+                  <label for=${this.id + "-settings-clock-bold"}>bold header?</label>
+                  <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
+
+                  <label for=${this.id + "-settings-clock-italic"}>italic header?</label>
+                  <input id=${this.id + "-settings-clock-italic"} type="checkbox" />
+
+                <p class="menuHeader">section text options</p>
+                  <label>set section size (px): </label>
+                  <input id=${this.id + "-settings-section-size"} />
+
+                  <label>set section color: </label>
+                  <input id=${this.id + "-settings-section-color"} type="color" />
+
+                  <label for="sectionBoldToggle">bold sections?</label>
+                  <input id=${this.id + "-settings-section-bold"} type="checkbox" />
+
+                  <label for="sectionItalicToggle">italic sections?</label>
+                  <input id=${this.id + "-settings-section-italic"} type="checkbox" />
+
+                <p class="menuHeader">bookmark text options</p>
+                  <label>set link size (px): </label>
+                  <input id=${this.id + "-settings-link-size"} />
+
+                  <label>set link color: </label>
+                  <input id=${this.id + "-settings-link-color"} type="color" />
+
+                <p class="menuHeader">layer-wide options</p>
+                  <label>change font (see instructions for more info):</label>
+                  <input  id=${this.id + "-settings-font-input"} />
+                  <button id=${this.id + "-settings-set-font-button"}>set font</button>
+                  
+                  <label>current font:</label>
+                  <span id=${this.id + "-settings-font-name"}></span>
+
+                  <br /><br />
+                  <label>align text:</label>
+                  <br />
+                  <label for=${this.id + "-settings-left-align"}>left</label>
+                  <input id=${this.id + "-settings-left-align"} type="radio" name="align" />
+                  <label for=${this.id + "-settings-center-align"}>center</label>
+                  <input id=${this.id + "-settings-center-align"} type="radio" name="align" />
+              </div>
+
+              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: color + shape options</p>
               <div class="expandableMenu">
 
-                <p class="menuHeader">layer background options</p>
+                <p class="menuHeader">background color</p>
                   <label>set background color: </label>
                   <input id=${this.id + "-settings-bg-color"} type="color" />
 
@@ -809,13 +888,6 @@
 
                   <label>set container roundedness (px): </label>
                   <input id=${this.id + "-settings-border-radius"} placeholder="0 for square" />
-
-                <p class="menuHeader">change divider</p>
-                  <label for=${this.id + "-settings-divider-toggle"}>disable divider: </label>
-                  <input id=${this.id + "-settings-divider-toggle"} type="checkbox" />
-
-                  <label>set divider color: </label>
-                  <input id=${this.id + "-settings-divider-color"} type="color" />
 
                 <p class="menuHeader">change shadow / glow</p>
                   shadow settings:<br />
@@ -835,13 +907,14 @@
           </div>
           `
         );
+        this.loadBookmarkListings();
       }
 
 
       /*
        * applies saved cosmetic customizations to container
        */
-      applyContainerSettings() {
+      applySettings() {
         /** set options relevant to both image and text containers */
         /** POSITION */
         document.getElementById(this.id).style.top = this.y;
@@ -1016,7 +1089,7 @@
 
         /** DIVIDER */
         let divider = document.getElementById(this.id + "-divider");
-        if (containerSettings.disableDivider) {
+        if (!containerSettings.enableDivider) {
           document.getElementById(this.id + "-divider").hidden = true;
           // if there are links in this container, add room under the divider
           if (Object.keys(this.sections).length > 0) {
@@ -1030,7 +1103,7 @@
         }
         // fill-in settings ui
         document.getElementById(this.id + "-settings-divider-toggle").checked =
-          containerSettings.disableDivider;
+          containerSettings.enableDivider;
         document.getElementById(this.id + "-settings-divider-color").value =
           containerSettings.dividerColor;
       }
@@ -1135,7 +1208,7 @@
         // container divider setting listeners
         document
           .getElementById(this.id + "-settings-divider-toggle")
-          .addEventListener("change", disableDivider, false);
+          .addEventListener("change", toggleDivider, false);
         document
           .getElementById(this.id + "-settings-divider-color")
           .addEventListener("input", changeDividerColor, false);
@@ -1158,48 +1231,45 @@
       }
 
       /**
-       * [re]loads saved bookmark sections + links for container
+       * [re]renders saved bookmark sections + links for container
        */
       loadBookmarks() {
-        let containerSettings = this.containerSettings;
-        let linkContainer = document.getElementById(this.id + "-sections");
-        linkContainer.innerHTML = "";
-
         if (Object.keys(this.sections).length == 0) {
           return;
         }
 
         let sectionData = Object.values(this.sections);
+        let containerSettings = this.containerSettings;
 
-        // render the sections
+        let containerBookmarks = document.getElementById(this.id + "-sections");
+        
+        containerBookmarks.innerHTML = "";
+
+        /* ensure uncategorized links (if any) stay at top
+        let noneSectionIndex;
         for (let i = 0; i < sectionData.length; i++) {
-          linkContainer.insertAdjacentHTML(
+          if(sectionData[i].label == "") {
+            noneSectionIndex = i;
+            break;
+          }
+        }
+
+        if (noneSectionIndex != -1 && noneSectionIndex != 0) {
+          this.sections.splice(noneSectionIndex, 1);
+          this.sections.unshift("none");
+        }*/
+
+        for (let i = 0; i < sectionData.length; i++) {
+          containerBookmarks.insertAdjacentHTML(
             "beforeend",
             `
               ${i == 0 ? "" : `<br />`}
               <div id="${this.id}-section-${i}">
-                <span 
-                  class="hiddenButton ${editing ? "" : "hidden"}" 
-                  onClick="deleteSection(this)"
-                >
-                  [X]
-                </span>
+                
                 <span class=${this.id + "-section"}>
                   ${sectionData[i].label}
                 </span>
 
-                <span 
-                  class="hiddenButton ${editing ? "" : "hidden"}"
-                  onClick="reorderSection(this, 'up')"
-                >
-                  [up]
-                </span>
-                <span 
-                  class="hiddenButton ${editing ? "" : "hidden"}"
-                  onClick="reorderSection(this, 'down')"
-                >
-                  [down]
-                </span>
               </div>
             `
           );
@@ -1216,12 +1286,6 @@
               "beforeend",
               `
                 <div id="${this.id}-section-${s}-link-${l}" >
-                  <span 
-                    class="hiddenButton bookmark ${editing ? "" : "hidden"}" 
-                    onClick="deleteLink(this)"
-                  >
-                    [X]
-                  </span>
 
                   <a 
                     class="${this.id}-link" 
@@ -1236,7 +1300,7 @@
         }
 
         // ensure smooth ux when rerendering
-        if (containerSettings.disableDivider) {
+        if (!containerSettings.enableDivider) {
           document.getElementById(this.id + "-header").style.marginBottom = "18px";
         }
       }
@@ -1551,7 +1615,6 @@
     function toggleEditingElements(show) {
       const editButton = document.getElementById("editToggle");
       const settingsContainer = document.getElementById("settingsContainer");
-      const hiddenButtons = document.getElementsByClassName("hiddenButton");
 
       /** when editing-mode is enabled, */
       if (show) {
@@ -1559,9 +1622,6 @@
 
         // reveal settings container
         settingsContainer.classList.remove("hidden");
-        for (let i = 0; i < hiddenButtons.length; i++) {
-          hiddenButtons[i].classList.remove("hidden");
-        }
 
         // change cursor on movable elements to indicate grabbable
         let movableElements = document.getElementsByClassName("movable");
@@ -1590,9 +1650,6 @@
 
         // hide the settings container
         settingsContainer.classList.add("hidden");
-        for (let i = 0; i < hiddenButtons.length; i++) {
-          hiddenButtons[i].classList.add("hidden");
-        }
       }
     }
 
@@ -1861,14 +1918,14 @@
       let section = document.getElementById(containerId + "-section-input").value;
 
       // sanitize input
-      if (!url.startsWith("http")) {
+      if (url.length > 0 && !url.startsWith("http")) {
         url = "https://" + url; // append HTTPS to link if needed
       }
       if (label == "" || url == "https://") {
         alert("you must specify url and label to add a bookmark");
         return;
       }
-
+      
       // store new link in container
       let sectionData = Object.values(container.sections);
       let sectionLabels = [];
@@ -1876,31 +1933,49 @@
         sectionLabels.push(sectionData[i].label);
       }
 
-      let tempIndex = sectionLabels.indexOf(section); 
-      // existing section
-      if (tempIndex != -1) {
-        let tempSectionLinks = Object.values(container.sections)[tempIndex].links;
+      let sectionIndex = sectionLabels.indexOf(section); 
+      // add link to existing section
+      if (sectionIndex != -1) {
+        let tempSectionLinks = Object.values(container.sections)[sectionIndex].links;
         tempSectionLinks.push({
           label: label,
           url: url
         });
       }
-      // creating new section
+      // or create new section + add link
       else {
-        let tempSectionLinks = [];
-        tempSectionLinks.push({
+        let newSectionLinks = [];
+        newSectionLinks.push({
           label: label,
           url: url
         });
-        container.sections[sectionData.length] = {}
-        container.sections[sectionData.length].links = tempSectionLinks;
-        container.sections[sectionData.length].label = section;
+
+        // ensure that uncategorized links stay at top of container
+        if (section == "" && sectionData.length > 0) {
+          let reorderedSections = {};          
+          reorderedSections[0] = {};
+          reorderedSections[0].links = newSectionLinks;
+          reorderedSections[0].label = section;
+
+          // move existing sections down
+          for (let i = 0; i < sectionData.length; i++) {
+            reorderedSections[i+1] = sectionData[i];
+          }
+
+          container.sections = reorderedSections;
+        }
+        else {
+          container.sections[sectionData.length] = {};
+          container.sections[sectionData.length].links = newSectionLinks;
+          container.sections[sectionData.length].label = section;
+        }
       }
 
       // reset inputs + render
       document.getElementById(containerId + "-url-input").value = "";
       document.getElementById(containerId + "-label-input").value = "";
       container.loadBookmarks();
+      container.loadBookmarkListings();
     }
 
     function reorderSection(buttonPressed, direction) {
@@ -1909,7 +1984,7 @@
       let container = containerDataMap.get(temp[0]);
 
       let copy = container.sections[sectionId];
-      if (direction == "up" && sectionId != 0) {
+      if (direction == "up" && sectionId != 0) { 
         container.sections[sectionId]     = container.sections[sectionId - 1]; 
         container.sections[sectionId - 1] = copy;
       } else if (direction == "down" && (sectionId + 1) != Object.keys(container.sections).length) {
@@ -1920,14 +1995,15 @@
       }
 
       container.loadBookmarks();
+      container.loadBookmarkListings();
     }
 
     function deleteSection(buttonPressed) {
       let temp = buttonPressed.parentElement.id.split("-");
       let sectionId = parseInt(temp[temp.length - 1]);
-      let container = containerDataMap.get(temp[0]);
+      let container = containerDataMap.get(buttonPressed.parentElement.id.split("-section")[0]);
 
-      // go through sections, starting with one to delete
+      // overwrite sections 
       let numSections = Object.keys(container.sections).length;
       for (let i = sectionId; i < numSections; i++) {
         container.sections[i] = container.sections[i+1];
@@ -1937,6 +2013,7 @@
 
       // refresh screen
       container.loadBookmarks();
+      container.loadBookmarkListings();
     }
 
     function deleteLink(buttonPressed) {
@@ -2233,12 +2310,13 @@
       divider.style.backgroundColor = container.containerSettings.dividerColor;
       divider.style.borderColor = container.containerSettings.dividerColor;
     }
-    function disableDivider(checkboxChanged) {
+    function toggleDivider(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.disableDivider = checkboxChanged.target.checked;
-      document.getElementById(containerId + "-divider").hidden = checkboxChanged.target.checked;
+      container.containerSettings.enableDivider = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-divider").style.display = 
+        checkboxChanged.target.checked ? "block" : "none";
 
       if (checkboxChanged.target.checked && Object.keys(container.sections).length > 0) {
         document.getElementById(containerId + "-clock").style.marginBottom = "18px";
@@ -2330,7 +2408,7 @@
       localStorage.setItem("links", JSON.stringify(links));
       localStorage.setItem("sections", JSON.stringify(sections));
 
-      if (containerSettings.disableDivider) {
+      if (containerSettings.enableDivider) {
         document.getElementById("clock").style.marginBottom = "0px";
       }
 
@@ -2373,7 +2451,7 @@
       document.getElementById("mainContainer").style.top = "10px";
       document.getElementById("mainContainer").style.left = "10px";
 
-      applyContainerSettings();
+      applySettings();
       loadSections();
     }
 
