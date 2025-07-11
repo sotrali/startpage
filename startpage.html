@@ -135,6 +135,41 @@
         font-style: italic;
       }
 
+      .bookmarkListingContainer {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .sectionListingContainer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .linkListingContainer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .bookmarkListingButtons {
+      }
+      
+      .bookmarkButton {
+      }
+      .bookmarkButton:hover {
+        cursor: pointer;
+        background-color: rgba(173, 165, 165, 0.8);
+      }
+
+      .bookmarkDeleteButton {
+      }
+      .bookmarkDeleteButton:hover {
+        background-color: rgba(173, 165, 165, 0.8);
+        color: red;
+        cursor: pointer;
+      }
+
       hr {
         width: 75%;
       }
@@ -336,6 +371,9 @@
         </form>
 
         <form id="globalSettingsForm" onsubmit="return false">
+
+          <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
+
           <label>enter source for normal cursor: </label>
           <input id="pointerCursorInput" placeholder="paste link here" />
           <button onclick="setDefaultCursor()">set normal cursor</button>
@@ -544,7 +582,7 @@
                 <span id=${this.id + "-clock"}></span>
               </div>
               <hr id=${this.id + "-divider"} />
-              <div id=${this.id + "-sections"} ></div>
+              <div id=${this.id + "-bookmarks"} ></div>
             </div>
             </div>
           `
@@ -630,7 +668,7 @@
                   <span id=${this.id + "-clock"}></span>
                 </div>
                 <hr id=${this.id + "-divider"} />
-                <div id=${this.id + "-sections"} ></div>
+                <div id=${this.id + "-bookmarks"} ></div>
               </div>
             </div>
         `
@@ -684,43 +722,43 @@
 
       loadBookmarkListings() {
         if (Object.keys(this.sections).length == 0) {
+          let bookmarkListings = document.getElementById(this.id + "-bookmark-menu--listings");
+          bookmarkListings.innerHTML = "(no bookmarks)";
           return;
         }
 
         let sectionData = Object.values(this.sections);
         let containerSettings = this.containerSettings;
 
-        let bookmarkListings = document.getElementById(this.id + "-bookmark-listings");
-
-        console.log(sectionData);
-        
-        // [re]render the section listings
+        let bookmarkListings = document.getElementById(this.id + "-bookmark-menu--listings");
         bookmarkListings.innerHTML = "";
+
+        // [re]render the section listings
         for (let i = 0; i < sectionData.length; i++) {
-          console.log(i);
           bookmarkListings.insertAdjacentHTML(
             "beforeend",
             `
               ${i == 0 ? "" : `<br />`}
-              <div id="${this.id}-section-listing-${i}">
-                <span onClick="deleteSection(this)">
-                  [X]
+              <div id="${this.id}-section-listing-${i}" class="sectionListingContainer">
+                <span class=${this.id + "-section"}>
+                  ${sectionData[i].label == "" ? "uncategorized links: " : "<u>section</u>: " + sectionData[i].label}
                 </span>
 
-                <span class=${this.id + "-section-listing"}>
-                  ${sectionData[i].label}
-                </span>
-
-                ${i > 1 ? `
-                  <span onClick="reorderSection(this, 'up')">
-                    [up]
-                  </span>
-                ` : ``}
-                ${i > 0 ? `
-                <span onClick="reorderSection(this, 'down')">
-                    [down]
-                  </span>
-                ` : ``}
+                <div class="bookmarkListingButtons">
+                  ${(i > 1) ? `
+                    <span onClick="reorderSection(this, 'up')" class="bookmarkButton">
+                      [up]
+                    </span>
+                  ` : ``
+                  }
+                  ${(i > 0) && (i < sectionData.length - 1) ? `
+                  <span onClick="reorderSection(this, 'down')" class="bookmarkButton">
+                      [down]
+                    </span>
+                  ` : ``
+                  }
+                  <span onClick="deleteSection(this)" class="bookmarkDeleteButton">[delete section]</span>
+                </div>
               </div>
             `
           );
@@ -729,24 +767,34 @@
         // [re]render the link listings
         for (let s = 0; s < sectionData.length; s++) {
           for (let l = 0; l < sectionData[s].links.length; l++) {
-            console.log('s: ' + s);
             let targetSection = document.getElementById(
               this.id + "-section-listing-" + s
             );
 
             targetSection.insertAdjacentHTML(
-              "beforeend",
+              "afterend",
               `
-                <div id="${this.id}-section-${s}-link-${l}-listing" >
-                  <span onClick="deleteLink(this)">
-                    [X]
-                  </span>
-                  <a 
-                    class="${this.id}-link" 
-                    href="${sectionData[s].links[l].url}"
-                  >
+                <div id="${this.id}-section-${s}-link-listing-${l}" class="linkListingContainer">
+                                    
+                  <span class="${this.id}-link">
                     ${sectionData[s].links[l].label}
-                  </a>
+                  </span>
+
+                  <div class="bookmarkListingButtons">
+                    ${l > 0 ? `
+                      <span onClick="reorderLink(this, 'up')" class="bookmarkButton">
+                        [up]
+                      </span>
+                    ` : ``
+                    }
+                    ${l < sectionData[s].links.length - 1 ? `
+                      <span onClick="reorderLink(this, 'down')" class="bookmarkButton">
+                        [down]
+                      </span>
+                    ` : ``
+                    }
+                    <span onClick="deleteLink(this)" class="bookmarkDeleteButton">[delete link]</span>
+                  </div>
                 </div>
               `
             );
@@ -755,6 +803,8 @@
       }
 
       createSettingsMenuListing() {
+        console.log(this.id);
+        console.log(Object.keys(this.sections).length == 0 );
         document.getElementById("containers").insertAdjacentHTML(
           "beforeend",
           `
@@ -767,12 +817,13 @@
             <div class="expandableMenu" id=${this.id + "-bookmark-menu"} >
 
               <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ manage bookmarks / sections</p>
-              <div class="expandableMenu" id=${this.id + "-bookmark-listings"} >
-                ${Object.keys(this.sections).length == 0 ? `<p>(no bookmarks)</p>` : ``}
+              <div class="expandableMenu"  >
+                <div id=${this.id + "-bookmark-menu--listings"} class="bookmarkListingContainer">
+                </div>
               </div>
 
               <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ add new bookmarks / sections</p>
-              <div class="expandableMenu" id=${this.id + "-add-bookmark-menu"} >
+              <div class="expandableMenu" id=${this.id + "-bookmark-menu--add-new"} >
 
                 <label> enter url: </label>
                 <input id=${this.id + "-url-input"} type="text" name="url" />
@@ -1235,30 +1286,17 @@
        */
       loadBookmarks() {
         if (Object.keys(this.sections).length == 0) {
+          let containerBookmarks = document.getElementById(this.id + "-bookmarks");
+          containerBookmarks.innerHTML = ""; 
           return;
         }
 
         let sectionData = Object.values(this.sections);
         let containerSettings = this.containerSettings;
 
-        let containerBookmarks = document.getElementById(this.id + "-sections");
+        let containerBookmarks = document.getElementById(this.id + "-bookmarks");
         
         containerBookmarks.innerHTML = "";
-
-        /* ensure uncategorized links (if any) stay at top
-        let noneSectionIndex;
-        for (let i = 0; i < sectionData.length; i++) {
-          if(sectionData[i].label == "") {
-            noneSectionIndex = i;
-            break;
-          }
-        }
-
-        if (noneSectionIndex != -1 && noneSectionIndex != 0) {
-          this.sections.splice(noneSectionIndex, 1);
-          this.sections.unshift("none");
-        }*/
-
         for (let i = 0; i < sectionData.length; i++) {
           containerBookmarks.insertAdjacentHTML(
             "beforeend",
@@ -1907,11 +1945,9 @@
      **********************/
 
     function addLink(containerElement) {
-      console.log(containerElement)
       let containerId = containerElement.id.split("-")[0];
       let container = containerDataMap.get(containerId);
 
-      console.log(containerId);
       // collect data from inputs
       let url = document.getElementById(containerId + "-url-input").value;
       let label = document.getElementById(containerId + "-label-input").value;
@@ -1979,7 +2015,7 @@
     }
 
     function reorderSection(buttonPressed, direction) {
-      let temp = buttonPressed.parentElement.id.split("-");
+      let temp = buttonPressed.parentElement.parentElement.id.split("-");
       let sectionId = parseInt(temp[temp.length - 1]);
       let container = containerDataMap.get(temp[0]);
 
@@ -1988,8 +2024,6 @@
         container.sections[sectionId]     = container.sections[sectionId - 1]; 
         container.sections[sectionId - 1] = copy;
       } else if (direction == "down" && (sectionId + 1) != Object.keys(container.sections).length) {
-        console.log(sectionId);
-        console.log(Object.keys(container.sections).length);
         container.sections[sectionId]     = container.sections[sectionId + 1]; 
         container.sections[sectionId + 1] = copy;
       }
@@ -1999,11 +2033,10 @@
     }
 
     function deleteSection(buttonPressed) {
-      let temp = buttonPressed.parentElement.id.split("-");
+      let temp = buttonPressed.parentElement.parentElement.id.split("-");
       let sectionId = parseInt(temp[temp.length - 1]);
-      let container = containerDataMap.get(buttonPressed.parentElement.id.split("-section")[0]);
+      let container = containerDataMap.get(buttonPressed.parentElement.parentElement.id.split("-section")[0]);
 
-      // overwrite sections 
       let numSections = Object.keys(container.sections).length;
       for (let i = sectionId; i < numSections; i++) {
         container.sections[i] = container.sections[i+1];
@@ -2199,7 +2232,6 @@
       for (let i = 0; i < sectionElements.length; i++) {
         sectionElements[i].style.fontSize = container.containerSettings.sectionSize + "px";
       }
-      console.log(container.containerSettings.sectionSize);
     }
     function toggleSectionBold(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-")[0];
