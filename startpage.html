@@ -739,7 +739,7 @@
             "beforeend",
             `
               ${i == 0 ? "" : `<br />`}
-              <div id="${this.id}-section-listing-${i}" class="sectionListingContainer">
+              <div id="${this.id}-section-listing--${i}" class="sectionListingContainer">
                 <span class=${this.id + "-section"}>
                   ${sectionData[i].label == "" ? "uncategorized links: " : "<u>section</u>: " + sectionData[i].label}
                 </span>
@@ -768,13 +768,13 @@
         for (let s = 0; s < sectionData.length; s++) {
           for (let l = 0; l < sectionData[s].links.length; l++) {
             let targetSection = document.getElementById(
-              this.id + "-section-listing-" + s
+              this.id + "-section-listing--" + s
             );
 
             targetSection.insertAdjacentHTML(
               "afterend",
               `
-                <div id="${this.id}-section-${s}-link-listing-${l}" class="linkListingContainer">
+                <div id="${this.id}-section-listing--${s}--${l}" class="linkListingContainer">
                                     
                   <span class="${this.id}-link">
                     ${sectionData[s].links[l].label}
@@ -1319,6 +1319,8 @@
             let targetSection = document.getElementById(
               this.id + "-section-" + s
             );
+
+            console.log(s, l);
 
             targetSection.insertAdjacentHTML(
               "beforeend",
@@ -2015,17 +2017,17 @@
     }
 
     function reorderSection(buttonPressed, direction) {
-      let temp = buttonPressed.parentElement.parentElement.id.split("-");
-      let sectionId = parseInt(temp[temp.length - 1]);
-      let container = containerDataMap.get(temp[0]);
+      let temp = buttonPressed.parentElement.parentElement.id.split("--");
+      let container = containerDataMap.get(temp[0].split("-")[0]);
+      const sectionIndex = parseInt(temp[temp.length - 1]);
 
-      let copy = container.sections[sectionId];
-      if (direction == "up" && sectionId != 0) { 
-        container.sections[sectionId]     = container.sections[sectionId - 1]; 
-        container.sections[sectionId - 1] = copy;
-      } else if (direction == "down" && (sectionId + 1) != Object.keys(container.sections).length) {
-        container.sections[sectionId]     = container.sections[sectionId + 1]; 
-        container.sections[sectionId + 1] = copy;
+      let copy = container.sections[sectionIndex];
+      if (direction == "up" && sectionIndex != 0) { 
+        container.sections[sectionIndex]     = container.sections[sectionIndex - 1]; 
+        container.sections[sectionIndex - 1] = copy;
+      } else if (direction == "down" && (sectionIndex + 1) != Object.keys(container.sections).length) {
+        container.sections[sectionIndex]     = container.sections[sectionIndex + 1]; 
+        container.sections[sectionIndex + 1] = copy;
       }
 
       container.loadBookmarks();
@@ -2033,12 +2035,13 @@
     }
 
     function deleteSection(buttonPressed) {
-      let temp = buttonPressed.parentElement.parentElement.id.split("-");
-      let sectionId = parseInt(temp[temp.length - 1]);
-      let container = containerDataMap.get(buttonPressed.parentElement.parentElement.id.split("-section")[0]);
+      let temp = buttonPressed.parentElement.parentElement.id.split("--");
+      let container = containerDataMap.get(temp[0].split("-")[0]);
+      const sectionIndex = parseInt(temp[temp.length - 1]);
 
+      // delete section
       let numSections = Object.keys(container.sections).length;
-      for (let i = sectionId; i < numSections; i++) {
+      for (let i = sectionIndex; i < numSections; i++) {
         container.sections[i] = container.sections[i+1];
       }
       // trim last section index that is no longer needed
@@ -2050,25 +2053,17 @@
     }
 
     function deleteLink(buttonPressed) {
-      // remove the link from local array
-      const linkIndex = buttonPressed.parentElement.id.replace("link-", "");
-      links.splice(linkIndex, 1);
+      let temp = buttonPressed.parentElement.parentElement.id.split("--");
+      let container = containerDataMap.get(temp[0].split("-")[0]);
+      const sectionIndex = parseInt(temp[temp.length - 2]);
+      const linkIndex    = parseInt(temp[temp.length - 1]);
+      
+      // delete link
+      container.sections[sectionIndex].links.splice(linkIndex, 1);
 
-      // determine whether to remove link"s section (if no more links)
-      let removeSection = true;
-      const linkSection = buttonPressed.parentElement.parentElement.id;
-      for (let i = 0; i < links.length; i++) {
-        if (links[i].section == linkSection) {
-          removeSection = false;
-          break;
-        }
-      }
-
-      // remove section (if needed) + save
-      if (removeSection) {
-        sections.splice(sections.indexOf(linkSection), 1);
-      }
-      loadSections();
+      // refresh screen
+      container.loadBookmarks();
+      container.loadBookmarkListings();
     }
 
     /******************
