@@ -765,8 +765,8 @@
         }
 
         // [re]render the link listings
-        for (let s = 0; s < sectionData.length; s++) {
-          for (let l = 0; l < sectionData[s].links.length; l++) {
+        for (let s = sectionData.length - 1; s >= 0; s--) {
+          for (let l = sectionData[s].links.length - 1; l >= 0; l--) {
             let targetSection = document.getElementById(
               this.id + "-section-listing--" + s
             );
@@ -803,8 +803,6 @@
       }
 
       createSettingsMenuListing() {
-        console.log(this.id);
-        console.log(Object.keys(this.sections).length == 0 );
         document.getElementById("containers").insertAdjacentHTML(
           "beforeend",
           `
@@ -1319,8 +1317,6 @@
             let targetSection = document.getElementById(
               this.id + "-section-" + s
             );
-
-            console.log(s, l);
 
             targetSection.insertAdjacentHTML(
               "beforeend",
@@ -2061,6 +2057,29 @@
       // delete link
       container.sections[sectionIndex].links.splice(linkIndex, 1);
 
+      // refresh screen
+      container.loadBookmarks();
+      container.loadBookmarkListings();
+    }
+
+    function reorderLink(buttonPressed, direction) {
+      let temp = buttonPressed.parentElement.parentElement.id.split("--");
+      let container = containerDataMap.get(temp[0].split("-")[0]);
+      const sectionIndex = parseInt(temp[temp.length - 2]);
+      const linkIndex    = parseInt(temp[temp.length - 1]);
+      let links = container.sections[sectionIndex].links;
+
+      // cut out section and re-insert into array
+      let link = container.sections[sectionIndex].links[linkIndex];
+      container.sections[sectionIndex].links.splice(linkIndex, 1);
+      if (direction == "up" && linkIndex != 0) {
+        console.log("up: " + linkIndex);
+        links.splice(linkIndex - 1, 0, link);
+      } else if (direction == "down" && linkIndex != links.length) {
+        console.log("down: " + linkIndex);
+        links.splice(linkIndex + 1, 0, link);
+      }
+      
       // refresh screen
       container.loadBookmarks();
       container.loadBookmarkListings();
