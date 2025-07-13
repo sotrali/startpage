@@ -210,7 +210,7 @@
 
       <div id="settingsContainer" class="movable settingsContainer hidden">
         <div id="tabList">
-          <span class="tab" id="containerTab">containers / layers</span>
+          <span class="tab" id="containerTab">layers</span>
           <span class="tab" id="imageAndWallpaperTab">images + wallpaper</span>
           <span class="tab" id="audioTab">audio</span>
           <span class="tab" id="globalSettingsTab">global settings</span>
@@ -285,17 +285,39 @@
 
         <form id="containerForm" onsubmit="return false">
           <div id="containers">
-            <p class="formTitle">layers:</p>
+            <h2 class="menuHeader">layers</h2>
           </div>
-          <div class="formTitle">add new layer</div>
-          <input
-            id="newContainerNameInput"
-            placeholder="new layer name"
-            type="text"
-          />
-          <button id="newContainerCreateButton" onclick="createNewContainer()">
-            create new layer
-          </button>
+
+          <div style="display:flex; flex-direction:row; align-items:center; justify-content: space-between; flex-wrap: wrap;">
+            <div>
+              <h2 class="menuHeader">add bookmark layer</h2>
+              <input
+                id="newTextContainerNameInput"
+                placeholder="optional: layer name"
+                type="text"
+              />
+              <button id="newTextContainerCreateButton" onclick="createNewTextContainer(this)">
+                create new layer
+              </button>
+            </div>
+            <p>or</p>
+            <div>
+              <h2 class="menuHeader">add image to page</h2>
+              <input
+                id="newImageContainerNameInput"
+                placeholder="optional: image name"
+                type="text"
+              />
+              <input
+                id="newImageContainerUrlInput"
+                placeholder="required: direct url to image"
+                type="text"
+              />
+              <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
+                place image
+              </button>
+            </div>
+          </div>
         </form>
 
         <form id="imageAndWallpaperForm" onsubmit="return false">
@@ -425,10 +447,6 @@
       sectionBold: false,
       linkColor: "",
       linkSize: "16",
-            /*
-       *
-       * IMPLEMENT CLOCK TOGGLE LOGIC
-       */
       enableDate: true,
       enableClock: true,
       headerColor: "",
@@ -445,37 +463,15 @@
       shadowRgba: "rgba(255,255,255,.90)",
     };
 
-    /* let defaultImageContainerSettings = {
-      backgroundRgba: "",
-      backgroundAlpha: 100,
+    let defaultImageContainerSettings = {
       borderWidth: "0",
       borderRadius: "0",
       borderColor: "grey",
-      fontName: "",
-      : "",
-      sectionColor: "",
-      sectionSize: "16",
-      sectionItalic: false,
-      sectionBold: false,
-      linkColor: "",
-      linkSize: "16",
-      /*
-       *
-       * IMPLEMENT THIS
-       * clockToggle
-       *
-      clockColor: "",
-      clockSize: "16",
-      clockBold: false,
-      clockItalic: false,
-      enableDivider: false,
-      dividerColor: "",
-      centerAlign: false,
       shadowX: "0",
       shadowY: "0",
       shadowBlur: "0",
       shadowRgba: "rgba(255,255,255,.90)",
-    };*/
+    };
 
     // cookie holder for images
     // let imageMap = new Map(); // key: img.id     | value: {id:, url:}
@@ -512,6 +508,7 @@
       sections;
 
       constructor(
+        id,
         name,
         x,
         y,
@@ -521,16 +518,24 @@
         containerSettings,
         sections
       ) {
-        /**
-        * TODO
-        * check if id is already used
-        * ensure there are no brackets in the name
-        */
-        this.name = name;
-        this.id = name.replace(" ", "-").toLowerCase();
+        // check if id is already used
+        if (Object.keys(containerDataMap)
+            .indexOf(name.replace(" ", "-").toLowerCase()) 
+            != -1
+        ) {
+          alert("that name is already used, please use another");
+          return;
+        }
+        // ensure there are no brackets in the name
+        else if (name.indexOf("<") != -1 || name.indexOf(">") != -1) {
+          alert("no brackets in the name please"); 
+          return;
+        }
 
-        // if initializing saved container content,
-        if (x !== undefined && y !== undefined) {
+        // if initializing saved bookmark container
+        if (x != undefined && y != undefined && imageUrl == undefined) {
+          this.name = name;
+          this.id = id;
           this.x = x;
           this.y = y;
           this.height = height;
@@ -539,123 +544,118 @@
           this.containerSettings = containerSettings;
           this.sections = sections;
 
-          this.loadSavedContainer();
-        }
-        // new text container content,
-        else if (imageUrl == undefined) {
-          this.initializeNewTextContainer();
-        }
-        // or new image container content
-        else {
-          // sanitize image input?
-          this.imageUrl = imageUrl;
-          this.initializeNewImageContainer();
+          this.initializeTextContainer();
+          this.createTextContainerMenuListing();
+
+          this.loadBookmarks();
+          this.loadBookmarkListings();
         }
 
-        this.loadBookmarks();
+        // if initializing saved image container
+        else if (x != undefined && y != undefined && imageUrl != undefined) {
+          // todo: initialize saved image container
+          this.name = name;
+          this.id = id;
+          this.x = x;
+          this.y = y;
+          this.height = height;
+          this.width = width;
+          this.imageUrl = imageUrl;
+          this.containerSettings = containerSettings;
+
+          this.initializeImageContainer();
+          this.createImageContainerMenuListing();
+        }
+
+        // if intializing brand new bookmark container
+        else if (imageUrl == undefined) {
+          if (name == "") {
+            this.name = "bookmark layer " + numberOfContainers;
+            this.id = "bookmark-layer-" + numberOfContainers;
+          }
+          else {
+            this.name = name;
+            this.id = name.replace(" ", "-").toLowerCase();
+          }
+
+          // deep copy default settings
+          this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
+          this.sections = {};
+
+          this.initializeTextContainer();
+          this.createTextContainerMenuListing();
+
+          this.loadBookmarks();
+          this.loadBookmarkListings();
+        }
+
+        // if initializing brand new image
+        else {
+          if (name == "") {
+            this.name = "image " + numberOfContainers;
+            this.id = "image-layer-" + numberOfContainers;
+          }
+          else {
+            this.name = name;
+            this.id = name.replace(" ", "-").toLowerCase();
+          }
+            console.log(this.id);
+
+          this.imageUrl = imageUrl;
+
+          this.initializeImageContainer();
+          this.createImageContainerMenuListing();
+        }
+
         
-        this.createSettingsMenuListing();
         this.applySettings();
         
         this.addContainerEventListeners()
         this.addSettingsMenuEventListeners();
 
         // and save
-
-        // done!
+        containerDataMap.set(this.id, this);
         numberOfContainers++;
       }
 
       /**
-       * creates a basic container shell and lets
+       * creates image element and lets
        * loadBookmarks() and applySettings() do the rest
        */
-      loadSavedContainer() {
-        document.body.insertAdjacentHTML(
-          "beforeend",
-          `
-            <div class="movable container" id=${this.id}>
-            <div style="margin: auto">
-              <div id=${this.id + "-header"}>
-                <span id=${this.id + "-date"}></span>
-                <br />
-                <span id=${this.id + "-clock"}></span>
-              </div>
-              <hr id=${this.id + "-divider"} />
-              <div id=${this.id + "-bookmarks"} ></div>
-            </div>
-            </div>
-          `
-        );
-
-        /** set up the time */
-        const timeFormat = new Intl.DateTimeFormat([], {
-          timeZone: "America/New_York",
-          hour12: false,
-          hour: "numeric",
-          minute: "numeric",
-          second: "numeric",
-        });
-        // set time immediately so it shows upon load
-        document.getElementById(this.id + "-clock").innerText =
-          timeFormat.format(new Date());
-        // set time on interval to continue to update
-        setInterval(() => {
-          document.getElementById(this.id + "-clock").innerText =
-            timeFormat.format(new Date());
-        }, 1000);
-
-        /** set up date */
-        const dateFormat = new Intl.DateTimeFormat([], {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-        });
-        document.getElementById(this.id + "-date").innerText =
-          dateFormat.format(new Date());
-      }
-
-      /**
-       * creates a default image container (NEED TO IMPLEMENT DEFAULT IMAGE CONTAINER SETTINGS)
-       */
-      initializeNewImageContainer() {
+      initializeImageContainer() {
         // deep copy default settings
         this.containerSettings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
-
-        // insert default container HTML
+        
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-          <span>
-          <img
-            class="movable userImage"
-            id="${this.id}"
-            onmousedown="bringImageToTop(this)"
-            style="z-index: ${numberOfContainers};"
-            src="${this.imageUrl}"
-            draggable=false
-          />
-          </span>
+          <div style="display: inline;">
+            <img
+              class="movable userImage"
+              id="${this.id}"
+              style="z-index: ${numberOfContainers + 1};"
+              src="${this.imageUrl}"
+              draggable=false
+            />
+          </div>
         `
         );
-
-        // save position fields
-        let newContainer = document.getElementById(this.id);
-        this.x = newContainer.offsetLeft;
-        this.y = newContainer.offsetTop;
-        this.height = newContainer.offsetHeight;
-        this.width = newContainer.offsetWidth;
+        
+        // save data if not loading existing container
+        if (this.x == undefined && this.y == undefined) {
+          let newImage = document.getElementById(this.id);
+          this.x = newImage.offsetLeft;
+          this.y = newImage.offsetTop;
+          this.height = newImage.offsetHeight;
+          this.width = newImage.offsetWidth;
+        }
       }
 
       /**
-       * creates a default text container
+       * creates shell HTML to hold bookmarks and lets
+       * loadBookmarks() and applySettings() do the rest
        */
-      initializeNewTextContainer() {
-        // deep copy default settings
-        this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
-        // set no sections
-        this.sections = {};
-
+      initializeTextContainer() {
         // insert default container HTML
         document.body.insertAdjacentHTML(
           "beforeend",
@@ -700,12 +700,14 @@
         document.getElementById(this.id + "-date").innerText =
          dateFormat.format(new Date());
 
-        // save position fields
-        let newContainer = document.getElementById(this.id);
-        this.x = newContainer.offsetLeft;
-        this.y = newContainer.offsetTop;
-        this.height = newContainer.offsetHeight;
-        this.width = newContainer.offsetWidth;
+        // save data if not loading existing container
+        if (this.x == undefined && this.y == undefined) {
+          let newContainer = document.getElementById(this.id);
+          this.x = newContainer.offsetLeft;
+          this.y = newContainer.offsetTop;
+          this.height = newContainer.offsetHeight;
+          this.width = newContainer.offsetWidth;
+        }
       }
       
       /**
@@ -802,7 +804,7 @@
         }
       }
 
-      createSettingsMenuListing() {
+      createTextContainerMenuListing() {
         document.getElementById("containers").insertAdjacentHTML(
           "beforeend",
           `
@@ -953,12 +955,55 @@
                </div>
             </div>
 
+            <button id="${this.id + "-delete-button"} onclick="deleteContainer(this)">delete</button>
           </div>
           `
         );
-        this.loadBookmarkListings();
       }
 
+      createImageContainerMenuListing() {
+        document.getElementById("containers").insertAdjacentHTML(
+          "beforeend",
+          `
+          <div class="containerListing" id=${this.id + "-container-listing"}>
+
+          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">- ${this.name}</p>
+          <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
+
+            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: color + shape options</p>
+            <div class="expandableMenu">
+
+             <p class="menuHeader">change border + shape</p>
+                <label>set border color: </label>
+                <input id=${this.id + "-settings-border-color"} type="color" />
+
+                <label>set border width (px): </label>
+                <input id=${this.id + "-settings-border-width"} placeholder="0 for none" />
+
+                <label>set container roundedness (px): </label>
+                <input id=${this.id + "-settings-border-radius"} placeholder="0 for square" />
+
+              <p class="menuHeader">change shadow / glow</p>
+                shadow settings:<br />
+                <label>x-offset (px): </label><br />
+                <input id=${this.id + "-settings-shadow-x"} placeholder="all 0 for none" /><br />
+                <label>y-offset (px): </label><br />
+                <input id=${this.id + "-settings-shadow-y"} placeholder="all 0 for none" /><br />
+                <label>blur radius / fuzziness (px): </label><br />
+                <input id=${this.id + "-settings-shadow-blur"} placeholder="all 0 for none" /><br />
+                <label>shadow color: </label><br />
+                <input id=${this.id + "-settings-shadow-color"} type="color" /><br />
+                <label>shadow opacity:</label>
+                <input id=${this.id + "-settings-shadow-alpha"} />
+             </div>
+
+            </div>
+
+            <button id="${this.id + "-delete-button"} onclick="deleteContainer(this)">delete</button>
+          </div>
+          `
+        );
+      }
 
       /*
        * applies saved cosmetic customizations to container
@@ -1022,12 +1067,10 @@
         document.getElementById(this.id + "-settings-border-radius").value =
           containerSettings.borderRadius;
 
-        /** if this is an image container, set the IMAGE SOURCE and then we are done */
+        /** if this is an image container, all relevant settings have been applied */
         if (this.imageUrl != undefined) {
-          document.getElementById(this.id).src = this.imageUrl;
           return;
         }
-        /** otherwise, this is a text-based container and there are more options to set: */
 
         /** FONT */
         if (containerSettings.fontName == "") {
@@ -1188,7 +1231,39 @@
        * applies event listeners on container options inputs in settings menu
        */
       addSettingsMenuEventListeners() {
-        // container color setting listeners
+        // container border setting listeners
+        document
+          .getElementById(this.id + "-settings-border-color")
+          .addEventListener("input", changeContainerBorderColor, false);
+        document
+          .getElementById(this.id + "-settings-border-width")
+          .addEventListener("input", changeContainerBorderWidth, false);
+        document
+          .getElementById(this.id + "-settings-border-radius")
+          .addEventListener("input", changeContainerBorderRadius, false); // container color setting listeners
+        // container shadow setting listeners
+        document
+          .getElementById(this.id + "-settings-shadow-x")
+          .addEventListener("input", changeContainerShadow, false);
+        document
+          .getElementById(this.id + "-settings-shadow-y")
+          .addEventListener("input", changeContainerShadow, false);
+        document
+          .getElementById(this.id + "-settings-shadow-blur")
+          .addEventListener("input", changeContainerShadow, false);
+        document
+          .getElementById(this.id + "-settings-shadow-color")
+          .addEventListener("input", changeContainerShadow, false);
+        document
+          .getElementById(this.id + "-settings-shadow-alpha")
+          .addEventListener("input", changeContainerShadow, false);
+
+        /** if this is an image container, all relevant listeners have been applied */
+        if (this.imageUrl != undefined) {
+          return;
+        }
+
+        // conatiner background color setting listeners
         document
           .getElementById(this.id + "-settings-bg-color")
           .addEventListener("input", changeContainerBackground, false);
@@ -1205,16 +1280,6 @@
         document
           .getElementById(this.id + "-settings-center-align")
           .addEventListener("change", changeContainerAlignment, false);
-        // container border setting listeners
-        document
-          .getElementById(this.id + "-settings-border-color")
-          .addEventListener("input", changeContainerBorderColor, false);
-        document
-          .getElementById(this.id + "-settings-border-width")
-          .addEventListener("input", changeContainerBorderWidth, false);
-        document
-          .getElementById(this.id + "-settings-border-radius")
-          .addEventListener("input", changeContainerBorderRadius, false);
         // bookmark section setting listeners
         document
           .getElementById(this.id + "-settings-section-color")
@@ -1261,22 +1326,6 @@
         document
           .getElementById(this.id + "-settings-divider-color")
           .addEventListener("input", changeDividerColor, false);
-        // container shadow setting listeners
-        document
-          .getElementById(this.id + "-settings-shadow-x")
-          .addEventListener("input", changeContainerShadow, false);
-        document
-          .getElementById(this.id + "-settings-shadow-y")
-          .addEventListener("input", changeContainerShadow, false);
-        document
-          .getElementById(this.id + "-settings-shadow-blur")
-          .addEventListener("input", changeContainerShadow, false);
-        document
-          .getElementById(this.id + "-settings-shadow-color")
-          .addEventListener("input", changeContainerShadow, false);
-        document
-          .getElementById(this.id + "-settings-shadow-alpha")
-          .addEventListener("input", changeContainerShadow, false);
       }
 
       /**
@@ -1352,9 +1401,9 @@
         if (e.key == "e" && !editing) {
           toggleEditMode();
         }
-     });
+      });
 
-      /** set up cursors **/
+      /** set up cursors */
       cursors = JSON.parse(localStorage.getItem("cursors")) || {};
       if (cursors.default != undefined) {
         // apply new default cursor to entire html document
@@ -1429,16 +1478,7 @@
       /** set event listeners for settings menu *
       addSettingsEventListeners();
 
-      /** load settings menu data */
-      settingsMenuData = JSON.parse(
-        localStorage.getItem("settingsMenuData")
-      ) || {
-        x: "",
-        y: "",
-        width: "",
-        height: "",
-      };
-      setupContainerSettingsMenu();
+      
 
       /** load container data */
       let containerMapValues =
@@ -1448,6 +1488,7 @@
         if (containerMapValues[i].id != "settingsContainer") {
           containerDataMap.set(containerMapValues[i].id, new Container(
            containerMapValues[i].id,
+           containerMapValues[i].name,
            containerMapValues[i].x,
            containerMapValues[i].y,
            containerMapValues[i].height,
@@ -1458,8 +1499,18 @@
           ));
         }
       }
-      numberOfContainers = containerDataMap.length;
-
+      numberOfContainers = containerMapValues.length;
+     
+      /** load settings menu data */
+      settingsMenuData = JSON.parse(
+        localStorage.getItem("settingsMenuData")
+      ) || {
+        x: "",
+        y: "",
+        width: "",
+        height: "",
+      };
+      setupContainerSettingsMenu();
       /** load last active settings tab user was on */
       activeTabId =
         JSON.parse(localStorage.getItem("activeTabId")) || "instructionsTab";
@@ -1481,6 +1532,13 @@
     function setupContainerSettingsMenu() {
       let settingsContainer = document.getElementById("settingsContainer");
 
+      if (numberOfContainers == 0) {
+        document.getElementById("containers").insertAdjacentHTML(
+          "beforeend",
+          `<p>(you have no layers right now)</p>`
+        );
+      }
+
       /* set at the last saved location */
       settingsContainer.style.top    = settingsMenuData.y;
       settingsContainer.style.left   = settingsMenuData.x;
@@ -1488,7 +1546,6 @@
       settingsContainer.style.height = settingsMenuData.height + "px";
 
       /* add event listeners */
-
       // moving / resizing
       settingsContainer.addEventListener(
         "mousedown",
@@ -1725,31 +1782,52 @@
      * DOCUMENT MANAGEMENT / MODIFICATION STUFF *
      ********************************************/
 
-    function createNewContainer() {
+    function createNewTextContainer() {
       let containerName = document.getElementById(
-        "newContainerNameInput"
+        "newTextContainerNameInput"
       ).value;
-      document.getElementById("newContainerNameInput").value = "";
+      document.getElementById("newTextContainerNameInput").value = "";
 
-      // generate generic unnamed name
-      if (containerName == "") {
-        containerName =
-          "container-" + (containerDataMap.keys().length + 1).toString();
-      }
-
-      containerDataMap.set(
+     let container = new Container(
+        undefined,
         containerName,
-        new Container(
-          containerName,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined
-        )
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
       );
+    }
+
+    function createNewImageContainer() {
+      let containerName = document.getElementById(
+        "newImageContainerNameInput"
+      ).value;
+      let imageUrl = document.getElementById(
+        "newImageContainerUrlInput"
+      ).value;
+      document.getElementById("newImageContainerNameInput").value = "";
+      document.getElementById("newImageContainerUrlInput").value = "";
+
+     let container = new Container(
+        undefined,
+        containerName,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        imageUrl,
+        undefined,
+        undefined
+      );
+    }
+
+    function deleteContainer(buttonPressed) {
+      let containerId = buttonPressed.id.split("--")[0];
+      containerDataMap.delete(containerId);
+      // remove element from DOM
     }
 
     /** upon click release on movable elements, store position data for when saving to localStorage when disabling edit mode */
@@ -1943,7 +2021,7 @@
      **********************/
 
     function addLink(containerElement) {
-      let containerId = containerElement.id.split("-")[0];
+      let containerId = containerElement.id.split("-add-link-")[0];
       let container = containerDataMap.get(containerId);
 
       // collect data from inputs
@@ -2014,7 +2092,7 @@
 
     function reorderSection(buttonPressed, direction) {
       let temp = buttonPressed.parentElement.parentElement.id.split("--");
-      let container = containerDataMap.get(temp[0].split("-")[0]);
+      let container = containerDataMap.get(temp[0].split("-section-listing")[0]);
       const sectionIndex = parseInt(temp[temp.length - 1]);
 
       let copy = container.sections[sectionIndex];
@@ -2032,7 +2110,7 @@
 
     function deleteSection(buttonPressed) {
       let temp = buttonPressed.parentElement.parentElement.id.split("--");
-      let container = containerDataMap.get(temp[0].split("-")[0]);
+      let container = containerDataMap.get(temp[0].split("-section-listing")[0]);
       const sectionIndex = parseInt(temp[temp.length - 1]);
 
       // delete section
@@ -2050,7 +2128,7 @@
 
     function deleteLink(buttonPressed) {
       let temp = buttonPressed.parentElement.parentElement.id.split("--");
-      let container = containerDataMap.get(temp[0].split("-")[0]);
+      let container = containerDataMap.get(temp[0].split("-section-listing")[0]);
       const sectionIndex = parseInt(temp[temp.length - 2]);
       const linkIndex    = parseInt(temp[temp.length - 1]);
       
@@ -2064,7 +2142,7 @@
 
     function reorderLink(buttonPressed, direction) {
       let temp = buttonPressed.parentElement.parentElement.id.split("--");
-      let container = containerDataMap.get(temp[0].split("-")[0]);
+      let container = containerDataMap.get(temp[0].split("-section-listing")[0]);
       const sectionIndex = parseInt(temp[temp.length - 2]);
       const linkIndex    = parseInt(temp[temp.length - 1]);
       let links = container.sections[sectionIndex].links;
@@ -2187,7 +2265,7 @@
      ************************************/
 
     function changeContainerBackground(colorChange) {
-      let containerId = colorChange.currentTarget.id.split("-")[0];
+      let containerId = colorChange.currentTarget.id.split("-settings")[0];
       let container = containerDataMap.get(containerId);
 
       console.log(container);
@@ -2202,7 +2280,7 @@
     }
 
     function changeLinkColor(colorChange) {
-      let containerId = colorChange.currentTarget.id.split("-")[0];
+      let containerId = colorChange.currentTarget.id.split("-settings")[0];
       let container = containerDataMap.get(containerId);
 
       container.containerSettings.linkColor = colorChange.target.value;
@@ -2213,7 +2291,7 @@
       }
     }
     function changeLinkSize(sizeChange) {
-      let containerId = sizeChange.currentTarget.id.split("-")[0];
+      let containerId = sizeChange.currentTarget.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.linkSize =
@@ -2226,7 +2304,7 @@
     }
 
     function changeSectionColor(colorChange) {
-      let containerId = colorChange.currentTarget.id.split("-")[0];
+      let containerId = colorChange.currentTarget.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.sectionColor = colorChange.target.value;
@@ -2236,7 +2314,7 @@
       }
     }
     function changeSectionSize(sizeChange) {
-      let containerId = sizeChange.currentTarget.id.split("-")[0];
+      let containerId = sizeChange.currentTarget.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.sectionSize =
@@ -2248,7 +2326,7 @@
       }
     }
     function toggleSectionBold(checkboxChanged) {
-      let containerId = checkboxChanged.target.id.split("-")[0];
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       let sectionElements = document.getElementsByClassName(containerId + "-section");
@@ -2258,7 +2336,7 @@
       container.containerSettings.sectionBold = checkboxChanged.target.checked;
     }
     function toggleSectionItalic(checkboxChanged) {
-      let containerId = checkboxChanged.target.id.split("-")[0];
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       let sectionElements = document.getElementsByClassName(containerId + "-section");
@@ -2270,7 +2348,7 @@
 
     // BORDER
     function changeContainerBorderWidth(borderChange) {
-      let containerId = borderChange.target.id.split("-")[0];
+      let containerId = borderChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.borderWidth = borderChange.target.value;
@@ -2278,7 +2356,7 @@
         container.containerSettings.borderWidth + "px";
     }
     function changeContainerBorderRadius(radiusChange) {
-      let containerId = radiusChange.target.id.split("-")[0];
+      let containerId = radiusChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.borderRadius = radiusChange.target.value;
@@ -2286,7 +2364,7 @@
         container.containerSettings.borderRadius + "px";
     }
     function changeContainerBorderColor(colorChange) {
-      let containerId = colorChange.target.id.split("-")[0];
+      let containerId = colorChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.borderColor = colorChange.target.value;
@@ -2295,7 +2373,7 @@
     }
     // CLOCK
     function toggleDate(checkboxChanged) {
-      let containerId = checkboxChanged.target.id.split("-")[0];
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.enableDate = checkboxChanged.target.checked;
@@ -2303,7 +2381,7 @@
         checkboxChanged.target.checked ? "inline" : "none";
     }
     function toggleClock(checkboxChanged) {
-      let containerId = checkboxChanged.target.id.split("-")[0];
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.enableClock = checkboxChanged.target.checked;
@@ -2311,7 +2389,7 @@
         checkboxChanged.target.checked ? "inline" : "none";
     }
     function changeHeaderColor(colorChange) {
-      let containerId = colorChange.target.id.split("-")[0];
+      let containerId = colorChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
      container.containerSettings.headerColor = colorChange.target.value;
@@ -2319,7 +2397,7 @@
         container.containerSettings.headerColor;
     }
     function changeHeaderSize(sizeChange) {
-      let containerId = sizeChange.target.id.split("-")[0];
+      let containerId = sizeChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.headerSize =
@@ -2328,7 +2406,7 @@
         container.containerSettings.headerSize + "px";
     }
     function toggleHeaderBold(checkboxChanged) {
-      let containerId = checkboxChanged.target.id.split("-")[0];
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.headerBold = checkboxChanged.target.checked;
@@ -2336,7 +2414,7 @@
         checkboxChanged.target.checked ? "bold" : "normal";
     }
     function toggleHeaderItalic(checkboxChanged) {
-      let containerId = checkboxChanged.target.id.split("-")[0];
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.headerItalic = checkboxChanged.target.checked;
@@ -2346,7 +2424,7 @@
 
     // DIVIDER
     function changeDividerColor(colorChange) {
-      let containerId = colorChange.target.id.split("-")[0];
+      let containerId = colorChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
      container.containerSettings.dividerColor = colorChange.target.value;
@@ -2357,7 +2435,7 @@
       divider.style.borderColor = container.containerSettings.dividerColor;
     }
     function toggleDivider(checkboxChanged) {
-      let containerId = checkboxChanged.target.id.split("-")[0];
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.enableDivider = checkboxChanged.target.checked;
@@ -2372,7 +2450,7 @@
     }
     // TEXT
     function changeContainerAlignment(alignmentChanged) {
-      let containerId = alignmentChanged.target.id.split("-")[0];
+      let containerId = alignmentChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       if (document.getElementById(containerId + "-settings-left-align").checked) {
@@ -2384,7 +2462,7 @@
       }
     }
     function changeFont(buttonClicked) {
-      let containerId = buttonClicked.target.id.split("-")[0];
+      let containerId = buttonClicked.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       let input = document.getElementById(containerId + "-settings-font-input").value;
@@ -2409,7 +2487,7 @@
 
     // SHADOW
     function changeContainerShadow(valueChanged) {
-      let containerId = valueChanged.target.id.split("-")[0];
+      let containerId = valueChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.containerSettings.shadowX =
