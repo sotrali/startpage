@@ -427,10 +427,7 @@
     let settingsMenuData = {};
 
     // cookie holder for coordinates + size of containers
-    let containerDataMap = new Map(); // key: element.id | values: {x:, y:, width:, height:, containerSettings}
-
-    // cookie holder for container settings
-    // let containerSettings = {};
+    let containerDataMap = new Map();
 
     // default values for easy resetting
     let defaultTextContainerSettings = {
@@ -473,8 +470,6 @@
       shadowRgba: "rgba(255,255,255,.90)",
     };
 
-    // cookie holder for images
-    // let imageMap = new Map(); // key: img.id     | value: {id:, url:}
     let wallpaper = "";
 
     // local states
@@ -492,7 +487,9 @@
     let audioLink = "";
     let autoplayAudio = true;
 
-    let numberOfContainers = 0;
+    let numberOfTextContainers = 0;
+    let numberOfImageContainers = 0;
+    let occupiedIndices = new Map();
 
     let cursors = {};
 
@@ -506,6 +503,7 @@
       imageUrl;
       containerSettings;
       sections;
+      clockIntervalId;
 
       constructor(
         id,
@@ -516,7 +514,7 @@
         width,
         imageUrl,
         containerSettings,
-        sections
+        sections,
       ) {
         // check if id is already used
         if (Object.keys(containerDataMap)
@@ -534,6 +532,8 @@
 
         // if initializing saved bookmark container
         if (x != undefined && y != undefined && imageUrl == undefined) {
+          numberOfTextContainers++;
+
           this.name = name;
           this.id = id;
           this.x = x;
@@ -553,7 +553,8 @@
 
         // if initializing saved image container
         else if (x != undefined && y != undefined && imageUrl != undefined) {
-          // todo: initialize saved image container
+          numberOfImageContainers++;
+
           this.name = name;
           this.id = id;
           this.x = x;
@@ -569,9 +570,11 @@
 
         // if intializing brand new bookmark container
         else if (imageUrl == undefined) {
+          numberOfTextContainers++;
+
           if (name == "") {
-            this.name = "bookmark layer " + numberOfContainers;
-            this.id = "bookmark-layer-" + numberOfContainers;
+            this.name = "bookmark layer " + numberOfTextContainers;
+            this.id = findLowestAvailableId("text");
           }
           else {
             this.name = name;
@@ -591,15 +594,15 @@
 
         // if initializing brand new image
         else {
+          numberOfImageContainers++;
           if (name == "") {
-            this.name = "image " + numberOfContainers;
-            this.id = "image-layer-" + numberOfContainers;
+            this.name = "image " + numberOfImageContainers;
+            this.id = findLowestAvailableId("image");
           }
           else {
             this.name = name;
             this.id = name.replace(" ", "-").toLowerCase();
           }
-            console.log(this.id);
 
           this.imageUrl = imageUrl;
 
@@ -607,7 +610,6 @@
           this.createImageContainerMenuListing();
         }
 
-        
         this.applySettings();
         
         this.addContainerEventListeners()
@@ -615,7 +617,6 @@
 
         // and save
         containerDataMap.set(this.id, this);
-        numberOfContainers++;
       }
 
       /**
@@ -633,7 +634,7 @@
             <img
               class="movable userImage"
               id="${this.id}"
-              style="z-index: ${numberOfContainers + 1};"
+              style="z-index: ${numberOfImageContainers};"
               src="${this.imageUrl}"
               draggable=false
             />
@@ -686,7 +687,7 @@
         document.getElementById(this.id + "-clock").innerText =
           timeFormat.format(new Date());
         // set time on interval to continue to update
-        setInterval(() => {
+        this.clockIntervalId = setInterval(() => {
           document.getElementById(this.id + "-clock").innerText =
             timeFormat.format(new Date());
         }, 1000);
@@ -955,7 +956,7 @@
                </div>
             </div>
 
-            <button id="${this.id + "-delete-button"} onclick="deleteContainer(this)">delete</button>
+            <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
           </div>
           `
         );
@@ -967,13 +968,13 @@
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">- ${this.name}</p>
-          <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
+            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">- ${this.name}</p>
+            <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
-            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: color + shape options</p>
-            <div class="expandableMenu">
+              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: color + shape options</p>
+              <div class="expandableMenu">
 
-             <p class="menuHeader">change border + shape</p>
+               <p class="menuHeader">change border + shape</p>
                 <label>set border color: </label>
                 <input id=${this.id + "-settings-border-color"} type="color" />
 
@@ -983,8 +984,7 @@
                 <label>set container roundedness (px): </label>
                 <input id=${this.id + "-settings-border-radius"} placeholder="0 for square" />
 
-              <p class="menuHeader">change shadow / glow</p>
-                shadow settings:<br />
+               <p class="menuHeader">change shadow / glow</p>
                 <label>x-offset (px): </label><br />
                 <input id=${this.id + "-settings-shadow-x"} placeholder="all 0 for none" /><br />
                 <label>y-offset (px): </label><br />
@@ -995,11 +995,10 @@
                 <input id=${this.id + "-settings-shadow-color"} type="color" /><br />
                 <label>shadow opacity:</label>
                 <input id=${this.id + "-settings-shadow-alpha"} />
-             </div>
+              </div>
 
+            <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
             </div>
-
-            <button id="${this.id + "-delete-button"} onclick="deleteContainer(this)">delete</button>
           </div>
           `
         );
@@ -1389,6 +1388,8 @@
           document.getElementById(this.id + "-header").style.marginBottom = "18px";
         }
       }
+
+      
     }
 
     /*************************
@@ -1397,8 +1398,12 @@
     (() => {
       window.onbeforeunload = unloadPage;
       
+      /** add keybinds */
       document.body.addEventListener("keydown", (e) => {
         if (e.key == "e" && !editing) {
+          toggleEditMode();
+        }
+        if (e.key == "Escape" && editing) {
           toggleEditMode();
         }
       });
@@ -1461,47 +1466,36 @@
         .getElementById("wallpaperColorPicker")
         .addEventListener("input", changeWallpaper, false);
       document
-        .getElementById("wallpaperRepeatToggle")
-        .addEventListener("change", toggleWallpaperRepeat, false);
-
-      /**
-      OLD INIT
-
-      /** load image data cookies *
-      let imageValues =
-        JSON.parse(localStorage.getItem("imageMapValues")) || [];
-      for (let i = 0; i < imageValues.length; i++) {
-        imageMap.set(imageValues[i].id, imageValues[i]);
-      }
-
-
-      /** set event listeners for settings menu *
-      addSettingsEventListeners();
-
-      
 
       /** load container data */
+      let occupiedIndexMapValues = 
+        JSON.parse(localStorage.getItem("occupiedIndexMapValues")) || [];
+      for (let i = 0; i < occupiedIndexMapValues.length; i++) {
+        occupiedIndices.set(occupiedIndexMapValues[i], true);
+      }
+
       let containerMapValues =
         JSON.parse(localStorage.getItem("containerMapValues")) || [];
       for (let i = 0; i < containerMapValues.length; i++) {
         // containerDataMap.set(containerMapValues[i].id, containerMapValues[i]);
-        if (containerMapValues[i].id != "settingsContainer") {
-          containerDataMap.set(containerMapValues[i].id, new Container(
-           containerMapValues[i].id,
-           containerMapValues[i].name,
-           containerMapValues[i].x,
-           containerMapValues[i].y,
-           containerMapValues[i].height,
-           containerMapValues[i].width,
-           containerMapValues[i].imageUrl,
-           containerMapValues[i].containerSettings,
-           containerMapValues[i].sections
-          ));
+        if (containerMapValues[i].id == "settingsContainer") {
+          continue;
         }
+
+        containerDataMap.set(containerMapValues[i].id, new Container(
+          containerMapValues[i].id,
+          containerMapValues[i].name,
+          containerMapValues[i].x,
+          containerMapValues[i].y,
+          containerMapValues[i].height,
+          containerMapValues[i].width,
+          containerMapValues[i].imageUrl,
+          containerMapValues[i].containerSettings,
+          containerMapValues[i].sections
+        ));
       }
-      numberOfContainers = containerMapValues.length;
      
-      /** load settings menu data */
+      /** set up + load settings menu data */
       settingsMenuData = JSON.parse(
         localStorage.getItem("settingsMenuData")
       ) || {
@@ -1511,15 +1505,14 @@
         height: "",
       };
       setupContainerSettingsMenu();
-      /** load last active settings tab user was on */
+      // load last active settings tab user was on 
       activeTabId =
         JSON.parse(localStorage.getItem("activeTabId")) || "instructionsTab";
       document.getElementById(
         activeTabId.replace("Tab", "Form")
       ).style.display = "flex";
       document.getElementById(activeTabId).classList.add("active");
-
-      /** tab-switching listeners */
+      // add tab-switching listeners 
       let tabs = document.getElementsByClassName("tab");
       for (let i = 0; i < tabs.length; i++) {
         tabs[i].addEventListener("click", changeActiveTab, false);
@@ -1532,7 +1525,7 @@
     function setupContainerSettingsMenu() {
       let settingsContainer = document.getElementById("settingsContainer");
 
-      if (numberOfContainers == 0) {
+      if (numberOfImageContainers == 0 && numberOfTextContainers == 0) {
         document.getElementById("containers").insertAdjacentHTML(
           "beforeend",
           `<p>(you have no layers right now)</p>`
@@ -1626,9 +1619,15 @@
         let valueArray = [];
         containerDataMap.values().forEach((value) => {
           valueArray.push(value);
-          console.log(value);
         });
         localStorage.setItem("containerMapValues", JSON.stringify(valueArray));
+
+        // save the states of occupied ID indice
+        valueArray = [];
+        occupiedIndices.keys().forEach((value) => {
+          valueArray.push(value);
+        });
+        localStorage.setItem("occupiedIndexMapValues", JSON.stringify(valueArray));
 
         // save wallpaper info
         localStorage.setItem("wallpaper", JSON.stringify(wallpaper));
@@ -1826,8 +1825,38 @@
 
     function deleteContainer(buttonPressed) {
       let containerId = buttonPressed.id.split("--")[0];
+      let container = containerDataMap.get(containerId);
+
+      if (container.imageUrl == undefined) {
+        numberOfTextContainers--;
+        clearInterval(container.clockIntervalId);
+      }
+      else {
+        numberOfImageContainers--;
+      }
+
       containerDataMap.delete(containerId);
-      // remove element from DOM
+      occupiedIndices.delete(containerId);
+
+      document.getElementById(containerId).remove();
+      document.getElementById(containerId + "-container-listing").remove();
+    }
+
+    /**
+      * uses map to determine the lowest available ID index for given type, to 
+      * prevent accidentally using the same ID number for unnamed containers twice
+      */
+    function findLowestAvailableId(containerType) {
+      let id = "";
+      for(let index = 0; index < 200; index ++) {
+        id = containerType + "-" + index;
+        if (!occupiedIndices.has(id)) {
+          occupiedIndices.set(id, true);
+          console.log(id);
+          return id;
+        }
+      }
+      return -1;
     }
 
     /** upon click release on movable elements, store position data for when saving to localStorage when disabling edit mode */
@@ -2151,10 +2180,8 @@
       let link = container.sections[sectionIndex].links[linkIndex];
       container.sections[sectionIndex].links.splice(linkIndex, 1);
       if (direction == "up" && linkIndex != 0) {
-        console.log("up: " + linkIndex);
         links.splice(linkIndex - 1, 0, link);
       } else if (direction == "down" && linkIndex != links.length) {
-        console.log("down: " + linkIndex);
         links.splice(linkIndex + 1, 0, link);
       }
       
@@ -2182,7 +2209,6 @@
       let numImages = 1;
       for (const key of keys) {
         if (key.slice(-1) > numImages) {
-          console.log(key);
           numImages = parseInt(key.slice(-1));
         }
       }
@@ -2267,8 +2293,6 @@
     function changeContainerBackground(colorChange) {
       let containerId = colorChange.currentTarget.id.split("-settings")[0];
       let container = containerDataMap.get(containerId);
-
-      console.log(container);
 
       container.containerSettings.backgroundRgba = hexToRgba(
         document.getElementById(containerId + "-settings-bg-color").value,
