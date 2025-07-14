@@ -500,6 +500,7 @@
       y;
       height;
       width;
+      zindex;
       imageUrl;
       containerSettings;
       sections;
@@ -512,6 +513,7 @@
         y,
         height,
         width,
+        zindex,
         imageUrl,
         containerSettings,
         sections,
@@ -540,6 +542,7 @@
           this.y = y;
           this.height = height;
           this.width = width;
+          this.zindex = zindex;
           this.imageUrl = imageUrl;
           this.containerSettings = containerSettings;
           this.sections = sections;
@@ -561,6 +564,7 @@
           this.y = y;
           this.height = height;
           this.width = width;
+          this.zindex = zindex;
           this.imageUrl = imageUrl;
           this.containerSettings = containerSettings;
 
@@ -572,6 +576,50 @@
         else if (imageUrl == undefined) {
           numberOfTextContainers++;
 
+          /**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        todo:
+        remove the zindex stuff.
+        get rid of the separation between text/image in terms of ID
+        -> the function doesn't need params and should just get the index
+        
+        use the id index as the key in the data map for easier zindex manipulation
+        make all default ids just "container-Z" regardless of type, no need to use the name in there at all
+
+        
+        then you can get rid of the index map too, you can just check the normal data map to see if the ID is used
+        
+        do you need to  save the numberOfTexContainers/ImageContainers? or honestly probably not..
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          */
           if (name == "") {
             this.name = "bookmark layer " + numberOfTextContainers;
             this.id = findLowestAvailableId("text");
@@ -584,6 +632,7 @@
           // deep copy default settings
           this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
           this.sections = {};
+          this.zindex = numberOfTextContainers + numberOfImageContainers;
 
           this.initializeTextContainer();
           this.createTextContainerMenuListing();
@@ -605,6 +654,7 @@
           }
 
           this.imageUrl = imageUrl;
+          this.zindex = numberOfTextContainers + numberOfImageContainers;
 
           this.initializeImageContainer();
           this.createImageContainerMenuListing();
@@ -634,7 +684,7 @@
             <img
               class="movable userImage"
               id="${this.id}"
-              style="z-index: ${numberOfImageContainers};"
+              style="z-index: ${this.zindex};"
               src="${this.imageUrl}"
               draggable=false
             />
@@ -1489,6 +1539,7 @@
           containerMapValues[i].y,
           containerMapValues[i].height,
           containerMapValues[i].width,
+          containerMapValues[i].zindex,
           containerMapValues[i].imageUrl,
           containerMapValues[i].containerSettings,
           containerMapValues[i].sections
@@ -1796,6 +1847,7 @@
         undefined,
         undefined,
         undefined,
+        undefined,
         undefined
       );
     }
@@ -1813,6 +1865,7 @@
      let container = new Container(
         undefined,
         containerName,
+        undefined,
         undefined,
         undefined,
         undefined,
