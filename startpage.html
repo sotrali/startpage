@@ -460,6 +460,7 @@
       shadowY: "0",
       shadowBlur: "0",
       shadowRgba: "rgba(255,255,255,.90)",
+      zIndex: ""
     };
 
     let defaultImageContainerSettings = {
@@ -470,6 +471,7 @@
       shadowY: "0",
       shadowBlur: "0",
       shadowRgba: "rgba(255,255,255,.90)",
+      zIndex: ""
     };
 
     let wallpaper = "";
@@ -551,11 +553,13 @@
             else            this.name = name;
 
             this.id = findLowestAvailableId();
-            zIndexMap.set(this.id, numberOfImageContainers + numberOfTextContainers);
-
             this.imageUrl = imageUrl;
+            
             // deep copy default settings
             this.containerSettings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
+
+            zIndexMap.set(numberOfImageContainers + numberOfTextContainers, this.id);
+            this.containerSettings.zIndex = numberOfImageContainers + numberOfTextContainers;
           }
 
           this.initializeImageContainer();
@@ -580,12 +584,14 @@
             else            this.name = name;
 
             this.id = findLowestAvailableId();
-            zIndexMap.set(this.id, numberOfTextContainers + numberOfImageContainers);
+            this.sections = {};
 
             // deep copy default settings
             this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
-            this.sections = {};
-          }
+ 
+            zIndexMap.set(numberOfTextContainers + numberOfImageContainers, this.id);
+            this.containerSettings.zIndex = numberOfImageContainers + numberOfTextContainers;
+         }
 
           this.initializeTextContainer();
           this.createTextContainerMenuListing();
@@ -787,13 +793,12 @@
       }
 
       createTextContainerMenuListing() {
-        let layerIndex = zIndexMap.get(this.id);
         document.getElementById("containers").insertAdjacentHTML(
           "beforeend",
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">[${layerIndex}]: ${this.name}</p>
+          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">[${this.containerSettings.zIndex}]: ${this.name}</p>
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
             <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: bookmarks</p>
@@ -954,7 +959,7 @@
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">[${zIndexMap.get(this.id)}]: ${this.name}</p>
+            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">[${this.containerSettings.zIndex}]: ${this.name}</p>
             <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
               <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: color + shape options</p>
@@ -1008,7 +1013,7 @@
         /** POSITION */
         document.getElementById(this.id).style.top    = this.y;
         document.getElementById(this.id).style.left   = this.x;
-        document.getElementById(this.id).style.zIndex = zIndexMap.get(this.id);
+        document.getElementById(this.id).style.zIndex = this.containerSettings.zIndex;
         
         /** SIZE */
         let containerSettings = this.containerSettings;
@@ -1826,44 +1831,29 @@
     function reorderContainer(buttonPressed, direction) {
       let containerId = buttonPressed.id.split("--")[0];
       let container = document.getElementById(containerId);
-      let currentIndex = zindexmap.get(containerId);
-      let tempContainer;
-      let start;
-
-      // TODO if only using mapKeys for length, just sum the numberOf..Containers  
-      let mapKeys = [];
-      zIndexMap.keys().forEach(key => {
-        mapKeys.push(key);
-      });
+      let currentIndex = container.containerSettings.zIndex;
+      let copy = container;
 
       // move indicated container
       if (direction == "up") {
-        start = currentIndex + 1;
-
-
-        // TODO can't access with index dummy. gotta be id. figure out how to get the id of the necessary indices...
-
-
-        tempContainer = zIndexMap.get(// currentIndex + 1);
+        zIndexMap.set(currentIndex, zIndexMap.get(currentIndex + 1));
+        zIndexMap.set(currentIndex + 1, copy);
       }
       else if (direction == "down") {
-        start = currentIndex - 1;
-        tempContainer = zIndexMap.get(// currentIndex - 1);
+        zIndexMap.set(currentIndex, zIndexMap.get(currentIndex - 1));
+        zIndexMap.set(currentIndex - 1, copy);     
       }
       else if (direction == "top") {
-        start = mapKeys.length;
-        tempContainer = zIndexMap.get(// mapKeys.length);
+        zIndexMap.set(
+          currentIndex, zIndexMap.get(numberOfImageContainers + numberOfTextContainers)
+        );
+        zIndexMap.set(numberOfImageContainers + numberOfTextContainers, copy);
       }
       else if (direction == "bottom") {
-        start = 1;
-        tempContainer = zIndexMap.get(// 1);
+        zIndexMap.set(currentIndex, zIndexMap.get(1));
+        zIndexMap.set(1, copy);
       }
 
-      for (let i = start; i < mapKeys.length; i++) {
-        zIndexMap.set(containerDataMap(i).id, i);
-        document.getElementById(containerDataMap(i)).style.zIndex = i;
-      }
-      zindexMap.set(tempContainer, currentIndex);
       // consider a redraw function for menu listings 
     }
 
