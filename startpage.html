@@ -426,8 +426,9 @@
     // cookie holder for coordinates + size of settings menu
     let settingsMenuData = {};
 
-    // cookie holder for coordinates + size of containers
+    // cookie holders for container data
     let containerDataMap = new Map();
+    let zIndexMap = new Map();
 
     // default values for easy resetting
     let defaultTextContainerSettings = {
@@ -489,7 +490,6 @@
 
     let numberOfTextContainers = 0;
     let numberOfImageContainers = 0;
-    let occupiedIndices = new Map();
 
     let cursors = {};
 
@@ -500,7 +500,6 @@
       y;
       height;
       width;
-      zindex;
       imageUrl;
       containerSettings;
       sections;
@@ -513,151 +512,80 @@
         y,
         height,
         width,
-        zindex,
         imageUrl,
         containerSettings,
-        sections,
+        sections
       ) {
-        // check if id is already used
-        if (Object.keys(containerDataMap)
-            .indexOf(name.replace(" ", "-").toLowerCase()) 
-            != -1
-        ) {
+        /* check if id is already used
+        if (containerDataMap.has(name.replace(" ", "-").toLowerCase())) {
           alert("that name is already used, please use another");
           return;
-        }
+        }*/
         // ensure there are no brackets in the name
-        else if (name.indexOf("<") != -1 || name.indexOf(">") != -1) {
+        if (name.indexOf("<") != -1 || name.indexOf(">") != -1) {
           alert("no brackets in the name please"); 
           return;
         }
 
-        // if initializing saved bookmark container
-        if (x != undefined && y != undefined && imageUrl == undefined) {
-          numberOfTextContainers++;
+        let loadingFromSave = (x != undefined) && (y != undefined);
+        let isImage = (imageUrl != undefined);
 
-          this.name = name;
-          this.id = id;
-          this.x = x;
-          this.y = y;
-          this.height = height;
-          this.width = width;
-          this.zindex = zindex;
-          this.imageUrl = imageUrl;
-          this.containerSettings = containerSettings;
-          this.sections = sections;
-
-          this.initializeTextContainer();
-          this.createTextContainerMenuListing();
-
-          this.loadBookmarks();
-          this.loadBookmarkListings();
-        }
-
-        // if initializing saved image container
-        else if (x != undefined && y != undefined && imageUrl != undefined) {
+        // if constructing image container
+        if (isImage) {
           numberOfImageContainers++;
 
-          this.name = name;
-          this.id = id;
-          this.x = x;
-          this.y = y;
-          this.height = height;
-          this.width = width;
-          this.zindex = zindex;
-          this.imageUrl = imageUrl;
-          this.containerSettings = containerSettings;
+          if (loadingFromSave) {
+            this.name              = name;
+            this.id                = id;
+            this.x                 = x;
+            this.y                 = y;
+            this.height            = height;
+            this.width             = width;
+            this.containerSettings = containerSettings;
+            this.imageUrl          = imageUrl;
+          }
+          else {
+            if (name == "") this.name = "image " + numberOfImageContainers;
+            else            this.name = name;
+
+            this.id       = findLowestAvailableId();
+            this.imageUrl = imageUrl;
+            // deep copy default settings
+            this.containerSettings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
+          }
 
           this.initializeImageContainer();
           this.createImageContainerMenuListing();
         }
-
-        // if intializing brand new bookmark container
-        else if (imageUrl == undefined) {
-          numberOfTextContainers++;
-
-          /**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        todo:
-        remove the zindex stuff.
-        get rid of the separation between text/image in terms of ID
-        -> the function doesn't need params and should just get the index
-        
-        use the id index as the key in the data map for easier zindex manipulation
-        make all default ids just "container-Z" regardless of type, no need to use the name in there at all
-
-        
-        then you can get rid of the index map too, you can just check the normal data map to see if the ID is used
-        
-        do you need to  save the numberOfTexContainers/ImageContainers? or honestly probably not..
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-          */
-          if (name == "") {
-            this.name = "bookmark layer " + numberOfTextContainers;
-            this.id = findLowestAvailableId("text");
-          }
-          else {
-            this.name = name;
-            this.id = name.replace(" ", "-").toLowerCase();
-          }
-
-          // deep copy default settings
-          this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
-          this.sections = {};
-          this.zindex = numberOfTextContainers + numberOfImageContainers;
-
-          this.initializeTextContainer();
-          this.createTextContainerMenuListing();
-
-          this.loadBookmarks();
-          this.loadBookmarkListings();
-        }
-
-        // if initializing brand new image
+        // if constructing text container
         else {
-          numberOfImageContainers++;
-          if (name == "") {
-            this.name = "image " + numberOfImageContainers;
-            this.id = findLowestAvailableId("image");
+          numberOfTextContainers++;
+
+          if (loadingFromSave) {
+            this.name              = name;
+            this.id                = id;
+            this.x                 = x;
+            this.y                 = y;
+            this.height            = height;
+            this.width             = width;
+            this.containerSettings = containerSettings;
+            this.sections          = sections;
           }
           else {
-            this.name = name;
-            this.id = name.replace(" ", "-").toLowerCase();
+            if (name == "") this.name = "bookmark layer " + numberOfTextContainers;
+            else            this.name = name;
+
+            this.id       = findLowestAvailableId();
+            this.sections = {};
+            // deep copy default settings
+            this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
           }
 
-          this.imageUrl = imageUrl;
-          this.zindex = numberOfTextContainers + numberOfImageContainers;
+          this.initializeTextContainer();
+          this.createTextContainerMenuListing();
 
-          this.initializeImageContainer();
-          this.createImageContainerMenuListing();
+          this.loadBookmarks();
+          this.loadBookmarkListings();
         }
 
         this.applySettings();
@@ -667,28 +595,26 @@
 
         // and save
         containerDataMap.set(this.id, this);
+        zIndexMap.set(this.id, numberOfImageContainers + numberOfTextContainers);
       }
+      
 
       /**
        * creates image element and lets
        * loadBookmarks() and applySettings() do the rest
        */
       initializeImageContainer() {
-        // deep copy default settings
-        this.containerSettings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
-        
+       
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-          <div style="display: inline;">
-            <img
-              class="movable userImage"
-              id="${this.id}"
-              style="z-index: ${this.zindex};"
-              src="${this.imageUrl}"
-              draggable=false
-            />
-          </div>
+          <img
+            class="movable userImage"
+            id="${this.id}"
+            style="z-index: ${numberOfImageContainers + numberOfTextContainers};"
+            src="${this.imageUrl}"
+            draggable=false
+          />
         `
         );
         
@@ -1060,9 +986,10 @@
       applySettings() {
         /** set options relevant to both image and text containers */
         /** POSITION */
-        document.getElementById(this.id).style.top = this.y;
-        document.getElementById(this.id).style.left = this.x;
-
+        document.getElementById(this.id).style.top    = this.y;
+        document.getElementById(this.id).style.left   = this.x;
+        document.getElementById(this.id).style.zIndex = zIndexMap.get(this.id);
+        
         /** SIZE */
         let containerSettings = this.containerSettings;
         document.getElementById(this.id).style.width = this.width + "px";
@@ -1517,12 +1444,12 @@
         .addEventListener("input", changeWallpaper, false);
       document
 
-      /** load container data */
+      /** load container data 
       let occupiedIndexMapValues = 
         JSON.parse(localStorage.getItem("occupiedIndexMapValues")) || [];
       for (let i = 0; i < occupiedIndexMapValues.length; i++) {
         occupiedIndices.set(occupiedIndexMapValues[i], true);
-      }
+      }*/
 
       let containerMapValues =
         JSON.parse(localStorage.getItem("containerMapValues")) || [];
@@ -1539,7 +1466,6 @@
           containerMapValues[i].y,
           containerMapValues[i].height,
           containerMapValues[i].width,
-          containerMapValues[i].zindex,
           containerMapValues[i].imageUrl,
           containerMapValues[i].containerSettings,
           containerMapValues[i].sections
@@ -1673,12 +1599,13 @@
         });
         localStorage.setItem("containerMapValues", JSON.stringify(valueArray));
 
-        // save the states of occupied ID indice
+        /* save the states of occupied ID indice
         valueArray = [];
         occupiedIndices.keys().forEach((value) => {
           valueArray.push(value);
         });
         localStorage.setItem("occupiedIndexMapValues", JSON.stringify(valueArray));
+        */
 
         // save wallpaper info
         localStorage.setItem("wallpaper", JSON.stringify(wallpaper));
@@ -1847,7 +1774,6 @@
         undefined,
         undefined,
         undefined,
-        undefined,
         undefined
       );
     }
@@ -1865,7 +1791,6 @@
      let container = new Container(
         undefined,
         containerName,
-        undefined,
         undefined,
         undefined,
         undefined,
@@ -1889,7 +1814,6 @@
       }
 
       containerDataMap.delete(containerId);
-      occupiedIndices.delete(containerId);
 
       document.getElementById(containerId).remove();
       document.getElementById(containerId + "-container-listing").remove();
@@ -1899,12 +1823,11 @@
       * uses map to determine the lowest available ID index for given type, to 
       * prevent accidentally using the same ID number for unnamed containers twice
       */
-    function findLowestAvailableId(containerType) {
+    function findLowestAvailableId() {
       let id = "";
       for(let index = 0; index < 200; index ++) {
-        id = containerType + "-" + index;
-        if (!occupiedIndices.has(id)) {
-          occupiedIndices.set(id, true);
+        id = "container-" + index;
+        if (!containerDataMap.has(id)) {
           console.log(id);
           return id;
         }
