@@ -300,17 +300,18 @@
                 create new layer
               </button>
             </div>
-            <p>or</p>
             <div>
               <h2 class="menuHeader">add image to page</h2>
               <input
                 id="newImageContainerNameInput"
                 placeholder="optional: image name"
+                style="width: 50%;"
                 type="text"
               />
               <input
                 id="newImageContainerUrlInput"
                 placeholder="required: direct url to image"
+                style="width: 50%;"
                 type="text"
               />
               <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
@@ -530,6 +531,7 @@
         let loadingFromSave = (x != undefined) && (y != undefined);
         let isImage = (imageUrl != undefined);
 
+
         // if constructing image container
         if (isImage) {
           numberOfImageContainers++;
@@ -548,7 +550,9 @@
             if (name == "") this.name = "image " + numberOfImageContainers;
             else            this.name = name;
 
-            this.id       = findLowestAvailableId();
+            this.id = findLowestAvailableId();
+            zIndexMap.set(this.id, numberOfImageContainers + numberOfTextContainers);
+
             this.imageUrl = imageUrl;
             // deep copy default settings
             this.containerSettings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
@@ -575,10 +579,12 @@
             if (name == "") this.name = "bookmark layer " + numberOfTextContainers;
             else            this.name = name;
 
-            this.id       = findLowestAvailableId();
-            this.sections = {};
+            this.id = findLowestAvailableId();
+            zIndexMap.set(this.id, numberOfTextContainers + numberOfImageContainers);
+
             // deep copy default settings
             this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
+            this.sections = {};
           }
 
           this.initializeTextContainer();
@@ -595,7 +601,6 @@
 
         // and save
         containerDataMap.set(this.id, this);
-        zIndexMap.set(this.id, numberOfImageContainers + numberOfTextContainers);
       }
       
 
@@ -782,12 +787,13 @@
       }
 
       createTextContainerMenuListing() {
+        let layerIndex = zIndexMap.get(this.id);
         document.getElementById("containers").insertAdjacentHTML(
           "beforeend",
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">- ${this.name}</p>
+          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">[${layerIndex}]: ${this.name}</p>
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
             <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: bookmarks</p>
@@ -932,6 +938,10 @@
                </div>
             </div>
 
+            <button id=${this.id + "--move-up-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+            <button id=${this.id + "--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
+            <button id=${this.id + "--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
+            <button id=${this.id + "--move-up-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
             <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
           </div>
           `
@@ -944,7 +954,7 @@
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">- ${this.name}</p>
+            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">[${zIndexMap.get(this.id)}]: ${this.name}</p>
             <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
               <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: color + shape options</p>
@@ -973,7 +983,17 @@
                 <input id=${this.id + "-settings-shadow-alpha"} />
               </div>
 
-            <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
+              <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                <div>
+                  <button id=${this.id + "--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+                  <button id=${this.id + "--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
+                  <button id=${this.id + "--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
+                  <button id=${this.id + "--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+                </div>
+                <div>
+                  <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
+                </div>
+              </div>
             </div>
           </div>
           `
@@ -1444,12 +1464,15 @@
         .addEventListener("input", changeWallpaper, false);
       document
 
-      /** load container data 
-      let occupiedIndexMapValues = 
-        JSON.parse(localStorage.getItem("occupiedIndexMapValues")) || [];
-      for (let i = 0; i < occupiedIndexMapValues.length; i++) {
-        occupiedIndices.set(occupiedIndexMapValues[i], true);
-      }*/
+      /** load container data */
+      let zIndexMapData = JSON.parse(localStorage.getItem("zIndexMapData")) || [];
+      let zIndexMapKeys = Object.keys(zIndexMapData) || [];
+      for (let i = 0; i < zIndexMapKeys.length; i++) {
+        zIndexMap.set(
+          zIndexMapKeys[i], 
+          zIndexMapData[zIndexMapKeys[i]]
+        );
+      }
 
       let containerMapValues =
         JSON.parse(localStorage.getItem("containerMapValues")) || [];
@@ -1599,13 +1622,12 @@
         });
         localStorage.setItem("containerMapValues", JSON.stringify(valueArray));
 
-        /* save the states of occupied ID indice
-        valueArray = [];
-        occupiedIndices.keys().forEach((value) => {
-          valueArray.push(value);
+        /* save z-indexes */
+        let temp = {};
+        zIndexMap.keys().forEach((key) => {
+          temp[key] = zIndexMap.get(key);
         });
-        localStorage.setItem("occupiedIndexMapValues", JSON.stringify(valueArray));
-        */
+        localStorage.setItem("zIndexMapData", JSON.stringify(temp));
 
         // save wallpaper info
         localStorage.setItem("wallpaper", JSON.stringify(wallpaper));
@@ -1800,6 +1822,51 @@
         undefined
       );
     }
+
+    function reorderContainer(buttonPressed, direction) {
+      let containerId = buttonPressed.id.split("--")[0];
+      let container = document.getElementById(containerId);
+      let currentIndex = zindexmap.get(containerId);
+      let tempContainer;
+      let start;
+
+      // TODO if only using mapKeys for length, just sum the numberOf..Containers  
+      let mapKeys = [];
+      zIndexMap.keys().forEach(key => {
+        mapKeys.push(key);
+      });
+
+      // move indicated container
+      if (direction == "up") {
+        start = currentIndex + 1;
+
+
+        // TODO can't access with index dummy. gotta be id. figure out how to get the id of the necessary indices...
+
+
+        tempContainer = zIndexMap.get(// currentIndex + 1);
+      }
+      else if (direction == "down") {
+        start = currentIndex - 1;
+        tempContainer = zIndexMap.get(// currentIndex - 1);
+      }
+      else if (direction == "top") {
+        start = mapKeys.length;
+        tempContainer = zIndexMap.get(// mapKeys.length);
+      }
+      else if (direction == "bottom") {
+        start = 1;
+        tempContainer = zIndexMap.get(// 1);
+      }
+
+      for (let i = start; i < mapKeys.length; i++) {
+        zIndexMap.set(containerDataMap(i).id, i);
+        document.getElementById(containerDataMap(i)).style.zIndex = i;
+      }
+      zindexMap.set(tempContainer, currentIndex);
+      // consider a redraw function for menu listings 
+    }
+
 
     function deleteContainer(buttonPressed) {
       let containerId = buttonPressed.id.split("--")[0];
