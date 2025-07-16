@@ -1999,40 +1999,44 @@
     }
 
     function reorderContainer(buttonPressed, direction) {
+      /** first, deal with reordering container listings */
       let containerId = buttonPressed.id.split("--")[0];
       let movingContainer = containerDataMap.get(containerId);
 
       let currentIndex = parseInt(movingContainer.containerSettings.zIndex);
       let destinationIndex;
       
-      // re-order the container listings in the settings menu
+      // clone + remove the relocating listing
       let clickedListingCopy = document.getElementById(containerId + "-container-listing").cloneNode(true);
       document.getElementById(containerId + "-container-listing").remove();
-      
-      if (direction == "up") {
-        destinationIndex = String(currentIndex + 1);
-        document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing").insertAdjacentElement("beforebegin", clickedListingCopy);
-      }
-      else if (direction == "down") {
-        destinationIndex = String(currentIndex - 1);
-        document.getElementById(zIndexMap.get(destinationIndex)  + "-container-listing").insertAdjacentElement("afterend", clickedListingCopy);
-      }
-      else if (direction == "top") {
-        destinationIndex = String(numberTotalContainers);
-        document.getElementById("containers").insertAdjacentElement("afterbegin", clickedListingCopy);
+
+
+      if (direction == "top") {
+
       }
       else if (direction == "bottom") {
         destinationIndex = "1";
         document.getElementById("containers").insertAdjacentElement("beforeend", clickedListingCopy);
       }
 
-      // TODO? update the affected listing headers / refresh manage buttons here to save a small amount of energy (could then get rid of updateContainerListingOrder() at bottom)
+      /** then, deal with reordering the actual containers */
 
       // for up/down, simply swap container element z-indexes + save to map
       if (direction == "up" || direction == "down") {
-        // swap z-index of element in destination index to current         
-        document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
+
+        // determine destination + move listing
+        if (direction == "up") {
+          destinationIndex = String(currentIndex + 1);
+          document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing").insertAdjacentElement("beforebegin", clickedListingCopy);
+        }
+        else if (direction == "down") {
+          destinationIndex = String(currentIndex - 1);
+          document.getElementById(zIndexMap.get(destinationIndex)  + "-container-listing").insertAdjacentElement("afterend", clickedListingCopy);
+        }
+        
+        // swap z-index of element in destination index to current        
         document.getElementById(containerId).style.zIndex = destinationIndex;
+        document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
                 
         // save new indexes to affected containers
         movingContainer.containerSettings.zIndex = parseInt(destinationIndex);
@@ -2047,13 +2051,25 @@
       }
       // for big jumps, we don't just swap z-indexes 
       else if (direction == "top") {
-        // moved container is now at top, so we need to ripple all other zIndexes down 1
-        for (let i = 1; i < numberTotalContainers; i++) {
-          document.getElementById(zIndexMap.get(String(i))).style.zIndex--;
-          containerDataMap.get(zIndexMap.get(String(i))).containerSettings.zIndex--;
+        // moved container will be at, so we need to ripple all zIndexes between Current and Top down 1
+        for (let i = currentIndex; i < numberTotalContainers; i++) {
+          console.log("setting: " + i + ", " + zIndexMap.get(String(i+1)));
 
           zIndexMap.set(String(i), zIndexMap.get(String(i+1)))
+          
+          document.getElementById(zIndexMap.get(String(i))).style.zIndex--;
+          containerDataMap.get(zIndexMap.get(String(i))).containerSettings.zIndex--;
         }
+
+        destinationIndex = String(numberTotalContainers);
+        document.getElementById("containers").insertAdjacentElement("afterbegin", clickedListingCopy);
+        
+
+        // now
+        document.getElementById(containerId).style.zIndex = numberTotalContainers;
+        containerDataMap.get(containerId).containerSettings.zIndex = numberTotalContainers;
+        zIndexMap.set(String(numberTotalContainers), containerId);
+
       }
       else if (direction == "bottom") {
         // moved container is now at bottom, so we need to ripple all other zIndexes up 1
@@ -2065,7 +2081,7 @@
       // since menu for moving container was removed+readded, we need to reapply listeners
       movingContainer.addSettingsMenuEventListeners();
 
-      // and refresh the order / buttons
+      // and refresh the listings based on the new saved data
       updateContainerListingOrder();
     }
 
