@@ -2031,7 +2031,6 @@
       // for up/down, simply swap container element z-indexes + save to map
       if (direction == "up" || direction == "down") {
         // swap z-index of element in destination index to current         
-        // document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
         document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
         document.getElementById(containerId).style.zIndex = destinationIndex;
                 
@@ -2049,10 +2048,11 @@
       // for big jumps, we don't just swap z-indexes 
       else if (direction == "top") {
         // moved container is now at top, so we need to ripple all other zIndexes down 1
-        for (let i = numberTotalContainers - 1; i > 0; i--) {
-
+        for (let i = 1; i < numberTotalContainers; i++) {
           document.getElementById(zIndexMap.get(String(i))).style.zIndex--;
           containerDataMap.get(zIndexMap.get(String(i))).containerSettings.zIndex--;
+
+          zIndexMap.set(String(i), zIndexMap.get(String(i+1)))
         }
       }
       else if (direction == "bottom") {
