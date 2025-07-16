@@ -1926,6 +1926,10 @@
         document.getElementById("containers").insertAdjacentElement("beforeend", clickedListingCopy);
       }
 
+      console.log("current" + currentIndex);
+      console.log("destination" + destinationIndex);
+      console.log("zindexmap BEFORE: ", zIndexMap);
+
       let destinationContainer = containerDataMap.get(zIndexMap.get(destinationIndex));
 
       // swap container z-indexes
@@ -1933,11 +1937,12 @@
       document.getElementById(containerId).style.zIndex = destinationIndex;
 
       // save changes to map
-      zIndexMap.set(currentIndex, zIndexMap.get(destinationIndex));
+      zIndexMap.set(String(currentIndex), zIndexMap.get(destinationIndex));
       zIndexMap.set(destinationIndex, movingContainer.id);
 
-      // save new indexes direcly to affected containers
+      console.log("zindexmap AFTER: ", zIndexMap);
 
+      // save new indexes direcly to affected containers
       movingContainer.containerSettings.zIndex = destinationIndex;
       movingContainer.addSettingsMenuEventListeners();
 
