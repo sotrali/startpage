@@ -565,7 +565,7 @@
           }
 
           this.initializeImageContainer();
-          this.createImageContainerMenuListing();
+          // this.createImageContainerMenuListing();
         }
         // if constructing text container
         else {
@@ -597,16 +597,16 @@
          }
 
           this.initializeTextContainer();
-          this.createTextContainerMenuListing();
+          // this.createTextContainerMenuListing();
 
           this.loadBookmarks();
-          this.loadBookmarkListings();
+          // this.loadBookmarkListings();
         }
 
         this.applySettings();
         
         this.addContainerEventListeners()
-        this.addSettingsMenuEventListeners();
+        // this.addSettingsMenuEventListeners();
 
         // and save
         containerDataMap.set(this.id, this);
@@ -797,12 +797,21 @@
 
       createTextContainerMenuListing() {
         let zindex = parseInt(this.containerSettings.zIndex);
+        let upButtons = `
+            <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+            <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
+          `;
+        let downButtons = `
+          <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
+          <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+        `;
+
         document.getElementById("containers").insertAdjacentHTML(
           "afterbegin",
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">[${this.containerSettings.zIndex}]: ${this.name}</p>
+          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)" id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
             <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: bookmarks</p>
@@ -948,9 +957,10 @@
             </div>
 
             <div style="display: flex; flex-direction: row; justify-content: space-between;">
-              <div id=${this.id + "--manage-container-buttons"}>
-
-              </div>
+                <div id=${this.id + "--manage-buttons"}>
+                  ${zindex == numberTotalContainers ? `` : upButtons}
+                  ${zindex == 1 ? `` : downButtons}
+                </div>
               <div>
                 <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
               </div>
@@ -1050,7 +1060,6 @@
 
       createImageContainerMenuListing() {
         let zindex = this.containerSettings.zIndex;
-
         let upButtons = `
             <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
             <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
@@ -1065,7 +1074,7 @@
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">[${this.containerSettings.zIndex}]: ${this.name}</p>
+            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)" id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
             <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
               <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: color + shape options</p>
@@ -1095,7 +1104,7 @@
               </div>
 
               <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                <div>
+                <div id=${this.id + "--manage-buttons"}>
                   ${zindex == numberTotalContainers ? `` : upButtons}
                   ${zindex == 1 ? `` : downButtons}
                 </div>
@@ -1138,6 +1147,8 @@
         document.getElementById(this.id + "-settings-border-radius").value =
           containerSettings.borderRadius;
       }
+
+
 
       /*
        * applies saved cosmetic customizations to container
@@ -1285,26 +1296,6 @@
        * applies event listeners on container options inputs in settings menu
        */
       addSettingsMenuEventListeners() {
-        document.getElementById(this.id + "--manage-container-buttons").innerHTML = "";
-        if (this.containerSettings.zIndex != numberTotalContainers) {
-          document.getElementById(this.id + "--manage-container-buttons").insertAdjacentHTML(
-            "afterbegin",
-            `
-              <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
-              <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
-            `
-          )
-        }
-        if (this.containerSettings.zIndex != 1) {
-          document.getElementById(this.id + "--manage-container-buttons").insertAdjacentHTML(
-            "afterbegin",
-            `
-              <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
-              <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
-            `
-          )
-        }
-
         // container border setting listeners
         document
           .getElementById(this.id + "-settings-border-color")
@@ -1555,7 +1546,42 @@
       let containerMapValues =
         JSON.parse(localStorage.getItem("containerMapValues")) || [];
       numberTotalContainers = containerMapValues.length;
-      for (let i = 0; i < containerMapValues.length; i++) {
+      
+
+      /** to ensure that container listings are rendered in order of zindex
+      let tempContainerMap = new Map();
+      for (let i = 0; i < numberTotalContainers; i++) {
+        tempContainerMap.set(containerMapValues[i].id, {
+          id:                 containerMapValues[i].id,
+          name:               containerMapValues[i].name,
+          x:                  containerMapValues[i].x,
+          y:                  containerMapValues[i].y,
+          height:             containerMapValues[i].height,
+          width:              containerMapValues[i].width,
+          imageUrl:           containerMapValues[i].imageUrl,
+          containerSettings:  containerMapValues[i].containerSettings,
+          sections:          containerMapValues[i].sections
+        });
+      }
+
+      for (let i = 1; i <= numberTotalContainers; i++) {
+        let tempContainerData = tempContainerMap.get(zIndexMap.get(String(i)));
+        console.log(tempContainerData);
+        containerDataMap.set(tempContainerData.id, new Container(
+          tempContainerData.id,
+          tempContainerData.name,
+          tempContainerData.x,
+          tempContainerData.y,
+          tempContainerData.height,
+          tempContainerData.width,
+          tempContainerData.imageUrl,
+          tempContainerData.containerSettings,
+          tempContainerData.sections
+        ));
+
+      }*/
+
+      for (let i = 0; i < numberTotalContainers; i++) {
         containerDataMap.set(containerMapValues[i].id, new Container(
           containerMapValues[i].id,
           containerMapValues[i].name,
@@ -1568,6 +1594,7 @@
           containerMapValues[i].sections
         ));
       }
+      
      
       /** set up + load settings menu data */
       settingsMenuData = JSON.parse(
@@ -1578,7 +1605,7 @@
         width: "",
         height: "",
       };
-      setupContainerSettingsMenu();
+      setupSettingsContainer();
       // load last active settings tab user was on 
       activeTabId =
         JSON.parse(localStorage.getItem("activeTabId")) || "instructionsTab";
@@ -1596,17 +1623,30 @@
     /**************************
      * INITIALIZATION HELPERS *
      **************************/
-    function setupContainerSettingsMenu() {
+    function setupSettingsContainer() {
       let settingsContainer = document.getElementById("settingsContainer");
 
-      if (numberOfImageContainers == 0 && numberOfTextContainers == 0) {
+      if (numberTotalContainers == 0) {
         document.getElementById("containers").insertAdjacentHTML(
           "beforeend",
-          `<p>(you have no layers right now)</p>`
+          `<p id="noContainerWarning">(you have no layers right now)</p>`
         );
       }
 
-      /* set at the last saved location */
+      // render listings of existing containers in menu, in order of z-index
+      for (let i = 1; i <= numberTotalContainers; i++) {
+        let currentContainer = containerDataMap.get(zIndexMap.get(String(i)));
+        if (currentContainer.imageUrl == undefined) {
+          currentContainer.createTextContainerMenuListing();
+          currentContainer.loadBookmarkListings();
+        }
+        else {
+          currentContainer.createImageContainerMenuListing();
+        }
+          currentContainer.addSettingsMenuEventListeners();
+      }
+
+      /* place settings container at the last saved location */
       settingsContainer.style.top    = settingsMenuData.y;
       settingsContainer.style.left   = settingsMenuData.x;
       settingsContainer.style.width  = settingsMenuData.width + "px";
@@ -1634,6 +1674,7 @@
         }
       });
     }
+
 
     /** inserts saved images in their saved order (postioning done upon return) 
     function initializeSavedImages() {
@@ -1872,6 +1913,11 @@
         undefined,
         undefined
       );
+
+      container.createTextContainerMenuListing();
+      container.loadBookmarkListings();
+      container.addSettingsMenuEventListeners();
+      updateContainerListingOrder();
     }
 
     function createNewImageContainer() {
@@ -1895,6 +1941,61 @@
         undefined,
         undefined
       );
+
+      container.createImageContainerMenuListing();
+      container.addSettingsMenuEventListeners();
+      updateContainerListingOrder();
+    }
+
+    /**
+    * Used in the case of a container being reordered, deleted, or a new container being made.
+    * Updates all container listing order numbers + recalculates whether they should have up/down buttons
+    */
+    function updateContainerListingOrder() {
+      // either show "you have no containers" or don't
+      if (numberTotalContainers > 0 && document.getElementById("noContainerWarning") != undefined) {
+        document.getElementById("noContainerWarning").remove();
+      }
+      else if (numberTotalContainers == 0 && document.getElementById("noContainerWarning") == undefined) {
+        document.getElementById("containers").insertAdjacentHTML(
+          "beforeend",
+          `<p id="noContainerWarning">(you have no layers right now)</p>`
+        );
+        return;
+      }
+
+      // go through all container listings and make only the necessary updates
+      for (let i = 1; i <= numberTotalContainers; i++) {
+          let currentContainer = containerDataMap.get(zIndexMap.get(String(i)));
+          let containerListingHeader = document.getElementById(currentContainer.id + "--listing-header");
+          let containerManageButtons = document.getElementById(currentContainer.id + "--manage-buttons");
+
+          // update layer number
+          containerListingHeader.innerText =
+            "[" + currentContainer.containerSettings.zIndex + "] " + currentContainer.name;
+
+          // remove / insert the necessary up/down buttons
+          containerManageButtons.innerHTML = "";
+          if (currentContainer.containerSettings.zIndex != numberTotalContainers) {
+            containerManageButtons.insertAdjacentHTML(
+              "beforeend",
+              `
+                <button id="` + currentContainer.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+                <button id="` + currentContainer.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
+              `
+            );
+          }
+          if (currentContainer.containerSettings.zIndex != 1) {
+           containerManageButtons.insertAdjacentHTML(
+              "beforeend",
+              `
+                <button id="` + currentContainer.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
+                <button id="` + currentContainer.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+              `
+            ); 
+          }
+
+      }
     }
 
     function reorderContainer(buttonPressed, direction) {
@@ -1903,12 +2004,11 @@
 
       let currentIndex = parseInt(movingContainer.containerSettings.zIndex);
       let destinationIndex;
-
+      
+      // re-order the container listings in the settings menu
       let clickedListingCopy = document.getElementById(containerId + "-container-listing").cloneNode(true);
-      // let destinationListingCopy = document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing").cloneNode(true);
-
       document.getElementById(containerId + "-container-listing").remove();
-
+      
       if (direction == "up") {
         destinationIndex = String(currentIndex + 1);
         document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing").insertAdjacentElement("beforebegin", clickedListingCopy);
@@ -1926,91 +2026,54 @@
         document.getElementById("containers").insertAdjacentElement("beforeend", clickedListingCopy);
       }
 
-      console.log("current" + currentIndex);
-      console.log("destination" + destinationIndex);
-      console.log("zindexmap BEFORE: ", zIndexMap);
+      // TODO? update the affected listing headers / refresh manage buttons here to save a small amount of energy (could then get rid of updateContainerListingOrder() at bottom)
 
-      let destinationContainer = containerDataMap.get(zIndexMap.get(destinationIndex));
+      // for up/down, simply swap container element z-indexes + save to map
+      if (direction == "up" || direction == "down") {
+        // swap z-index of element in destination index to current         
+        // document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
+        document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
+        document.getElementById(containerId).style.zIndex = destinationIndex;
+                
+        // save new indexes to affected containers
+        movingContainer.containerSettings.zIndex = parseInt(destinationIndex);
+        containerDataMap.get(zIndexMap.get(destinationIndex)).containerSettings.zIndex = currentIndex;
 
-      // swap container z-indexes
-      document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
-      document.getElementById(containerId).style.zIndex = destinationIndex;
+        // save changes to map
+        zIndexMap.set(String(currentIndex), zIndexMap.get(destinationIndex));
+        zIndexMap.set(destinationIndex, movingContainer.id);
 
-      // save changes to map
-      zIndexMap.set(String(currentIndex), zIndexMap.get(destinationIndex));
-      zIndexMap.set(destinationIndex, movingContainer.id);
+        // reapply listeners to menu for element that got swapped with current
+        containerDataMap.get(zIndexMap.get(destinationIndex)).addSettingsMenuEventListeners();
+      }
+      // for big jumps, we don't just swap z-indexes 
+      else if (direction == "top") {
+        // moved container is now at top, so we need to ripple all other zIndexes down 1
+        for (let i = numberTotalContainers - 1; i > 0; i--) {
 
-      console.log("zindexmap AFTER: ", zIndexMap);
+          document.getElementById(zIndexMap.get(String(i))).style.zIndex--;
+          containerDataMap.get(zIndexMap.get(String(i))).containerSettings.zIndex--;
+        }
+      }
+      else if (direction == "bottom") {
+        // moved container is now at bottom, so we need to ripple all other zIndexes up 1
+        for (let i = 1; i <= numberTotalContainers; i++) {
 
-      // save new indexes direcly to affected containers
-      movingContainer.containerSettings.zIndex = destinationIndex;
+        }
+      }
+
+      // since menu for moving container was removed+readded, we need to reapply listeners
       movingContainer.addSettingsMenuEventListeners();
 
-      destinationContainer.containerSettings.zIndex = currentIndex;
-      destinationContainer.addSettingsMenuEventListeners();
-
-
-      /** adjust container listings on settings menu *
-
-      // swap listing element in destination index with current listing
-      let currentIndexAtBottom      = parseInt(currentIndex)     == 1;
-      let currentIndexAtTop         = parseInt(currentIndex)     == numberTotalContainers;
-      let destinationIndexAtBottom  = parseInt(destinationIndex) == 1;
-      let destinationIndexAtTop     = parseInt(destinationIndex) == numberTotalContainers;
-
-      // MOVE DESTINATION LISTING TO CURRENT SPOT
-      if (currentIndexAtBottom) {
-        document.getElementById("containers").insertAdjacentElement("beforeend", destinationListingCopy);
-      }
-      else if (currentIndexAtTop) {
-        document.getElementById("containers").insertAdjacentElement("afterbegin", destinationListingCopy);
-      }
-      else {
-        console.log("1getting: " + zIndexMap.get(String(parseInt(currentIndex-1))) + "-container-listing");
-        // document.getElementById(zIndexMap.get(String(parseInt(currentIndex))) + "-container-listing").insertAdjacentElement("beforebegin", destinationListingCopy);
-        document.getElementById(zIndexMap.get(String(parseInt(currentIndex-1))) + "-container-listing").insertAdjacentElement("beforebegin", destinationListingCopy);
-      }
-
-      // MOVE CURRENT LISTING TO DESTINATION
-      if (destinationIndexAtBottom) {
-        document.getElementById("containers").insertAdjacentElement("beforeend", clickedListingCopy);
-      }
-      else if (destinationIndexAtTop) {
-      }
-      else {
-        console.log("2getting: " + zIndexMap.get(String(parseInt(destinationIndex)+1)) + "-container-listing");
-        document.getElementById(zIndexMap.get(String(parseInt(destinationIndex)+1)) + "-container-listing").insertAdjacentElement("afterend", clickedListingCopy);
-      }
-        */
-      // save new indexes 
-
-
-
-      /* REMOVE RELEVANT ELEMENTS
-      console.log('removing: ' + containerId + "-container-listing");
-      console.log('removing: ' + zIndexMap.get(destinationIndex) + "-container-listing");
-      document.getElementById(containerId + "-container-listing").remove();
-      document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing").remove();
-
-      currentIndex     = String(currentIndex);
-      destinationIndex = String(destinationIndex);
-
-      console.log('currentIndex: ' + currentIndex);
-      console.log('destinationIndex: ' + destinationIndex);
-      console.log('zindexmap: ' + zIndexMap.get(destinationIndex));
-      console.log('container map: ' + containerDataMap.get(zIndexMap.get(destinationIndex)));
-*/
-
-      // redrawContainerListings();
-
-      //      else if (currentIndex == numberTotalContainers) {
-//        document.getElementById(zIndexMap.get(numberTotalContainers - 1)).insertAdjacentElement("afterend", destinationListingCopy);
-//      }
+      // and refresh the order / buttons
+      updateContainerListingOrder();
     }
 
+    /* unused. would be the easiest implementation for reordering/deleting/adding, but it would be more resource intensive.
+               can delete but it's so clean i just want to admire a bit more
     function redrawContainerListings() {
       document.getElementById("containers").innerHTML = "";
-      for (let i = 1; i <= numberTotalContainers; i++) {
+        for (let i = 1; i <= numberTotalContainers; i++) {
         let currentContainer = containerDataMap.get(zIndexMap.get(String(i)));
         if (currentContainer.imageUrl == undefined) {
           currentContainer.createTextContainerMenuListing();
@@ -2020,7 +2083,8 @@
         }
           currentContainer.addSettingsMenuEventListeners();
       }
-    }
+
+    }*/
 
     function deleteContainer(buttonPressed) {
       let containerId = buttonPressed.id.split("--")[0];
@@ -2034,11 +2098,21 @@
         numberOfImageContainers--;
       }
 
+      // delete from zindex map and ripple zIndexes down
+      for (let i = container.containerSettings.zIndex; i < numberTotalContainers; i++) {
+        zIndexMap.set(String(i), zIndexMap.get(String(i+1)));
+        containerDataMap.get(zIndexMap.get(String(i+1))).containerSettings.zIndex--;
+      }
+      zIndexMap.delete(String(numberTotalContainers));
+
+      // remove data associated with container
       containerDataMap.delete(containerId);
       numberTotalContainers--;
 
       document.getElementById(containerId).remove();
       document.getElementById(containerId + "-container-listing").remove();
+      
+      updateContainerListingOrder();
     }
 
     /**
