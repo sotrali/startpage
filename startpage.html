@@ -948,16 +948,8 @@
             </div>
 
             <div style="display: flex; flex-direction: row; justify-content: space-between;">
-              <div>
-                ${zindex == numberTotalContainers ? `` : `
-                  <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
-                  <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
-                `}
+              <div id=${this.id + "--manage-container-buttons"}>
 
-                ${zindex == 1 ? `` :`
-                  <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
-                  <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
-                `}
               </div>
               <div>
                 <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
@@ -1293,6 +1285,26 @@
        * applies event listeners on container options inputs in settings menu
        */
       addSettingsMenuEventListeners() {
+        document.getElementById(this.id + "--manage-container-buttons").innerHTML = "";
+        if (this.containerSettings.zIndex != numberTotalContainers) {
+          document.getElementById(this.id + "--manage-container-buttons").insertAdjacentHTML(
+            "afterbegin",
+            `
+              <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+              <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
+            `
+          )
+        }
+        if (this.containerSettings.zIndex != 1) {
+          document.getElementById(this.id + "--manage-container-buttons").insertAdjacentHTML(
+            "afterbegin",
+            `
+              <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
+              <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+            `
+          )
+        }
+
         // container border setting listeners
         document
           .getElementById(this.id + "-settings-border-color")
@@ -1891,51 +1903,104 @@
 
       let currentIndex = parseInt(movingContainer.containerSettings.zIndex);
       let destinationIndex;
+
+      let clickedListingCopy = document.getElementById(containerId + "-container-listing").cloneNode(true);
+      // let destinationListingCopy = document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing").cloneNode(true);
+
+      document.getElementById(containerId + "-container-listing").remove();
+
       if (direction == "up") {
-        destinationIndex = currentIndex + 1;
+        destinationIndex = String(currentIndex + 1);
+        document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing").insertAdjacentElement("beforebegin", clickedListingCopy);
       }
       else if (direction == "down") {
-        destinationIndex = currentIndex - 1;
+        destinationIndex = String(currentIndex - 1);
+        document.getElementById(zIndexMap.get(destinationIndex)  + "-container-listing").insertAdjacentElement("afterend", clickedListingCopy);
       }
       else if (direction == "top") {
-        destinationIndex = numberOfImageContainers + numberOfTextContainers;
+        destinationIndex = String(numberTotalContainers);
+        document.getElementById("containers").insertAdjacentElement("afterbegin", clickedListingCopy);
       }
       else if (direction == "bottom") {
-        destinationIndex = 1;
+        destinationIndex = "1";
+        document.getElementById("containers").insertAdjacentElement("beforeend", clickedListingCopy);
       }
 
-      currentIndex = String(currentIndex);
+      let destinationContainer = containerDataMap.get(zIndexMap.get(destinationIndex));
+
+      // swap container z-indexes
+      document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
+      document.getElementById(containerId).style.zIndex = destinationIndex;
+
+      // save changes to map
+      zIndexMap.set(currentIndex, zIndexMap.get(destinationIndex));
+      zIndexMap.set(destinationIndex, movingContainer.id);
+
+      // save new indexes direcly to affected containers
+
+      movingContainer.containerSettings.zIndex = destinationIndex;
+      movingContainer.addSettingsMenuEventListeners();
+
+      destinationContainer.containerSettings.zIndex = currentIndex;
+      destinationContainer.addSettingsMenuEventListeners();
+
+
+      /** adjust container listings on settings menu *
+
+      // swap listing element in destination index with current listing
+      let currentIndexAtBottom      = parseInt(currentIndex)     == 1;
+      let currentIndexAtTop         = parseInt(currentIndex)     == numberTotalContainers;
+      let destinationIndexAtBottom  = parseInt(destinationIndex) == 1;
+      let destinationIndexAtTop     = parseInt(destinationIndex) == numberTotalContainers;
+
+      // MOVE DESTINATION LISTING TO CURRENT SPOT
+      if (currentIndexAtBottom) {
+        document.getElementById("containers").insertAdjacentElement("beforeend", destinationListingCopy);
+      }
+      else if (currentIndexAtTop) {
+        document.getElementById("containers").insertAdjacentElement("afterbegin", destinationListingCopy);
+      }
+      else {
+        console.log("1getting: " + zIndexMap.get(String(parseInt(currentIndex-1))) + "-container-listing");
+        // document.getElementById(zIndexMap.get(String(parseInt(currentIndex))) + "-container-listing").insertAdjacentElement("beforebegin", destinationListingCopy);
+        document.getElementById(zIndexMap.get(String(parseInt(currentIndex-1))) + "-container-listing").insertAdjacentElement("beforebegin", destinationListingCopy);
+      }
+
+      // MOVE CURRENT LISTING TO DESTINATION
+      if (destinationIndexAtBottom) {
+        document.getElementById("containers").insertAdjacentElement("beforeend", clickedListingCopy);
+      }
+      else if (destinationIndexAtTop) {
+      }
+      else {
+        console.log("2getting: " + zIndexMap.get(String(parseInt(destinationIndex)+1)) + "-container-listing");
+        document.getElementById(zIndexMap.get(String(parseInt(destinationIndex)+1)) + "-container-listing").insertAdjacentElement("afterend", clickedListingCopy);
+      }
+        */
+      // save new indexes 
+
+
+
+      /* REMOVE RELEVANT ELEMENTS
+      console.log('removing: ' + containerId + "-container-listing");
+      console.log('removing: ' + zIndexMap.get(destinationIndex) + "-container-listing");
+      document.getElementById(containerId + "-container-listing").remove();
+      document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing").remove();
+
+      currentIndex     = String(currentIndex);
       destinationIndex = String(destinationIndex);
 
       console.log('currentIndex: ' + currentIndex);
       console.log('destinationIndex: ' + destinationIndex);
       console.log('zindexmap: ' + zIndexMap.get(destinationIndex));
       console.log('container map: ' + containerDataMap.get(zIndexMap.get(destinationIndex)));
+*/
 
+      // redrawContainerListings();
 
-      // actually move containers (swap with destination index)
-      document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
-      document.getElementById(containerId).style.zIndex = destinationIndex;
-
-      // save new indexes
-      movingContainer.containerSettings.zIndex = destinationIndex;
-      containerDataMap.get(zIndexMap.get(destinationIndex))
-        .containerSettings.zIndex = currentIndex;
-      zIndexMap.set(currentIndex, zIndexMap.get(destinationIndex));
-      zIndexMap.set(destinationIndex, movingContainer.id);
-
-      /** adjust container listings on settings menu
-      let copy = document.getElementById(containerId + "-container-listing");
-      document.getElementById(containerId + "-container-listing").remove();
-
-      let destinationContainerElement = document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing");
-      
-      destinationContainerElement.insertAdjacentHTML("afterend", copy);
-      copy = destinationContainerElement;
-      */
-      
-
-      redrawContainerListings();
+      //      else if (currentIndex == numberTotalContainers) {
+//        document.getElementById(zIndexMap.get(numberTotalContainers - 1)).insertAdjacentElement("afterend", destinationListingCopy);
+//      }
     }
 
     function redrawContainerListings() {
@@ -1977,7 +2042,7 @@
       */
     function findLowestAvailableId() {
       let id = "";
-      for(let index = 0; index < 200; index ++) {
+      for(let index = 1; index < 200; index ++) {
         id = "container-" + index;
         if (!containerDataMap.has(id)) {
           console.log(id);
