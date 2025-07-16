@@ -284,8 +284,8 @@
         </div>
 
         <form id="containerForm" onsubmit="return false">
+          <h2 class="menuHeader">layers</h2>
           <div id="containers">
-            <h2 class="menuHeader">layers</h2>
           </div>
 
           <div style="display:flex; flex-direction:row; align-items:center; justify-content: space-between; flex-wrap: wrap;">
@@ -429,6 +429,7 @@
 
     // cookie holders for container data
     let containerDataMap = new Map();
+    let numberTotalContainers = 0;
     let zIndexMap = new Map();
 
     // default values for easy resetting
@@ -549,6 +550,7 @@
             this.imageUrl          = imageUrl;
           }
           else {
+            numberTotalContainers++;
             if (name == "") this.name = "image " + numberOfImageContainers;
             else            this.name = name;
 
@@ -558,7 +560,7 @@
             // deep copy default settings
             this.containerSettings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
 
-            zIndexMap.set(numberOfImageContainers + numberOfTextContainers, this.id);
+            zIndexMap.set(String(numberOfImageContainers + numberOfTextContainers), this.id);
             this.containerSettings.zIndex = numberOfImageContainers + numberOfTextContainers;
           }
 
@@ -580,6 +582,7 @@
             this.sections          = sections;
           }
           else {
+            numberTotalContainers++;
             if (name == "") this.name = "bookmark layer " + numberOfTextContainers;
             else            this.name = name;
 
@@ -589,7 +592,7 @@
             // deep copy default settings
             this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
  
-            zIndexMap.set(numberOfTextContainers + numberOfImageContainers, this.id);
+            zIndexMap.set(String(numberOfTextContainers + numberOfImageContainers), this.id);
             this.containerSettings.zIndex = numberOfImageContainers + numberOfTextContainers;
          }
 
@@ -723,7 +726,7 @@
         let bookmarkListings = document.getElementById(this.id + "-bookmark-menu--listings");
         bookmarkListings.innerHTML = "";
 
-        // [re]render the section listings
+        // [in]render the section listings
         for (let i = 0; i < sectionData.length; i++) {
           bookmarkListings.insertAdjacentHTML(
             "beforeend",
@@ -793,8 +796,9 @@
       }
 
       createTextContainerMenuListing() {
+        let zindex = parseInt(this.containerSettings.zIndex);
         document.getElementById("containers").insertAdjacentHTML(
-          "beforeend",
+          "afterbegin",
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
@@ -943,19 +947,129 @@
                </div>
             </div>
 
-            <button id=${this.id + "--move-up-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
-            <button id=${this.id + "--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
-            <button id=${this.id + "--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
-            <button id=${this.id + "--move-up-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
-            <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
+            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+              <div>
+                ${zindex == numberTotalContainers ? `` : `
+                  <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+                  <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
+                `}
+
+                ${zindex == 1 ? `` :`
+                  <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
+                  <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+                `}
+              </div>
+              <div>
+                <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
+              </div>
+            </div>
           </div>
           `
         );
+
+        /** fill in inputs with current values */
+        let containerSettings = this.containerSettings;
+        // SHADOW / GLOW
+        document.getElementById(this.id + "-settings-shadow-x").value =
+          containerSettings.shadowX;
+        document.getElementById(this.id + "-settings-shadow-y").value =
+          containerSettings.shadowY;
+        document.getElementById(this.id + "-settings-shadow-blur").value =
+          containerSettings.shadowBlur;
+        document.getElementById(this.id + "-settings-shadow-color").value =
+          rgbToHex(
+            containerSettings.shadowRgba
+              .replace("rgba(", "")
+              .slice(0, -1)
+              .split(",")
+              .splice(0, 3)
+          );
+        document.getElementById(this.id + "-settings-shadow-alpha").value =
+          containerSettings.shadowRgba
+            .replace("rgba(", "")
+            .slice(0, -1)
+            .split(",")[3] * 100;
+      // BORDER
+      document.getElementById(this.id + "-settings-border-color").value =
+        containerSettings.borderColor;
+      document.getElementById(this.id + "-settings-border-width").value =
+        containerSettings.borderWidth;
+      document.getElementById(this.id + "-settings-border-radius").value =
+        containerSettings.borderRadius;
+      // FONT
+      if (containerSettings.fontName == "") {
+        document.getElementById(this.id + "-settings-font-name").innerHTML =
+          "system default";
+      } else {
+        document.getElementById(this.id + "-settings-font-name").innerHTML =
+          containerSettings.fontName;
+      }
+      // TEXT ALIGNMENT
+      document.getElementById(this.id + "-settings-left-align").checked =
+        !containerSettings.centerAlign;
+      document.getElementById(this.id + "-settings-center-align").checked =
+        containerSettings.centerAlign;
+      // BOOKMARK OPTIONS
+      document.getElementById(this.id + "-settings-section-color").value =
+        containerSettings.sectionColor;
+      document.getElementById(this.id + "-settings-section-size").value =
+        containerSettings.sectionSize;
+      document.getElementById(this.id + "-settings-section-bold").checked =
+        containerSettings.sectionBold;
+      document.getElementById(this.id + "-settings-section-italic").checked =
+        containerSettings.sectionItalic;
+      document.getElementById(this.id + "-settings-link-color").value =
+        containerSettings.linkColor;
+      document.getElementById(this.id + "-settings-link-size").value =
+        containerSettings.linkSize;
+      // BACKGROUND COLOR
+      document.getElementById(this.id + "-settings-bg-color").value =
+        rgbToHex(
+          containerSettings.backgroundRgba
+            .replace("rgba(", "")
+            .slice(0, -1)
+            .split(",")
+            .splice(0, 3)
+        );
+      document.getElementById(this.id + "-settings-bg-alpha").value =
+        containerSettings.backgroundRgba
+          .replace("rgba(", "")
+          .slice(0, -1)
+          .split(",")[3] * 100;
+      // HEADER OPTIONS
+      document.getElementById(this.id + "-settings-date-toggle").checked =
+        containerSettings.enableDate;
+      document.getElementById(this.id + "-settings-clock-toggle").checked =
+        containerSettings.enableClock;
+      document.getElementById(this.id + "-settings-clock-color").value =
+        containerSettings.headerColor;
+      document.getElementById(this.id + "-settings-clock-size").value =
+        containerSettings.headerSize;
+      document.getElementById(this.id + "-settings-clock-bold").checked =
+        containerSettings.headerBold;
+      document.getElementById(this.id + "-settings-clock-italic").checked =
+        containerSettings.headerItalic;
+      // DIVIDER
+      document.getElementById(this.id + "-settings-divider-toggle").checked =
+        containerSettings.enableDivider;
+      document.getElementById(this.id + "-settings-divider-color").value =
+        containerSettings.dividerColor;
       }
 
       createImageContainerMenuListing() {
+        let zindex = this.containerSettings.zIndex;
+
+        let upButtons = `
+            <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+            <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
+          `;
+        let downButtons = `
+          <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
+          <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+        `;
+
         document.getElementById("containers").insertAdjacentHTML(
-          "beforeend",
+          "afterbegin",
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
@@ -990,10 +1104,8 @@
 
               <div style="display: flex; flex-direction: row; justify-content: space-between;">
                 <div>
-                  <button id=${this.id + "--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
-                  <button id=${this.id + "--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
-                  <button id=${this.id + "--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
-                  <button id=${this.id + "--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+                  ${zindex == numberTotalContainers ? `` : upButtons}
+                  ${zindex == 1 ? `` : downButtons}
                 </div>
                 <div>
                   <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
@@ -1003,6 +1115,36 @@
           </div>
           `
         );
+        
+        /** fill in inputs with current values */
+        let containerSettings = this.containerSettings;
+        // SHADOW / GLOW
+        document.getElementById(this.id + "-settings-shadow-x").value =
+          containerSettings.shadowX;
+        document.getElementById(this.id + "-settings-shadow-y").value =
+          containerSettings.shadowY;
+        document.getElementById(this.id + "-settings-shadow-blur").value =
+          containerSettings.shadowBlur;
+        document.getElementById(this.id + "-settings-shadow-color").value =
+          rgbToHex(
+            containerSettings.shadowRgba
+              .replace("rgba(", "")
+              .slice(0, -1)
+              .split(",")
+              .splice(0, 3)
+          );
+        document.getElementById(this.id + "-settings-shadow-alpha").value =
+          containerSettings.shadowRgba
+            .replace("rgba(", "")
+            .slice(0, -1)
+            .split(",")[3] * 100;
+        // BORDER
+        document.getElementById(this.id + "-settings-border-color").value =
+          containerSettings.borderColor;
+        document.getElementById(this.id + "-settings-border-width").value =
+          containerSettings.borderWidth;
+        document.getElementById(this.id + "-settings-border-radius").value =
+          containerSettings.borderRadius;
       }
 
       /*
@@ -1031,26 +1173,6 @@
           containerSettings.shadowBlur +
           "px " +
           containerSettings.shadowRgba;
-        // fill in settings ui
-        document.getElementById(this.id + "-settings-shadow-x").value =
-          containerSettings.shadowX;
-        document.getElementById(this.id + "-settings-shadow-y").value =
-          containerSettings.shadowY;
-        document.getElementById(this.id + "-settings-shadow-blur").value =
-          containerSettings.shadowBlur;
-        document.getElementById(this.id + "-settings-shadow-color").value =
-          rgbToHex(
-            containerSettings.shadowRgba
-              .replace("rgba(", "")
-              .slice(0, -1)
-              .split(",")
-              .splice(0, 3)
-          );
-        document.getElementById(this.id + "-settings-shadow-alpha").value =
-          containerSettings.shadowRgba
-            .replace("rgba(", "")
-            .slice(0, -1)
-            .split(",")[3] * 100;
 
         /** BORDER */
         document.getElementById(this.id).style.borderStyle = "solid";
@@ -1060,13 +1182,7 @@
           containerSettings.borderRadius + "px";
         document.getElementById(this.id).style.borderColor =
           containerSettings.borderColor;
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-border-color").value =
-          containerSettings.borderColor;
-        document.getElementById(this.id + "-settings-border-width").value =
-          containerSettings.borderWidth;
-        document.getElementById(this.id + "-settings-border-radius").value =
-          containerSettings.borderRadius;
+
 
         /** if this is an image container, all relevant settings have been applied */
         if (this.imageUrl != undefined) {
@@ -1074,19 +1190,11 @@
         }
 
         /** FONT */
-        if (containerSettings.fontName == "") {
-          document.getElementById(this.id + "-settings-font-name").innerHTML =
-            "system default";
-        } else {
-          document.getElementById(this.id + "-settings-font-name").innerHTML =
-            containerSettings.fontName;
-        }
         if (containerSettings.fontCode != "") {
           document.head.insertAdjacentHTML(
             "beforeend",
             containerSettings.fontCode
           );
-          // fill in settings ui
           document.getElementById(this.id).style.fontFamily =
             containerSettings.fontName;
         }
@@ -1097,11 +1205,7 @@
         } else {
           document.getElementById(this.id).style.textAlign = "left";
         }
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-left-align").checked =
-          !containerSettings.centerAlign;
-        document.getElementById(this.id + "-settings-center-align").checked =
-          containerSettings.centerAlign;
+
 
         /** BOOKMARK CUSTOMIZATION */
         // apply link customization
@@ -1118,38 +1222,12 @@
           sectionElements[i].style.fontWeight = containerSettings.sectionBold ? "bold" : "normal";
           sectionElements[i].style.fontStyle = containerSettings.sectionItalic ? "italic" : "normal";
         }
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-section-color").value =
-          containerSettings.sectionColor;
-        document.getElementById(this.id + "-settings-section-size").value =
-          containerSettings.sectionSize;
-        document.getElementById(this.id + "-settings-section-bold").checked =
-          containerSettings.sectionBold;
-        document.getElementById(this.id + "-settings-section-italic").checked =
-          containerSettings.sectionItalic;
 
-        document.getElementById(this.id + "-settings-link-color").value =
-          containerSettings.linkColor;
-        document.getElementById(this.id + "-settings-link-size").value =
-          containerSettings.linkSize;
 
         /** BACKGROUND COLOR */
         document.getElementById(this.id).style.backgroundColor =
           containerSettings.backgroundRgba;
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-bg-color").value =
-          rgbToHex(
-            containerSettings.backgroundRgba
-              .replace("rgba(", "")
-              .slice(0, -1)
-              .split(",")
-              .splice(0, 3)
-          );
-        document.getElementById(this.id + "-settings-bg-alpha").value =
-          containerSettings.backgroundRgba
-            .replace("rgba(", "")
-            .slice(0, -1)
-            .split(",")[3] * 100;
+
 
         /** HEADER  */
         // show header elements
@@ -1166,19 +1244,7 @@
           containerSettings.headerBold ? "bold" : "normal";
         document.getElementById(this.id + "-header").style.fontStyle =
           containerSettings.headerItalic ? "italic" : "normal";
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-date-toggle").checked =
-          containerSettings.enableDate;
-        document.getElementById(this.id + "-settings-clock-toggle").checked =
-          containerSettings.enableClock;
-        document.getElementById(this.id + "-settings-clock-color").value =
-          containerSettings.headerColor;
-        document.getElementById(this.id + "-settings-clock-size").value =
-          containerSettings.headerSize;
-        document.getElementById(this.id + "-settings-clock-bold").checked =
-          containerSettings.headerBold;
-        document.getElementById(this.id + "-settings-clock-italic").checked =
-          containerSettings.headerItalic;
+
 
         /** DIVIDER */
         let divider = document.getElementById(this.id + "-divider");
@@ -1194,11 +1260,6 @@
           divider.style.backgroundColor = containerSettings.dividerColor;
           divider.style.borderColor = containerSettings.dividerColor;
         }
-        // fill-in settings ui
-        document.getElementById(this.id + "-settings-divider-toggle").checked =
-          containerSettings.enableDivider;
-        document.getElementById(this.id + "-settings-divider-color").value =
-          containerSettings.dividerColor;
       }
 
       /**
@@ -1481,12 +1542,8 @@
 
       let containerMapValues =
         JSON.parse(localStorage.getItem("containerMapValues")) || [];
+      numberTotalContainers = containerMapValues.length;
       for (let i = 0; i < containerMapValues.length; i++) {
-        // containerDataMap.set(containerMapValues[i].id, containerMapValues[i]);
-        if (containerMapValues[i].id == "settingsContainer") {
-          continue;
-        }
-
         containerDataMap.set(containerMapValues[i].id, new Container(
           containerMapValues[i].id,
           containerMapValues[i].name,
@@ -1830,33 +1887,70 @@
 
     function reorderContainer(buttonPressed, direction) {
       let containerId = buttonPressed.id.split("--")[0];
-      let container = document.getElementById(containerId);
-      let currentIndex = container.containerSettings.zIndex;
-      let copy = container;
+      let movingContainer = containerDataMap.get(containerId);
 
-      // move indicated container
+      let currentIndex = parseInt(movingContainer.containerSettings.zIndex);
+      let destinationIndex;
       if (direction == "up") {
-        zIndexMap.set(currentIndex, zIndexMap.get(currentIndex + 1));
-        zIndexMap.set(currentIndex + 1, copy);
+        destinationIndex = currentIndex + 1;
       }
       else if (direction == "down") {
-        zIndexMap.set(currentIndex, zIndexMap.get(currentIndex - 1));
-        zIndexMap.set(currentIndex - 1, copy);     
+        destinationIndex = currentIndex - 1;
       }
       else if (direction == "top") {
-        zIndexMap.set(
-          currentIndex, zIndexMap.get(numberOfImageContainers + numberOfTextContainers)
-        );
-        zIndexMap.set(numberOfImageContainers + numberOfTextContainers, copy);
+        destinationIndex = numberOfImageContainers + numberOfTextContainers;
       }
       else if (direction == "bottom") {
-        zIndexMap.set(currentIndex, zIndexMap.get(1));
-        zIndexMap.set(1, copy);
+        destinationIndex = 1;
       }
 
-      // consider a redraw function for menu listings 
+      currentIndex = String(currentIndex);
+      destinationIndex = String(destinationIndex);
+
+      console.log('currentIndex: ' + currentIndex);
+      console.log('destinationIndex: ' + destinationIndex);
+      console.log('zindexmap: ' + zIndexMap.get(destinationIndex));
+      console.log('container map: ' + containerDataMap.get(zIndexMap.get(destinationIndex)));
+
+
+      // actually move containers (swap with destination index)
+      document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
+      document.getElementById(containerId).style.zIndex = destinationIndex;
+
+      // save new indexes
+      movingContainer.containerSettings.zIndex = destinationIndex;
+      containerDataMap.get(zIndexMap.get(destinationIndex))
+        .containerSettings.zIndex = currentIndex;
+      zIndexMap.set(currentIndex, zIndexMap.get(destinationIndex));
+      zIndexMap.set(destinationIndex, movingContainer.id);
+
+      /** adjust container listings on settings menu
+      let copy = document.getElementById(containerId + "-container-listing");
+      document.getElementById(containerId + "-container-listing").remove();
+
+      let destinationContainerElement = document.getElementById(zIndexMap.get(destinationIndex) + "-container-listing");
+      
+      destinationContainerElement.insertAdjacentHTML("afterend", copy);
+      copy = destinationContainerElement;
+      */
+      
+
+      redrawContainerListings();
     }
 
+    function redrawContainerListings() {
+      document.getElementById("containers").innerHTML = "";
+      for (let i = 1; i <= numberTotalContainers; i++) {
+        let currentContainer = containerDataMap.get(zIndexMap.get(String(i)));
+        if (currentContainer.imageUrl == undefined) {
+          currentContainer.createTextContainerMenuListing();
+        }
+        else {
+          currentContainer.createImageContainerMenuListing();
+        }
+          currentContainer.addSettingsMenuEventListeners();
+      }
+    }
 
     function deleteContainer(buttonPressed) {
       let containerId = buttonPressed.id.split("--")[0];
@@ -1871,6 +1965,7 @@
       }
 
       containerDataMap.delete(containerId);
+      numberTotalContainers--;
 
       document.getElementById(containerId).remove();
       document.getElementById(containerId + "-container-listing").remove();
