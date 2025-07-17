@@ -2015,8 +2015,7 @@
 
       }
       else if (direction == "bottom") {
-        destinationIndex = "1";
-        document.getElementById("containers").insertAdjacentElement("beforeend", clickedListingCopy);
+        
       }
 
       /** then, deal with reordering the actual containers */
@@ -2034,11 +2033,11 @@
           document.getElementById(zIndexMap.get(destinationIndex)  + "-container-listing").insertAdjacentElement("afterend", clickedListingCopy);
         }
         
-        // swap z-index of element in destination index to current        
+        // swap z-index of element in destination index with current        
         document.getElementById(containerId).style.zIndex = destinationIndex;
         document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
                 
-        // save new indexes to affected containers
+        // save new indexes to container data
         movingContainer.containerSettings.zIndex = parseInt(destinationIndex);
         containerDataMap.get(zIndexMap.get(destinationIndex)).containerSettings.zIndex = currentIndex;
 
@@ -2046,36 +2045,45 @@
         zIndexMap.set(String(currentIndex), zIndexMap.get(destinationIndex));
         zIndexMap.set(destinationIndex, movingContainer.id);
 
-        // reapply listeners to menu for element that got swapped with current
+        // reapply listeners to menu that got remade
         containerDataMap.get(zIndexMap.get(destinationIndex)).addSettingsMenuEventListeners();
       }
       // for big jumps, we don't just swap z-indexes 
       else if (direction == "top") {
-        // moved container will be at, so we need to ripple all zIndexes between Current and Top down 1
+        // moved container will be at end, so we need to ripple all zIndexes between Current and end down 1
         for (let i = currentIndex; i < numberTotalContainers; i++) {
           console.log("setting: " + i + ", " + zIndexMap.get(String(i+1)));
 
           zIndexMap.set(String(i), zIndexMap.get(String(i+1)))
-          
           document.getElementById(zIndexMap.get(String(i))).style.zIndex--;
           containerDataMap.get(zIndexMap.get(String(i))).containerSettings.zIndex--;
         }
 
-        destinationIndex = String(numberTotalContainers);
+        // then actually move the container and menu listing element
         document.getElementById("containers").insertAdjacentElement("afterbegin", clickedListingCopy);
-        
-
-        // now
         document.getElementById(containerId).style.zIndex = numberTotalContainers;
+
+        // and save
         containerDataMap.get(containerId).containerSettings.zIndex = numberTotalContainers;
         zIndexMap.set(String(numberTotalContainers), containerId);
 
       }
       else if (direction == "bottom") {
         // moved container is now at bottom, so we need to ripple all other zIndexes up 1
-        for (let i = 1; i <= numberTotalContainers; i++) {
+        for (let i = currentIndex; i > 1; i--) {
+          console.log("setting: " + i + ", " + zIndexMap.get(String(i+1)));
 
+          zIndexMap.set(String(i), zIndexMap.get(String(i - 1)))
+          document.getElementById(zIndexMap.get(String(i))).style.zIndex++;
+          containerDataMap.get(zIndexMap.get(String(i))).containerSettings.zIndex++;
         }
+
+        document.getElementById("containers").insertAdjacentElement("beforeend", clickedListingCopy);
+        document.getElementById(containerId).style.zIndex = 1;
+
+        // and save
+        containerDataMap.get(containerId).containerSettings.zIndex = 1;
+        zIndexMap.set("1", containerId);
       }
 
       // since menu for moving container was removed+readded, we need to reapply listeners
