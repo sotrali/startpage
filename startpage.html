@@ -16,24 +16,40 @@
       body {
         cursor: url(""), auto;
       }
-      .grabbable:hover {
-        cursor: url(""), grab;
-      }
+      
       .removable:hover {
         cursor: url(""), crosshair;
       }
+      .grabbable:hover {
+        cursor: grab;
+      }
       */
+
+      body {
+        height: 100vh;
+        overflow: hidden;
+      }
+      
 
       .movable {
         position: fixed;
+        user-select: none;
       }
 
       .container {
         z-index: 998;
         display: flex;
+        flex-direction: column;
+        flex-wrap: nowrap;
         align-items: center;
         justify-content: center;
         overflow: auto;
+      }
+      .containerHeader {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        padding-left: 3rem;
       }
 
       .section {
@@ -43,9 +59,6 @@
       .settingsContainer {
         background-color: rgba(173, 165, 165, 0.8);
         z-index: 999;
-
-        user-select: none;
-        
 
         border: solid black 2px;
         border-radius: 10px;
@@ -72,8 +85,8 @@
 
       .tab {
         margin-right: 2rem;
-        user-select: none;
         text-wrap: nowrap;
+        color: black;
       }
       .tab:hover {
         cursor: pointer;
@@ -82,6 +95,9 @@
       .tab.active {
         font-weight: bold;
         text-decoration: underline;
+      }
+      a.visited {
+        color: black;
       }
       #ioTab {
         flex-shrink: 1;
@@ -224,9 +240,7 @@
 
       <div id="settingsContainer" class="movable settingsContainer hidden">
         <div id="tabList">
-          <span class="tab" id="containerTab">layers</span>
-          <span class="tab" id="imageAndWallpaperTab">images + wallpaper</span>
-          <span class="tab" id="audioTab">audio</span>
+          <a class="tab" id="containerTab">layers</a>
           <span class="tab" id="globalSettingsTab">global settings</span>
           <br />
           <span class="tab" id="ioTab">import / export</span>
@@ -327,49 +341,9 @@
               <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
                 place image
               </button>
-
+              <a href="https://imgur.com/upload" target="_blank">imgur upload</a>
               <h2 class="menuHeader">layers</h2>
               <div id="containers"></div>
-          </div>
-        </form>
-
-        <form id="imageAndWallpaperForm" onsubmit="return false">
-          <div class="formTitle">edit images</div>
-          <div>
-            <label> add a floating image to the page: </label><br />
-            <input type="text" name="url" placeholder="paste image URL" />
-            <span
-              ><a
-                href="https://imgur.com/upload"
-                target="_blank"
-                style="color: white"
-                >imgur upload</a
-              ></span
-            >
-          </div>
-          <button onclick="addFloatingImage()">add floating image</button><br />
-          <div>
-            <label for="imageRatioToggle">free transform mode</label>
-            <input type="checkbox" id="imageRatioToggle" />
-          </div>
-          <div>
-            <label for="imageRemovalToggle">image removal mode</label>
-            <input type="checkbox" id="imageRemovalToggle" />
-          </div>
-          <br />
-          <div class="formTitle">edit wallpaper</div>
-          <div>
-            <label> image as wallpaper: </label><br />
-            <input id="wallpaperUrl" placeholder="paste image URL" />
-            <button id="submitUrl" onclick="changeWallpaper()">
-              set image
-            </button>
-            <label for="wallpaperRepeatToggle"> tile? </label>
-            <input id="wallpaperRepeatToggle" type="checkbox" />
-          </div>
-          <div>
-            <label> solid color as wallpaper: </label><br />
-            <input type="color" id="wallpaperColorPicker" />
           </div>
         </form>
 
@@ -386,52 +360,102 @@
           </button>
         </form>
 
-        <form id="audioForm" onsubmit="return false">
-          <label
-            >paste a direct URL to an audio file (ending in .mp3 or .wav or
-            whatever) to load:</label
-          >
-          <input id="audioLinkInput" />
-          <button onclick="setAudioLink()">set audio</button>
-          <audio id="audio" controls>
-            <source id="audioSource" src="" type="audio/mp3" />
-          </audio>
-          <label for="autoplayAudioToggle">auto-play when page loads? </label>
-          <input id="autoplayAudioToggle" type="checkbox" checked />
-          <label
-            >(note: this will require white-listing this site in your browser.
-            you can whitelist local HTML files! the URL would be something like
-            "file:///C:/path/to/saved/file")</label
-          >
-        </form>
-
         <form id="globalSettingsForm" onsubmit="return false">
+          <div>
+            <p class="menuHeader">image manipulation</p>
+              <div class="containerOptionListing">
+                <label for="imageRatioToggle">image free transform mode</label>
+                <input type="checkbox" id="imageRatioToggle" />
+              </div>
 
-          <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
+            <p class="menuHeader">change page wallpaper</p>
+              <div class="containerOptionListing">
+                <label for="wallpaperUrl">set image as wallpaper: </label>
+                <div style="display: flex; flex-direction: column; align-items: end;">
+                  <input id="wallpaperUrl" placeholder="paste image URL" style="width: 10rem" />
+                  <br />
+                  <button id="submitUrl" onclick="changeWallpaper()">
+                    set image
+                  </button>
+                </div>
+              </div>
+              <div class="containerOptionListing">
+                <label for="wallpaperRepeatToggle"> tile wallpaper? </label>
+                <input id="wallpaperRepeatToggle" type="checkbox" />
+              </div>
+              <div class="containerOptionListing">
+                <label for="wallpaperColorPicker">or, set wallpaper as solid color: </label>
+                <input type="color" id="wallpaperColorPicker" />
+              </div>
 
-          <label>enter source for normal cursor: </label>
-          <input id="pointerCursorInput" placeholder="paste link here" />
-          <button onclick="setDefaultCursor()">set normal cursor</button>
 
-          <label>enter source for grabbing cursor: </label>
-          <input id="grabCursorInput" placeholder="paste link here" />
-          <button onclick="setGrabCursor()">set grabbing cursor</button>
-        </form>
+            <p class="menuHeader">change cursors</p>
+            <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
 
-        <form id="resetForm" onsubmit="return false">
-          <div class="formTitle">use these buttons to reset your page</div>
-          <button onclick="wipeBookmarks()">wipe links</button>
-          <button onclick="setDefault()">set to default gunny links</button
-          ><br />
-          <button onclick="wipeImages()">wipe floating images</button><br />
-          <button onclick="wipeWallpaper()">reset wallpaper</button><br />
-          <button onclick="wipeContainerSettings()">
-            reset box customizations</button
-          ><br />
-          <button onclick="resetCursors()">reset cursors</button>
-          <button onclick="resetFont()">reset font</button>
+              <div class="containerOptionListing">
+                <label for="pointerCursorInput">change normal cursor:</label>
+                <div style="display: flex; flex-direction: column; align-items: end;">
+                  <input id="pointerCursorInput" placeholder="paste link to image URL" />
+                  <button onclick="setDefaultCursor()">set normal cursor</button>
+                </div>
+              </div>
+              <div class="containerOptionListing">
+                <label for="grabCursorInput">change grab cursor:</label>
+                <div style="display: flex; flex-direction: column; align-items: end;">
+                  <input id="grabCursorInput" placeholder="paste link to image URL" />
+                  <button onclick="setGrabCursor()">set grabbing cursor</button>
+                </div>
+              </div>
+              <div class="containerOptionListing">
+                <label for="linkCursorInput">change link cursor:</label>
+                <div style="display: flex; flex-direction: column; align-items: end;">
+                  <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
+                  <button onclick="setGrabCursor()">set link hover cursor</button>
+                </div>
+              </div>
+
+            <p class="menuHeader">audio</p>
+            <div class="containerOptionListing">
+              <label for=audioLinkInput">paste a direct URL to an audio file:</label>
+
+              <div style="display: flex; flex-direction: column; align-items: end;">
+                <input id="audioLinkInput" />
+                <button onclick="setAudioLink()">set audio</button>
+              </div>
+            </div>
+
+            <audio id="audio" controls style="width: 100%">
+              <source id="audioSource" src="" type="audio/mp3" />
+            </audio>
+
+            <div class="containerOptionListing">
+              <label for="autoplayAudioToggle">auto-play when page loads? </label>
+              <input id="autoplayAudioToggle" type="checkbox" checked />
+            </div>
+
+            <p>
+              (note: this will require white-listing this site in your browser.
+              you can whitelist local HTML files! the URL would be something like
+              "file:///C:/path/to/saved/file")
+            </p>
+          </div>
+          </form>
+
+          <form id="resetForm" onsubmit="return false">
+            <div class="formTitle">use these buttons to reset your page</div>
+            <button onclick="wipeBookmarks()">wipe links</button>
+            <button onclick="setDefault()">set to default gunny links</button
+            ><br />
+            <button onclick="wipeImages()">wipe floating images</button><br />
+            <button onclick="wipeWallpaper()">reset wallpaper</button><br />
+            <button onclick="wipeContainerSettings()">
+              reset box customizations</button
+            ><br />
+            <button onclick="resetCursors()">reset cursors</button>
+            <button onclick="resetFont()">reset font</button>
         </form>
       </div>
+    TODO: CONTAINER TEXT RIGHT ALIGN AND ALSO PADDING LEVELS
     </div>
   </body>
 
@@ -630,7 +654,6 @@
        * loadBookmarks() and applySettings() do the rest
        */
       initializeImageContainer() {
-       
         document.body.insertAdjacentHTML(
           "beforeend",
           `
@@ -664,15 +687,12 @@
           "beforeend",
           `
             <div class="movable container" id=${this.id}>
-              <div>
-                <div id=${this.id + "-header"}>
-                  <span id=${this.id + "-date"}></span>
-                  <br />
-                  <span id=${this.id + "-clock"}></span>
+                <div id=${this.id + "-header"} class="containerHeader">
+                  <div id=${this.id + "-date"}></div>
+                  <div id=${this.id + "-clock"}></div>
                 </div>
                 <hr id=${this.id + "-divider"} />
                 <div id=${this.id + "-bookmarks"} ></div>
-              </div>
             </div>
         `
         );
@@ -721,7 +741,6 @@
             * -> remove "images" from wallpaper tab
             * -> furthermore, condense all global settings into one tab
             * - including wallpaper, audio, cursor
-            * add toggles for each settings menu
             * rename settings form div ids (see "note to self")
             */
 
@@ -874,38 +893,46 @@
               <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ header options</p>
               <div class="expandableMenu">
                 <p class="menuHeader">date + time options</p>
-                  <label for=${this.id + "-settings-date-toggle"}>show date?</label>
-                  <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
-                  <br />
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-date-toggle"}>show date?</label>
+                    <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
+                  </div>
                   
-                  <label for=${this.id + "-settings-clock-toggle"}>show clock?</label>
-                  <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
-                  <br /><br />
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-clock-toggle"}>show clock?</label>
+                    <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
+                  </div>
 
-                  <label for=${this.id + "-settings-clock-color"}>set header text color: </label>
-                  <input id=${this.id + "-settings-clock-color"} type="color" />
-                  <br /><br />
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-clock-color"}>set header text color: </label>
+                    <input id=${this.id + "-settings-clock-color"} type="color" />
+                  </div>
 
-                  <label>set header font size (px): </label>
-                  <input id=${this.id + "-settings-clock-size"} />
-                  <br /><br />
+                  <div class="containerOptionListing">
+                    <label>set header font size (px): </label>
+                    <input id=${this.id + "-settings-clock-size"} />
+                  </div>
 
-                  <label for=${this.id + "-settings-clock-bold"}>bold header?</label>
-                  <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
-                  <br />
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-clock-bold"}>bold header?</label>
+                    <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
+                  </div>
 
-                  <label for=${this.id + "-settings-clock-italic"}>italic header?</label>
-                  <input id=${this.id + "-settings-clock-italic"} type="checkbox" />
-
-
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-clock-italic"}>italic header?</label>
+                    <input id=${this.id + "-settings-clock-italic"} type="checkbox" />
+                  </div>
 
                 <p class="menuHeader">divider options</p>
-                  <label for=${this.id + "-settings-divider-toggle"}>display divider?</label>
-                  <input id=${this.id + "-settings-divider-toggle"} type="checkbox" />
-                  <br />
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-divider-toggle"}>display divider?</label>
+                    <input id=${this.id + "-settings-divider-toggle"} type="checkbox" />
+                  </div>
 
-                  <label>set divider color: </label>
-                  <input id=${this.id + "-settings-divider-color"} type="color" />
+                  <div class="containerOptionListing">
+                    <label>set divider color: </label>
+                    <input id=${this.id + "-settings-divider-color"} type="color" />
+                  </div>
               </div>
 
               <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ text options</p>
@@ -1603,9 +1630,6 @@
         .getElementById("imageRatioToggle")
         .addEventListener("change", toggleImageRatio, false);
       document
-        .getElementById("imageRemovalToggle")
-        .addEventListener("change", toggleImageRemoval, false);
-      document
         .getElementById("autoplayAudioToggle")
         .addEventListener("change", toggleAutoplayAudio, false);
 
@@ -1868,10 +1892,6 @@
       let images = document.getElementsByClassName("userImage");
       if (removing) {
         for (let i = 0; i < images.length; i++) {
-          // change cursor on images to crosshair
-          images[i].classList.remove("grabbable");
-          images[i].classList.add("removable");
-
           images[i].addEventListener(
             "mousedown",
             mouseDownRemovableElement,
@@ -1884,10 +1904,6 @@
         }
       } else {
         for (let i = 0; i < images.length; i++) {
-          // remove crosshair cursor from images
-          images[i].classList.remove("removable");
-          images[i].classList.add("grabbable");
-
           images[i].removeEventListener(
             "mousedown",
             mouseDownRemovableElement,
@@ -1915,13 +1931,14 @@
         // change cursor on movable elements to indicate grabbable
         let movableElements = document.getElementsByClassName("movable");
         for (let i = 0; i < movableElements.length; i++) {
-          movableElements[i].classList.add("grabbable");
+          // mmovableElements[i].classList.add("grabbable");
+          movableElements[i].style.cursor = cursors.grab ? 'url("' + cursors.grab + '"), grab' : "grab";
         }
       } else {
         // remove grabbable cursor
         let movableElements = document.getElementsByClassName("movable");
         for (let i = 0; i < movableElements.length; i++) {
-          movableElements[i].classList.remove("grabbable");
+          movableElements[i].style.cursor = "";
         }
 
         // disable image removal mode active
@@ -2291,6 +2308,7 @@
 
     function moveElement(mouseMove) {
       if (!moving) {
+        console.log("RETURN: " + mouseMove.target.tagName);
         return;
       }
 
@@ -2417,11 +2435,20 @@
       // apply new default cursor to entire html document
       document.getElementsByTagName("html")[0].style.cursor =
         'url("' + cursors.default + '"), auto';
+
+      document.getElementById("pointerCursorInput").value = "";
     }
 
     function setGrabCursor() {
       cursors.grab = document.getElementById("grabCursorInput").value;
       // apply new grab cursor to grabbable elements...
+      let movableElements = document.getElementsByClassName("movable");
+      for (let i = 0; i < movableElements.length; i++) {
+        console.log(movableElements[i]);
+          movableElements[i].style.cursor = cursors.grab ? 'url("' + cursors.grab + '"), grab' : "grab";
+      }
+
+      document.getElementById("grabCursorInput").value = "";
     }
     /**********************
      * BOOK MARK HANDLERS *
