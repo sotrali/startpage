@@ -49,7 +49,7 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        padding-left: 3rem;
+        margin: auto;
       }
 
       .section {
@@ -239,13 +239,15 @@
       <br />
 
       <div id="settingsContainer" class="movable settingsContainer hidden">
-        <div id="tabList">
-          <a class="tab" id="containerTab">layers</a>
-          <span class="tab" id="globalSettingsTab">global settings</span>
-          <br />
-          <span class="tab" id="ioTab">import / export</span>
-          <span class="tab" id="resetTab">reset data</span>
-          <span class="tab" id="instructionsTab">instructions</span>
+        <div id="tabList" style="display: flex; justify-content: space-between;">
+          <div>
+            <a class="tab" id="containerTab">layers</a>
+            <a class="tab" id="globalSettingsTab">global settings</a>
+          </div>
+          <div>
+            <a class="tab" id="instructionsTab">help</a>
+            <a class="tab" id="ioTab">import / export</a>
+          </div>
         </div>
 
         <!-- note to self: 
@@ -341,7 +343,7 @@
               <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
                 place image
               </button>
-              <a href="https://imgur.com/upload" target="_blank">imgur upload</a>
+              <a href="https://imgur.com/upload" target="_blank" style="color: black">imgur upload for convenience</a>
               <h2 class="menuHeader">layers</h2>
               <div id="containers"></div>
           </div>
@@ -410,7 +412,7 @@
                 <label for="linkCursorInput">change link cursor:</label>
                 <div style="display: flex; flex-direction: column; align-items: end;">
                   <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
-                  <button onclick="setGrabCursor()">set link hover cursor</button>
+                  <button onclick="setLinkHoverCursor()">set link hover cursor</button>
                 </div>
               </div>
 
@@ -439,20 +441,6 @@
               "file:///C:/path/to/saved/file")
             </p>
           </div>
-          </form>
-
-          <form id="resetForm" onsubmit="return false">
-            <div class="formTitle">use these buttons to reset your page</div>
-            <button onclick="wipeBookmarks()">wipe links</button>
-            <button onclick="setDefault()">set to default gunny links</button
-            ><br />
-            <button onclick="wipeImages()">wipe floating images</button><br />
-            <button onclick="wipeWallpaper()">reset wallpaper</button><br />
-            <button onclick="wipeContainerSettings()">
-              reset box customizations</button
-            ><br />
-            <button onclick="resetCursors()">reset cursors</button>
-            <button onclick="resetFont()">reset font</button>
         </form>
       </div>
     TODO: CONTAINER TEXT RIGHT ALIGN AND ALSO PADDING LEVELS
@@ -687,12 +675,14 @@
           "beforeend",
           `
             <div class="movable container" id=${this.id}>
+              <div>
                 <div id=${this.id + "-header"} class="containerHeader">
                   <div id=${this.id + "-date"}></div>
                   <div id=${this.id + "-clock"}></div>
                 </div>
                 <hr id=${this.id + "-divider"} />
                 <div id=${this.id + "-bookmarks"} ></div>
+              <div>
             </div>
         `
         );
@@ -1815,14 +1805,12 @@
       if (editing == false) {
         editing = true;
         toggleEditingElements(true);
-
       }
       // disable editing mode + save element data
       else {
         editing = false;
         toggleEditingElements(false);
         document.getElementById("editToggle").innerHTML = "saving";
-
 
         // if data was just imported directly to localStorage, don't save current element states (would overwrite import)
         if (justImported) {
@@ -2447,8 +2435,17 @@
         console.log(movableElements[i]);
           movableElements[i].style.cursor = cursors.grab ? 'url("' + cursors.grab + '"), grab' : "grab";
       }
-
       document.getElementById("grabCursorInput").value = "";
+    }
+
+    function setLinkHoverCursor() {
+      cursors.link = document.getElementById("linkCursorInput").value;
+      // apply new grab cursor to grabbable elements...
+      let links = document.getElementsByTagName("a");
+      for (let i = 0; i < links.length; i++) {
+        links[i].style.cursor = cursors.link ? 'url("' + cursors.link + '"), pointer' : "pointer";
+      }
+      document.getElementById("linkCursorInput").value = "";
     }
     /**********************
      * BOOK MARK HANDLERS *
@@ -2952,134 +2949,6 @@
     /************************************
      * RESET / IMPORT & EXPORT HANDLERS *
      ************************************/
-
-    function wipeBookmarks() {
-      // clear bookmark arrays
-      links = [];
-      sections = [];
-
-      localStorage.setItem("links", JSON.stringify(links));
-      localStorage.setItem("sections", JSON.stringify(sections));
-
-      if (containerSettings.enableDivider) {
-        document.getElementById("clock").style.marginBottom = "0px";
-      }
-
-      // refresh container
-      loadSections();
-    }
-
-    function wipeWallpaper() {
-      document.body.style.backgroundImage = "";
-      document.body.style.background = "";
-      wallpaper = "";
-    }
-
-    function wipeImages() {
-      imageMap = new Map();
-      // wipe images from screen
-      imageElements = document.getElementsByClassName("userImage");
-      for (let i = imageElements.length - 1; i >= 0; i--) {
-        imageElements[i].remove();
-      }
-
-      // remove image position + sizes from element data map
-      let tempMap = new Map();
-      tempMap.set(
-        "settingsContainer",
-        containerDataMap.get("settingsContainer")
-      );
-      tempMap.set("mainContainer", containerDataMap.get("mainContainer"));
-      containerDataMap = tempMap;
-    }
-
-    function wipeContainerSettings() {
-      containerSettings = defaultTextContainerSettings;
-      containerDataMap.get("mainContainer").width = "auto";
-      containerDataMap.get("mainContainer").height = "auto";
-      containerDataMap.get("mainContainer").x = "10px";
-      containerDataMap.get("mainContainer").y = "10px";
-      document.getElementById("mainContainer").style.width = "auto";
-      document.getElementById("mainContainer").style.height = "auto";
-      document.getElementById("mainContainer").style.top = "10px";
-      document.getElementById("mainContainer").style.left = "10px";
-
-      applySettings();
-      loadSections();
-    }
-
-    function setDefault() {
-      links = [
-        {
-          url: "https://www.youtube.com",
-          label: "youtube",
-          section: "video + picture",
-        },
-        {
-          url: "https://www.twitch.com",
-          label: "twitch",
-          section: "video + picture",
-        },
-        {
-          url: "https://www.instagram.com",
-          label: "insta",
-          section: "video + picture",
-        },
-        {
-          url: "https://www.archive.org",
-          label: "archive",
-          section: "video + picture",
-        },
-        {
-          url: "https://www.soundcloud.com",
-          label: "soundcloud",
-          section: "music",
-        },
-        {
-          url: "https://www.bandcamp.com",
-          label: "bandcamp",
-          section: "music",
-        },
-        {
-          url: "https://www.splice.com",
-          label: "splice",
-          section: "music",
-        },
-        {
-          url: "https://www.usevia.app",
-          label: "via",
-          section: "utils",
-        },
-        {
-          url: "https://www.distrokid.com/home",
-          label: "distrokid",
-          section: "utils",
-        },
-      ];
-
-      sections = ["video + picture", "music", "utils"];
-
-      localStorage.setItem("links", JSON.stringify(links));
-      localStorage.setItem("sections", JSON.stringify(sections));
-
-      loadSections();
-    }
-
-    function resetFont() {
-      let oldTags = document.getElementsByTagName("link");
-      for (let i = 0; i < oldTags.length; i++) {
-        oldTags[0].remove();
-      }
-      document.body.style.fontFamily = "";
-      fontCode = "";
-      fontName = "";
-    }
-
-    function resetCursors() {
-      cursors = {};
-      document.getElementsByTagName("html")[0].style.cursor = "auto";
-    }
-
     async function exportData() {
       try {
         window.focus();
