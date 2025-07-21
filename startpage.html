@@ -451,7 +451,6 @@
           </form>
       </div>
       </div>
-      todo: first image being made not working, free transform mode
     </div>
   </body>
 
@@ -657,15 +656,6 @@
           />
         `
         );
-        
-        // save data if not loading existing container
-        if (this.x == undefined && this.y == undefined) {
-          let newImage = document.getElementById(this.id);
-          this.x = newImage.offsetLeft;
-          this.y = newImage.offsetTop;
-          this.height = newImage.offsetHeight;
-          this.width = newImage.offsetWidth;
-        }
       }
 
       /**
@@ -2031,7 +2021,7 @@
       document.getElementById("newImageContainerNameInput").value = "";
       document.getElementById("newImageContainerUrlInput").value = "";
 
-     let container = new Container(
+      let container = new Container(
         undefined,
         containerName,
         undefined,
@@ -2194,23 +2184,6 @@
       updateContainerListingOrder();
     }
 
-    /* unused. would be the easiest implementation for reordering/deleting/adding, but it would be more resource intensive.
-               can delete but it's so clean i just want to admire a bit more
-    function redrawContainerListings() {
-      document.getElementById("containers").innerHTML = "";
-        for (let i = 1; i <= numberTotalContainers; i++) {
-        let currentContainer = containerDataMap.get(zIndexMap.get(String(i)));
-        if (currentContainer.imageUrl == undefined) {
-          currentContainer.createTextContainerMenuListing();
-        }
-        else {
-          currentContainer.createImageContainerMenuListing();
-        }
-          currentContainer.addSettingsMenuEventListeners();
-      }
-
-    }*/
-
     function deleteContainer(buttonPressed) {
       let containerId = buttonPressed.id.split("--")[0];
       let container = containerDataMap.get(containerId);
@@ -2349,7 +2322,7 @@
       let currentHeight = changingElement.offsetHeight - borderWidth;
 
       // if proportional image resizing enabled
-      if (changingElement.id.startsWith("img-") && keepImageRatio) {
+      if ((changingElement.tagName == "IMG") && keepImageRatio) {
         // growing
         if (mouseOffsetY > 0) {
           let newWidth = currentWidth * (1 + mouseOffsetY / 100);
