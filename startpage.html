@@ -145,8 +145,9 @@
 
       .expandableMenu {
         display: none;
-        padding: 0 18px;
-        border-left: 2px solid black;
+        padding: 0 1rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid black;
       }
 
       .menuHeader {
@@ -248,11 +249,11 @@
         <div id="tabList">
           <div>
             <a class="tab" id="containerTab">layers</a>
-            <a class="tab" id="globalSettingsTab">global settings</a>
+            <a class="tab" id="globalSettingsTab" style="margin: 0 2rem 0 0;">global settings</a>
           </div>
           <div style="text-align: right;">
-            <a class="tab" id="instructionsTab">help</a>
-            <a class="tab" id="ioTab" style="margin:0;">import / export</a>
+            <a class="tab" id="instructionsTab" style="margin: 0;">help</a>
+            <a class="tab" id="ioTab" style="margin: 0 0 0 2rem;">import / export</a>
           </div>
         </div>
 
@@ -1179,26 +1180,44 @@
               <div class="expandableMenu">
 
                <p class="menuHeader">change border + shape</p>
-                <label>set border color: </label>
-                <input id=${this.id + "-settings-border-color"} type="color" />
+                <div class="containerOptionListing">
+                  <label>set border color: </label>
+                  <input id=${this.id + "-settings-border-color"} type="color" />
+                </div>
 
-                <label>set border width (px): </label>
-                <input id=${this.id + "-settings-border-width"} placeholder="0 for none" />
+                <div class="containerOptionListing">
+                  <label>set border width (px): </label>
+                  <input id=${this.id + "-settings-border-width"} placeholder="0 for none" />
+                </div>
 
-                <label>set container roundedness (px): </label>
-                <input id=${this.id + "-settings-border-radius"} placeholder="0 for square" />
+                <div class="containerOptionListing">
+                  <label>set container roundedness (px): </label>
+                  <input id=${this.id + "-settings-border-radius"} placeholder="0 for square" />
+                </div>
 
                <p class="menuHeader">change shadow / glow</p>
-                <label>x-offset (px): </label><br />
-                <input id=${this.id + "-settings-shadow-x"} placeholder="all 0 for none" /><br />
-                <label>y-offset (px): </label><br />
-                <input id=${this.id + "-settings-shadow-y"} placeholder="all 0 for none" /><br />
-                <label>blur radius / fuzziness (px): </label><br />
-                <input id=${this.id + "-settings-shadow-blur"} placeholder="all 0 for none" /><br />
-                <label>shadow color: </label><br />
-                <input id=${this.id + "-settings-shadow-color"} type="color" /><br />
-                <label>shadow opacity:</label>
-                <input id=${this.id + "-settings-shadow-alpha"} />
+                <div class="containerOptionListing">
+                  <label>x-offset (px): </label>
+                  <input id=${this.id + "-settings-shadow-x"} placeholder="all 0 for none" />
+                </div>
+                <div class="containerOptionListing">
+                  <label>y-offset (px): </label>
+                  <input id=${this.id + "-settings-shadow-y"} placeholder="all 0 for none" />
+                </div>
+                <br />
+                <div class="containerOptionListing">
+                  <label>blur radius / fuzziness (px): </label>
+                  <input id=${this.id + "-settings-shadow-blur"} placeholder="all 0 for none" />
+                </div>
+                <br />
+                <div class="containerOptionListing">
+                  <label>shadow color: </label>
+                  <input id=${this.id + "-settings-shadow-color"} type="color" />
+                </div>
+                <div class="containerOptionListing">
+                  <label>shadow opacity:</label>
+                  <input id=${this.id + "-settings-shadow-alpha"} />
+                </div>
               </div>
 
               <div style="display: flex; flex-direction: row; justify-content: space-between;">
