@@ -62,7 +62,6 @@
 
         border: solid black 2px;
         border-radius: 10px;
-        padding: 10px;
 
         display: block;
 
@@ -77,10 +76,14 @@
       * SETTINGS TABS
       */
       #tabList {
-        display: block;
+        display: flex;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        background-color: rgba(173, 165, 165, 1);
+        padding: 5px 5px 5px 5px;
+
         border-bottom: solid 2px black;
-        padding-bottom: 10px;
-        margin-bottom: 10px;
       }
 
       .tab {
@@ -103,6 +106,9 @@
         flex-shrink: 1;
       }
 
+      #containers {
+        padding-left: .25rem;
+      }
       /*
       * SETTINGS PAGES
       */
@@ -239,211 +245,213 @@
       <br />
 
       <div id="settingsContainer" class="movable settingsContainer hidden">
-        <div id="tabList" style="display: flex; justify-content: space-between;">
+        <div id="tabList">
           <div>
             <a class="tab" id="containerTab">layers</a>
             <a class="tab" id="globalSettingsTab">global settings</a>
           </div>
-          <div>
+          <div style="text-align: right;">
             <a class="tab" id="instructionsTab">help</a>
-            <a class="tab" id="ioTab">import / export</a>
+            <a class="tab" id="ioTab" style="margin:0;">import / export</a>
           </div>
         </div>
 
+        <div style="padding: 0 .5rem;">
         <!-- note to self: 
            - i should rename these so they don't end in "Form",
            - rather something like "Page". to do that though i need
            - to change the logic for switching tabs that has the string
            - modification hardcoded
         -->
-        <div id="instructionsForm">
-          <p id="helpText">
-            you are now editing the page!<br /><br />
-            this is the settings box. there are various tabs containing various
-            customization options for your startpage experience. you can create
-            and categorize bookmarks, customize the bookmark box to your taste,
-            change the wallpaper, and add + maniuplate any image you want!<br /><br />
-            <b>[ <i>let it be known</i> ]</b><br />
-            <i
-              >your changes will only be saved when you stop editing the page.
-              to cancel your live edits, refresh the page without hitting
-              save.</i
-            ><br /><br />
-            <b>[ <i>bookmark tips</i> ]</b><br />
-            to group bookmarks together, just enter them with the same section.
-            bookmarks without a section will stay at the top. you can remove
-            individual bookmarks or whole sections, and sections can be
-            rearranged. there's also a button in this menu to full reset.<br /><br />
-            <b>[ <i>customization tips</i> ]</b><br />
-            everything on the screen can be dragged around and resized. left
-            click and drag to move, right click and drag to resize!<br /><br />
-            you can add as many images to the background and resize them as you
-            wish, but they can only be added via URL. i have provided a quick
-            link to a place to upload your own images if you have specific
-            things in mind, but you can also make a beautiful collage of random
-            photographs you find without using any disk space.<br /><br />
-            <b>[ <i>changing font</i> ]</b><br />
-            you can use any font that is available on
-            <a href="https://fonts.google.com/" target="blank">google fonts</a>.
-            FYI, if you have multiple fonts selected only the first one will be
-            loaded, and it will be the regular version (if there are variants of
-            the font)<br /><br />
-            to load a font:<br />
-            1.) on google fonts, click on a font you like, press the "get font"
-            button, and then press the "get embed code" button. <br />2.) under
-            the "web" tab (you are already probably on it), copy the stuff
-            under: "embed code in the &lt;head&gt; of your html" (it should be a
-            few lines starting with &lt;link&gt;)<br />3.) paste contents into
-            the "change font" input, found on the "container" tab of this
-            floating menu.<br /><br /><b>[ <i>back-up themes!</i> ]</b><br />
-            you can export your entire current setup to import again later (save
-            ur moodboards or share with friends). this is primarily useful
-            because everything for this page is stored as a cookie. so, if you
-            reset your browser history or cache, your startpage will be lost!!
-            unless you have it backed up 8]
-            <br /><br />
-            clicking 'export data' will fill your clipboard with your currently
-            saved data (make sure you've saved your changes before exporting),
-            simply paste the contents into a text file for safekeeping. to load
-            a saved configuration, just paste the exported text and hit
-            import.<br /><br />
-            if you somehow lose your bookmark box off-screen, use the "reset box
-            customization" options to get it back. you will lose your other
-            customizations tho :[<br /><br />
-          </p>
-        </div>
-
-        <form id="containerForm" onsubmit="return false">
-            <div>
-              <h2 class="menuHeader">add bookmark layer</h2>
-              <input
-                id="newTextContainerNameInput"
-                placeholder="(optional) layer name"
-                style="width: 100%"
-                type="text"
-              />
-              <button id="newTextContainerCreateButton" onclick="createNewTextContainer(this)">
-                create new layer
-              </button>
-            </div>
-            <div>
-              <h2 class="menuHeader">add image to page</h2>
-              <input
-                id="newImageContainerNameInput"
-                placeholder="(optional) image name"
-                style="width: 100%;"
-                type="text"
-              />
-              <input
-                id="newImageContainerUrlInput"
-                placeholder="direct url to image"
-                style="width: 100%;"
-                type="text"
-              />
-              <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
-                place image
-              </button>
-              <a href="https://imgur.com/upload" target="_blank" style="color: black">imgur upload for convenience</a>
-              <h2 class="menuHeader">layers</h2>
-              <div id="containers"></div>
-          </div>
-        </form>
-
-        <form id="ioForm" onsubmit="return false">
-          <label>use the button below to copy your current configuration to your clipboard<br />(you should save this somewhere)</label>
-          <button onclick="exportData()">export data</button><br />
-
-          <input id="importDataInput" />
-          <button
-            onclick="importData()"
-            placeholder="paste exported data here to load"
-          >
-            import data
-          </button>
-        </form>
-
-        <form id="globalSettingsForm" onsubmit="return false">
-          <div>
-            <p class="menuHeader">image manipulation</p>
-              <div class="containerOptionListing">
-                <label for="imageRatioToggle">image free transform mode</label>
-                <input type="checkbox" id="imageRatioToggle" />
-              </div>
-
-            <p class="menuHeader">change page wallpaper</p>
-              <div class="containerOptionListing">
-                <label for="wallpaperUrl">set image as wallpaper: </label>
-                <div style="display: flex; flex-direction: column; align-items: end;">
-                  <input id="wallpaperUrl" placeholder="paste image URL" style="width: 10rem" />
-                  <br />
-                  <button id="submitUrl" onclick="changeWallpaper()">
-                    set image
-                  </button>
-                </div>
-              </div>
-              <div class="containerOptionListing">
-                <label for="wallpaperRepeatToggle"> tile wallpaper? </label>
-                <input id="wallpaperRepeatToggle" type="checkbox" />
-              </div>
-              <div class="containerOptionListing">
-                <label for="wallpaperColorPicker">or, set wallpaper as solid color: </label>
-                <input type="color" id="wallpaperColorPicker" />
-              </div>
-
-
-            <p class="menuHeader">change cursors</p>
-            <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
-
-              <div class="containerOptionListing">
-                <label for="pointerCursorInput">change normal cursor:</label>
-                <div style="display: flex; flex-direction: column; align-items: end;">
-                  <input id="pointerCursorInput" placeholder="paste link to image URL" />
-                  <button onclick="setDefaultCursor()">set normal cursor</button>
-                </div>
-              </div>
-              <div class="containerOptionListing">
-                <label for="grabCursorInput">change grab cursor:</label>
-                <div style="display: flex; flex-direction: column; align-items: end;">
-                  <input id="grabCursorInput" placeholder="paste link to image URL" />
-                  <button onclick="setGrabCursor()">set grabbing cursor</button>
-                </div>
-              </div>
-              <div class="containerOptionListing">
-                <label for="linkCursorInput">change link cursor:</label>
-                <div style="display: flex; flex-direction: column; align-items: end;">
-                  <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
-                  <button onclick="setLinkHoverCursor()">set link hover cursor</button>
-                </div>
-              </div>
-
-            <p class="menuHeader">audio</p>
-            <div class="containerOptionListing">
-              <label for=audioLinkInput">paste a direct URL to an audio file:</label>
-
-              <div style="display: flex; flex-direction: column; align-items: end;">
-                <input id="audioLinkInput" />
-                <button onclick="setAudioLink()">set audio</button>
-              </div>
-            </div>
-
-            <audio id="audio" controls style="width: 100%">
-              <source id="audioSource" src="" type="audio/mp3" />
-            </audio>
-
-            <div class="containerOptionListing">
-              <label for="autoplayAudioToggle">auto-play when page loads? </label>
-              <input id="autoplayAudioToggle" type="checkbox" checked />
-            </div>
-
-            <p>
-              (note: this will require white-listing this site in your browser.
-              you can whitelist local HTML files! the URL would be something like
-              "file:///C:/path/to/saved/file")
+          <div id="instructionsForm">
+            <p id="helpText">
+              you are now editing the page!<br /><br />
+              this is the settings box. there are various tabs containing various
+              customization options for your startpage experience. you can create
+              and categorize bookmarks, customize the bookmark box to your taste,
+              change the wallpaper, and add + maniuplate any image you want!<br /><br />
+              <b>[ <i>let it be known</i> ]</b><br />
+              <i
+                >your changes will only be saved when you stop editing the page.
+                to cancel your live edits, refresh the page without hitting
+                save.</i
+              ><br /><br />
+              <b>[ <i>bookmark tips</i> ]</b><br />
+              to group bookmarks together, just enter them with the same section.
+              bookmarks without a section will stay at the top. you can remove
+              individual bookmarks or whole sections, and sections can be
+              rearranged. there's also a button in this menu to full reset.<br /><br />
+              <b>[ <i>customization tips</i> ]</b><br />
+              everything on the screen can be dragged around and resized. left
+              click and drag to move, right click and drag to resize!<br /><br />
+              you can add as many images to the background and resize them as you
+              wish, but they can only be added via URL. i have provided a quick
+              link to a place to upload your own images if you have specific
+              things in mind, but you can also make a beautiful collage of random
+              photographs you find without using any disk space.<br /><br />
+              <b>[ <i>changing font</i> ]</b><br />
+              you can use any font that is available on
+              <a href="https://fonts.google.com/" target="blank">google fonts</a>.
+              FYI, if you have multiple fonts selected only the first one will be
+              loaded, and it will be the regular version (if there are variants of
+              the font)<br /><br />
+              to load a font:<br />
+              1.) on google fonts, click on a font you like, press the "get font"
+              button, and then press the "get embed code" button. <br />2.) under
+              the "web" tab (you are already probably on it), copy the stuff
+              under: "embed code in the &lt;head&gt; of your html" (it should be a
+              few lines starting with &lt;link&gt;)<br />3.) paste contents into
+              the "change font" input, found on the "container" tab of this
+              floating menu.<br /><br /><b>[ <i>back-up themes!</i> ]</b><br />
+              you can export your entire current setup to import again later (save
+              ur moodboards or share with friends). this is primarily useful
+              because everything for this page is stored as a cookie. so, if you
+              reset your browser history or cache, your startpage will be lost!!
+              unless you have it backed up 8]
+              <br /><br />
+              clicking 'export data' will fill your clipboard with your currently
+              saved data (make sure you've saved your changes before exporting),
+              simply paste the contents into a text file for safekeeping. to load
+              a saved configuration, just paste the exported text and hit
+              import.<br /><br />
+              if you somehow lose your bookmark box off-screen, use the "reset box
+              customization" options to get it back. you will lose your other
+              customizations tho :[<br /><br />
             </p>
           </div>
-        </form>
+
+          <form id="containerForm" onsubmit="return false">
+              <div>
+                <h2 class="menuHeader">add bookmark layer</h2>
+                <input
+                  id="newTextContainerNameInput"
+                  placeholder="(optional) layer name"
+                  style="width: 100%"
+                  type="text"
+                />
+                <button id="newTextContainerCreateButton" onclick="createNewTextContainer(this)">
+                  create new layer
+                </button>
+              </div>
+              <div>
+                <h2 class="menuHeader">add image to page</h2>
+                <input
+                  id="newImageContainerNameInput"
+                  placeholder="(optional) image name"
+                  style="width: 100%;"
+                  type="text"
+                />
+                <input
+                  id="newImageContainerUrlInput"
+                  placeholder="direct url to image"
+                  style="width: 100%;"
+                  type="text"
+                />
+                <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
+                  place image
+                </button>
+                <a href="https://imgur.com/upload" target="_blank" style="color: black">imgur upload for convenience</a>
+                <h2 class="menuHeader">layers</h2>
+                <div id="containers"></div>
+            </div>
+          </form>
+
+          <form id="ioForm" onsubmit="return false">
+            <label>use the button below to copy your current configuration to your clipboard<br />(you should save this somewhere)</label>
+            <button onclick="exportData()">export data</button><br />
+
+            <input id="importDataInput" />
+            <button
+              onclick="importData()"
+              placeholder="paste exported data here to load"
+            >
+              import data
+            </button>
+          </form>
+
+          <form id="globalSettingsForm" onsubmit="return false">
+            <div>
+              <p class="menuHeader">image manipulation</p>
+                <div class="containerOptionListing">
+                  <label for="imageRatioToggle">image free transform mode</label>
+                  <input type="checkbox" id="imageRatioToggle" />
+                </div>
+
+              <p class="menuHeader">change page wallpaper</p>
+                <div class="containerOptionListing">
+                  <label for="wallpaperUrl">set image as wallpaper: </label>
+                  <div style="display: flex; flex-direction: column; align-items: end;">
+                    <input id="wallpaperUrl" placeholder="paste image URL" style="width: 10rem" />
+                    <br />
+                    <button id="submitUrl" onclick="changeWallpaper()">
+                      set image
+                    </button>
+                  </div>
+                </div>
+                <div class="containerOptionListing">
+                  <label for="wallpaperRepeatToggle"> tile wallpaper? </label>
+                  <input id="wallpaperRepeatToggle" type="checkbox" />
+                </div>
+                <div class="containerOptionListing">
+                  <label for="wallpaperColorPicker">or, set wallpaper as solid color: </label>
+                  <input type="color" id="wallpaperColorPicker" />
+                </div>
+
+
+              <p class="menuHeader">change cursors</p>
+              <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
+
+                <div class="containerOptionListing">
+                  <label for="pointerCursorInput">change normal cursor:</label>
+                  <div style="display: flex; flex-direction: column; align-items: end;">
+                    <input id="pointerCursorInput" placeholder="paste link to image URL" />
+                    <button onclick="setDefaultCursor()">set normal cursor</button>
+                  </div>
+                </div>
+                <div class="containerOptionListing">
+                  <label for="grabCursorInput">change grab cursor:</label>
+                  <div style="display: flex; flex-direction: column; align-items: end;">
+                    <input id="grabCursorInput" placeholder="paste link to image URL" />
+                    <button onclick="setGrabCursor()">set grabbing cursor</button>
+                  </div>
+                </div>
+                <div class="containerOptionListing">
+                  <label for="linkCursorInput">change link cursor:</label>
+                  <div style="display: flex; flex-direction: column; align-items: end;">
+                    <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
+                    <button onclick="setLinkHoverCursor()">set link hover cursor</button>
+                  </div>
+                </div>
+
+              <p class="menuHeader">audio</p>
+              <div class="containerOptionListing">
+                <label for=audioLinkInput">paste a direct URL to an audio file:</label>
+
+                <div style="display: flex; flex-direction: column; align-items: end;">
+                  <input id="audioLinkInput" />
+                  <button onclick="setAudioLink()">set audio</button>
+                </div>
+              </div>
+
+              <audio id="audio" controls style="width: 100%">
+                <source id="audioSource" src="" type="audio/mp3" />
+              </audio>
+
+              <div class="containerOptionListing">
+                <label for="autoplayAudioToggle">auto-play when page loads? </label>
+                <input id="autoplayAudioToggle" type="checkbox" checked />
+              </div>
+
+              <p>
+                (note: this will require white-listing this site in your browser.
+                you can whitelist local HTML files! the URL would be something like
+                "file:///C:/path/to/saved/file")
+              </p>
+            </div>
+          </form>
       </div>
-    TODO: CONTAINER TEXT RIGHT ALIGN AND ALSO PADDING LEVELS
+      </div>
+      todo: first image being made not working, free transform mode
     </div>
   </body>
 
@@ -480,7 +488,7 @@
 
       enableDivider: true,
       dividerColor: "",
-      centerAlign: false,
+      textAlign: "center",
       shadowX: "0",
       shadowY: "0",
       shadowBlur: "0",
@@ -621,16 +629,11 @@
          }
 
           this.initializeTextContainer();
-          // this.createTextContainerMenuListing();
-
           this.loadBookmarks();
-          // this.loadBookmarkListings();
         }
 
         this.applySettings();
-        
         this.addContainerEventListeners()
-        // this.addSettingsMenuEventListeners();
 
         // and save
         containerDataMap.set(this.id, this);
@@ -992,6 +995,10 @@
                         <label for=${this.id + "-settings-center-align"}>center</label>
                         <input id=${this.id + "-settings-center-align"} type="radio" name="align" />
                       </div>
+                      <div>
+                        <label for=${this.id + "-settings-right-align"}>right</label>
+                        <input id=${this.id + "-settings-right-align"} type="radio" name="align" />
+                      </div>
                     </div>
                   </div>
               </div>
@@ -1107,10 +1114,12 @@
       }
       // TEXT ALIGNMENT
       document.getElementById(this.id + "-settings-left-align").checked =
-        !containerSettings.centerAlign;
+        !containerSettings.textAlign == "left";
       document.getElementById(this.id + "-settings-center-align").checked =
-        containerSettings.centerAlign;
-      // BOOKMARK OPTIONS
+        containerSettings.textAlign == "center";
+     document.getElementById(this.id + "-settings-right-align").checked =
+        containerSettings.textAlign == "right";
+     // BOOKMARK OPTIONS
       document.getElementById(this.id + "-settings-section-color").value =
         containerSettings.sectionColor;
       document.getElementById(this.id + "-settings-section-size").value =
@@ -1302,12 +1311,13 @@
         }
 
         /** TEXT ALIGNMENT */
-        if (containerSettings.centerAlign) {
+        if (containerSettings.textAlign == "center") {
           document.getElementById(this.id).style.textAlign = "center";
-        } else {
+        } else if (containerSettings.textAlign == "left") {
           document.getElementById(this.id).style.textAlign = "left";
+        } else if (containerSettings.textAlign == "right") {
+          document.getElementById(this.id).style.textAlign = "right";
         }
-
 
         /** BOOKMARK CUSTOMIZATION */
         // apply link customization
@@ -1444,6 +1454,10 @@
         document
           .getElementById(this.id + "-settings-center-align")
           .addEventListener("change", changeContainerAlignment, false);
+        document
+          .getElementById(this.id + "-settings-right-align")
+          .addEventListener("change", changeContainerAlignment, false);
+
         // bookmark section setting listeners
         document
           .getElementById(this.id + "-settings-section-color")
@@ -2880,12 +2894,16 @@
       let container   = containerDataMap.get(containerId);
 
       if (document.getElementById(containerId + "-settings-left-align").checked) {
-        container.containerSettings.centerAlign = false;
+        container.containerSettings.textAlign = "left";
         document.getElementById(containerId).style.textAlign = "left";
       } else if (document.getElementById(containerId + "-settings-center-align").checked) {
-        container.containerSettings.centerAlign = true;
+        container.containerSettings.textAlign = "center";
         document.getElementById(containerId).style.textAlign = "center";
+      } else if (document.getElementById(containerId + "-settings-right-align").checked) {
+        container.containerSettings.textAlign = "right";
+        document.getElementById(containerId).style.textAlign = "right";
       }
+
     }
     function changeFont(buttonClicked) {
       let containerId = buttonClicked.target.id.split("-settings")[0];
