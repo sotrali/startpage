@@ -57,7 +57,7 @@
       }
 
       .settingsContainer {
-        background-color: rgba(173, 165, 165, 0.8);
+        background-color: rgba(173, 165, 165, 0.9);
         z-index: 999;
 
         border: solid black 2px;
@@ -136,27 +136,39 @@
   
       .expandableMenuToggle {
         cursor: pointer;
-        padding: 0px 18px;
+        margin: 0 0 0 0;
+        padding: .5rem 0 .5rem 0;
         width: 100%;
       }
       .expandableMenuToggle.active, .expandableMenuToggle:hover {
-        background-color: rgba(173, 165, 165, 0.8);
+        background-color: rgba(213, 205, 205, 1);
       }
 
       .expandableMenu {
         display: none;
         padding: 0 1rem;
         margin-bottom: 1rem;
-        border-left: 4px solid black;
+        border-left: 4px solid rgba(213, 205, 205);
       }
 
       .menuHeader {
         text-align: center;
         width: 100%;
-        background-color: rgba(173, 165, 165, 0.8);
         font-style: italic;
+        font-weight: bold;
+        margin: 0;
       }
 
+      .containerListing {
+      }
+
+      .manageButtons {
+        display: flex;
+        flex-direction: reow;
+        justify-content: space-between;
+
+        margin: 1rem 0rem;
+      }
       .bookmarkListingContainer {
         display: flex;
         flex-direction: column;
@@ -220,28 +232,14 @@
         cursor: pointer;
       }
 
-      #imageRemovalWarning {
-        color: red;
-        size: 3rem;
-        font-weight: bold;
-        user-select: none;
-        z-index: 1000;
-        display: inline;
-        align-self: center;
-        background-color: black;
-        border: solid red 0.25rem;
-        padding: 0.25rem;
-      }
+      
     </style>
   </head>
   <body>
     <div style="display: flex; flex-direction: column">
-      <div id="imageRemovalWarning" class="hidden">
-        IMAGE REMOVAL MODE ACTIVE!!
-      </div>
       <a id="editToggle" onClick="toggleEditMode()" style="align-self: flex-end"
-        >edit page</a
-      >
+        >edit page
+      </a>
 
       <br />
 
@@ -826,7 +824,20 @@
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-          <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)" id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
+          <div style="display: "flex"; flex-direction: row; justify-content: space-between">
+            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)" id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
+            <p id=${this.id + "--listing-active-indicator"}>
+            ` /**
+
+
+
+            Wait i probably can't do that because of how the toggle grabs the next element
+
+
+
+
+            */ + `
+          </div>
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
             <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: bookmarks</p>
@@ -1053,13 +1064,13 @@
                </div>
             </div>
 
-            <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                <div id=${this.id + "--manage-buttons"}>
+            <div class="manageButtons">
+                <div id=${this.id + "--manage-buttons"} >
                   ${zindex == numberTotalContainers ? `` : upButtons}
                   ${zindex == 1 ? `` : downButtons}
                 </div>
               <div>
-                <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
+                <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete layer</button>
               </div>
             </div>
           </div>
@@ -1220,13 +1231,13 @@
                 </div>
               </div>
 
-              <div style="display: flex; flex-direction: row; justify-content: space-between;">
+              <div class="manageButtons">
                 <div id=${this.id + "--manage-buttons"}>
                   ${zindex == numberTotalContainers ? `` : upButtons}
                   ${zindex == 1 ? `` : downButtons}
                 </div>
                 <div>
-                  <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete</button>
+                  <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete layer</button>
                 </div>
               </div>
             </div>
