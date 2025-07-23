@@ -135,6 +135,10 @@
       }
   
       .expandableMenuToggle {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
         cursor: pointer;
         margin: 0 0 0 0;
         padding: .5rem 0 .5rem 0;
@@ -451,6 +455,7 @@
       </div>
       </div>
     </div>
+    todo: image for labels
   </body>
 
   <script>
@@ -824,32 +829,33 @@
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-          <div style="display: "flex"; flex-direction: row; justify-content: space-between">
-            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)" id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
-            <p id=${this.id + "--listing-active-indicator"}>
-            ` /**
-
-
-
-            Wait i probably can't do that because of how the toggle grabs the next element
-
-
-
-
-            */ + `
+          <div class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">
+            <p id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
+            <p class="expandedMenuIndicator">-</p>
           </div>
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
-            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: bookmarks</p>
+
+            <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+              <p>+ ${this.name}: bookmarks</p>
+              <p class="expandedMenuIndicator">+</p>
+            </div>
             <div class="expandableMenu" id=${this.id + "-bookmark-menu"} >
 
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ manage bookmarks / sections</p>
-              <div class="expandableMenu"  >
+              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+                <p>manage bookmarks / sections</p>
+                <p class="expandedMenuIndicator">+</p>
+              </div>
+              <div class="expandableMenu">
+
                 <div id=${this.id + "-bookmark-menu--listings"} class="bookmarkListingContainer">
                 </div>
               </div>
 
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ add new bookmarks / sections</p>
+              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+                <p>add new bookmarks / sections</p>
+                <p class="expandedMenuIndicator">+</p>
+              </div>
               <div class="expandableMenu" id=${this.id + "-bookmark-menu--add-new"} >
 
                 <input 
@@ -878,15 +884,20 @@
 
                 <button id=${this.id + "-add-link-button"} onclick="addLink(this)">add link</button>
               </div>
-
             </div>
             
-
-            <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: customize</p>
+            <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+              <p>${this.name}: customize</p>
+              <p class="expandedMenuIndicator">+</p>
+            </div>
             <div class="expandableMenu">
 
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ header options</p>
+              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+                <p>header options</p>
+                <p class="expandedMenuIndicator">+</p>
+              </div>              
               <div class="expandableMenu">
+
                 <p class="menuHeader">date + time options</p>
                   <div class="containerOptionListing">
                     <label for=${this.id + "-settings-date-toggle"}>show date?</label>
@@ -930,7 +941,10 @@
                   </div>
               </div>
 
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ text options</p>
+              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+                <p>text options</p>
+                <p class="expandedMenuIndicator">+</p>
+              </div>
               <div class="expandableMenu">
 
                 <p class="menuHeader">section text options</p>
@@ -982,9 +996,7 @@
                       <button id=${this.id + "-settings-set-font-button"}>set font</button>
                     </div>
                   </div>
-
                   <br />
-
                  <div class="containerOptionListing" >
                     <p style="margin-top: 0;">align text:</p>
 
@@ -1005,7 +1017,10 @@
                   </div>
               </div>
 
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ color / shape options</p>
+              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+                <p>color + shape options</p>
+                <p class="expandedMenuIndicator">+</p>
+              </div>
               <div class="expandableMenu">
 
                 <p class="menuHeader">background color</p>
@@ -1184,49 +1199,55 @@
           `
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
-            <p class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)" id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
+            <div class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">
+              <p id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
+              <p class="expandedMenuIndicator">-</p>
+            </div>
             <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
-              <p class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">+ ${this.name}: color + shape options</p>
+              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+                <p>border + shape options</p>
+                <p class="expandedMenuIndicator">+</p>
+              </div>
               <div class="expandableMenu">
 
                <p class="menuHeader">change border + shape</p>
                 <div class="containerOptionListing">
-                  <label>set border color: </label>
+                  <label for=${this.id + "-settings-border-color"}>set border color: </label>
                   <input id=${this.id + "-settings-border-color"} type="color" />
                 </div>
 
                 <div class="containerOptionListing">
-                  <label>set border width (px): </label>
+                  <label for=${this.id + "-settings-border-width"}>set border width (px): </label>
                   <input id=${this.id + "-settings-border-width"} placeholder="0 for none" />
                 </div>
 
                 <div class="containerOptionListing">
-                  <label>set container roundedness (px): </label>
+                  <label for=${this.id + "-settings-border-radius"}>set container roundedness (px): </label>
                   <input id=${this.id + "-settings-border-radius"} placeholder="0 for square" />
                 </div>
 
                <p class="menuHeader">change shadow / glow</p>
                 <div class="containerOptionListing">
-                  <label>x-offset (px): </label>
+                  <label for=${this.id + "-settings-shadow-x"}>x-offset (px): </label>
                   <input id=${this.id + "-settings-shadow-x"} placeholder="all 0 for none" />
                 </div>
                 <div class="containerOptionListing">
-                  <label>y-offset (px): </label>
+                  <label for=${this.id + "-settings-shadow-y"}>y-offset (px): </label>
                   <input id=${this.id + "-settings-shadow-y"} placeholder="all 0 for none" />
                 </div>
                 <br />
                 <div class="containerOptionListing">
-                  <label>blur radius / fuzziness (px): </label>
+                  <label for=${this.id + "-settings-shadow-blur"}>blur radius / fuzziness (px): </label>
                   <input id=${this.id + "-settings-shadow-blur"} placeholder="all 0 for none" />
                 </div>
                 <br />
                 <div class="containerOptionListing">
-                  <label>shadow color: </label>
+                  <label for=${this.id + "-settings-shadow-color"}>shadow color: </label>
                   <input id=${this.id + "-settings-shadow-color"} type="color" />
                 </div>
                 <div class="containerOptionListing">
-                  <label>shadow opacity:</label>
+                  <label for=${this.id + "-settings-shadow-alpha"}>shadow opacity:</label>
                   <input id=${this.id + "-settings-shadow-alpha"} />
                 </div>
               </div>
@@ -1893,15 +1914,14 @@
   
     function toggleExpandableMenu(toggleButton) {
       toggleButton.classList.toggle("active");
-      let toggleButtonLabel = toggleButton.innerText;
       let menuContent = toggleButton.nextElementSibling;
 
       if (menuContent.style.display === "block") {
         menuContent.style.display = "none";
-        toggleButton.innerHTML = toggleButtonLabel.replace("-", "+");
+        toggleButton.children[1].innerHTML = "+";
       } else {
         menuContent.style.display = "block";
-        toggleButton.innerHTML = toggleButtonLabel.replace("+", "-");
+        toggleButton.children[1].innerHTML = "-";
       }
     }
 
