@@ -141,16 +141,21 @@
 
         cursor: pointer;
         margin: 0 0 0 0;
-        padding: .5rem 0 .5rem 0;
+        padding: .5rem 0rem .5rem .5rem;
+
         width: 100%;
       }
       .expandableMenuToggle.active, .expandableMenuToggle:hover {
         background-color: rgba(213, 205, 205, 1);
       }
+      .expandedMenuIndicator {
+        margin: 0 1rem 0 0;
+        font-size: 2rem;
+      }
 
       .expandableMenu {
         display: none;
-        padding: 0 1rem;
+        padding: 1rem 0 0 1rem;
         margin-bottom: 1rem;
         border-left: 4px solid rgba(213, 205, 205);
       }
@@ -160,6 +165,7 @@
         width: 100%;
         font-style: italic;
         font-weight: bold;
+        padding: 1rem 0;
         margin: 0;
       }
 
@@ -193,6 +199,10 @@
       .containerOptionListing {
         display: flex;
         justify-content: space-between;
+      }
+
+      #noContainerWarning {
+        font-style: italic;
       }
 
       input {
@@ -244,218 +254,259 @@
       <a id="editToggle" onClick="toggleEditMode()" style="align-self: flex-end"
         >edit page
       </a>
+    </div>
 
-      <br />
-
-      <div id="settingsContainer" class="movable settingsContainer hidden">
-        <div id="tabList">
-          <div>
-            <a class="tab" id="containerTab">layers</a>
-            <a class="tab" id="globalSettingsTab" style="margin: 0 2rem 0 0;">global settings</a>
-          </div>
-          <div style="text-align: right;">
-            <a class="tab" id="instructionsTab" style="margin: 0;">help</a>
-            <a class="tab" id="ioTab" style="margin: 0 0 0 2rem;">import / export</a>
-          </div>
+    <div id="settingsContainer" class="movable settingsContainer hidden">
+      <div id="tabList">
+        <div>
+          <a class="tab" id="containerTab">layers</a>
+          <a class="tab" id="globalSettingsTab" style="margin: 0 2rem 0 0;">global settings</a>
         </div>
+        <div style="text-align: right;">
+          <a class="tab" id="instructionsTab" style="margin: 0;">help</a>
+          <a class="tab" id="ioTab" style="margin: 0 0 0 2rem;">import / export</a>
+        </div>
+      </div>
 
-        <div style="padding: 0 .5rem;">
-        <!-- note to self: 
-           - i should rename these so they don't end in "Form",
-           - rather something like "Page". to do that though i need
-           - to change the logic for switching tabs that has the string
-           - modification hardcoded
-        -->
-          <div id="instructionsForm">
-            <p id="helpText">
-              you are now editing the page!<br /><br />
-              this is the settings box. there are various tabs containing various
-              customization options for your startpage experience. you can create
-              and categorize bookmarks, customize the bookmark box to your taste,
-              change the wallpaper, and add + maniuplate any image you want!<br /><br />
-              <b>[ <i>let it be known</i> ]</b><br />
-              <i
-                >your changes will only be saved when you stop editing the page.
-                to cancel your live edits, refresh the page without hitting
-                save.</i
-              ><br /><br />
-              <b>[ <i>bookmark tips</i> ]</b><br />
-              to group bookmarks together, just enter them with the same section.
-              bookmarks without a section will stay at the top. you can remove
-              individual bookmarks or whole sections, and sections can be
-              rearranged. there's also a button in this menu to full reset.<br /><br />
-              <b>[ <i>customization tips</i> ]</b><br />
-              everything on the screen can be dragged around and resized. left
-              click and drag to move, right click and drag to resize!<br /><br />
-              you can add as many images to the background and resize them as you
-              wish, but they can only be added via URL. i have provided a quick
-              link to a place to upload your own images if you have specific
-              things in mind, but you can also make a beautiful collage of random
-              photographs you find without using any disk space.<br /><br />
-              <b>[ <i>changing font</i> ]</b><br />
-              you can use any font that is available on
-              <a href="https://fonts.google.com/" target="blank">google fonts</a>.
-              FYI, if you have multiple fonts selected only the first one will be
-              loaded, and it will be the regular version (if there are variants of
-              the font)<br /><br />
-              to load a font:<br />
-              1.) on google fonts, click on a font you like, press the "get font"
-              button, and then press the "get embed code" button. <br />2.) under
-              the "web" tab (you are already probably on it), copy the stuff
-              under: "embed code in the &lt;head&gt; of your html" (it should be a
-              few lines starting with &lt;link&gt;)<br />3.) paste contents into
-              the "change font" input, found on the "container" tab of this
-              floating menu.<br /><br /><b>[ <i>back-up themes!</i> ]</b><br />
-              you can export your entire current setup to import again later (save
-              ur moodboards or share with friends). this is primarily useful
-              because everything for this page is stored as a cookie. so, if you
-              reset your browser history or cache, your startpage will be lost!!
-              unless you have it backed up 8]
-              <br /><br />
-              clicking 'export data' will fill your clipboard with your currently
-              saved data (make sure you've saved your changes before exporting),
-              simply paste the contents into a text file for safekeeping. to load
-              a saved configuration, just paste the exported text and hit
-              import.<br /><br />
-              if you somehow lose your bookmark box off-screen, use the "reset box
-              customization" options to get it back. you will lose your other
-              customizations tho :[<br /><br />
+      <div style="padding: 0 .5rem;">
+      <!-- note to self: 
+         - i should rename these so they don't end in "Form",
+         - rather something like "Page". to do that though i need
+         - to change the logic for switching tabs that has the string
+         - modification hardcoded
+      -->
+        <div id="instructionsForm">
+          <p>
+            you are now editing the page!<br /><br />
+
+            this is the settings box - there are various tabs containing various
+            customization options for your startpage experience.<br /><br />
+
+            this box is adjustable, just like every layer you add to the page. 
+            you can drag it around the page, and dragging with right click will 
+            adjust the size of the layer.<br /><br />
+
+            on the "layers" tab, you can add two types of layers to the page:
+          </p>
+          <ol>
+            <li>
+              <b>bookmark layer:</b><br />a customizable box that can serve as a clock,
+              tell you the date, and hold bookmarks all at once. it can also just be
+              one of those things.<br /><br />to group a layer's bookmarks together, enter
+              links all with the same "section". uncategorized (no section) bookmarks
+              will stay at the top.
+            </li><br />
+            <li>
+              <b>image layer:</b><br />paste any URL that points directly at an image 
+              (right click on a picture on any website and click "copy link to image")
+              to add it to the page.<br /><br />use "free transform" in the "global 
+              settings" tab to change the image resizing mode when customizing the page.
+            </li>
+          </ol>
+          <p>
+            your changes will be saved to the page when you exit editing mode.<br /><br />
+            if you've made edits you wish to undo, refresh the page without disabling
+            editing mode.<br /><br />
+
+            that concludes the basics. there's some more advanced information below:
+          </p>
+
+          <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+            <p>sharing / stashing your work</p>
+            <p class="expandedMenuIndicator">+</p>
+          </div>
+          <div class="expandableMenu">
+            <p>
+              you can export your entire current page's setup to your clipboard in the 
+              "import / export" tab. open a text file and paste the contents to store 
+              your theme for later or for sharing with others.<br /><br />
+
+              to load in a theme, simply paste the output of the export button into the
+              "import" input, and refresh the page. 
             </p>
           </div>
 
-          <form id="containerForm" onsubmit="return false">
-              <div>
-                <h2 class="menuHeader">add bookmark layer</h2>
-                <input
-                  id="newTextContainerNameInput"
-                  placeholder="(optional) layer name"
-                  style="width: 100%"
-                  type="text"
-                />
-                <button id="newTextContainerCreateButton" onclick="createNewTextContainer(this)">
-                  create new layer
-                </button>
-              </div>
-              <div>
-                <h2 class="menuHeader">add image to page</h2>
-                <input
-                  id="newImageContainerNameInput"
-                  placeholder="(optional) image name"
-                  style="width: 100%;"
-                  type="text"
-                />
-                <input
-                  id="newImageContainerUrlInput"
-                  placeholder="direct url to image"
-                  style="width: 100%;"
-                  type="text"
-                />
-                <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
-                  place image
-                </button>
-                <a href="https://imgur.com/upload" target="_blank" style="color: black">imgur upload for convenience</a>
-                <h2 class="menuHeader">layers</h2>
-                <div id="containers"></div>
-            </div>
-          </form>
+          <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+            <p>setting fonts</p>
+            <p class="expandedMenuIndicator">+</p>
+          </div>
+          <div class="expandableMenu">
+            <p>
+              you can use any font that is available on
+              <a href="https://fonts.google.com/" target="blank">google fonts</a>.
+              <br /><br />
 
-          <form id="ioForm" onsubmit="return false">
-            <label>use the button below to copy your current configuration to your clipboard<br />(you should save this somewhere)</label>
-            <button onclick="exportData()">export data</button><br />
+              beware, if you have multiple font families selected (it keeps track of
+              all of the fonts you press "get font" on), only the first one will be 
+              loaded. also, only regular versions of fonts are supported.<br /><br />
 
-            <input id="importDataInput" />
-            <button
-              onclick="importData()"
-              placeholder="paste exported data here to load"
-            >
-              import data
-            </button>
-          </form>
+              to load a font:<br />
+              
+              1.) on google fonts, open a font you like, and press the "get font"
+              button. then, press the "get embed code" button.<br /><br />
 
-          <form id="globalSettingsForm" onsubmit="return false">
+              2.) there will be a section on the right with various tabs ("web", 
+              "android", "ios", ..) under the "web" tab (you are already probably 
+              on it), click the "copy code" button under the option titled: 
+              "embed code in the &lt;head&gt; of your html" (it should be a
+              few lines starting with "&lt;link ...", right at the very top)<br /><br />
+
+              3.) paste copied contents into the "change font" input, found on the desired 
+              layer's "text options" 
+            </p>
+          </div>
+
+          <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+            <p>tips and tricks</p>
+            <p class="expandedMenuIndicator">+</p>
+          </div>
+          <div class="expandableMenu">
+            <p>
+              there are some keyboard shortcuts for your convenience:<br />
+              "e" = enables editing mode<br />
+              esc = disables editing mode (and saves page)<br /> 
+              "1"-"4" = jump between settings box tabs<br />
+            </p>
+            <p>
+              floating text:<br />
+              for floating text anywhere on the page, 
+              remove the border and set the background opacity of a layer to 
+              zero. then, add new sections to the bookmark list without any links.
+              customize the layer's "section" text to your liking and place freely.
+            </p>
+          </div>
+        </div>
+
+        <form id="containerForm" onsubmit="return false">
             <div>
-              <p class="menuHeader">image manipulation</p>
-                <div class="containerOptionListing">
-                  <label for="imageRatioToggle">image free transform mode</label>
-                  <input type="checkbox" id="imageRatioToggle" />
-                </div>
-
-              <p class="menuHeader">change page wallpaper</p>
-                <div class="containerOptionListing">
-                  <label for="wallpaperUrl">set image as wallpaper: </label>
-                  <div style="display: flex; flex-direction: column; align-items: end;">
-                    <input id="wallpaperUrl" placeholder="paste image URL" style="width: 10rem" />
-                    <br />
-                    <button id="submitUrl" onclick="changeWallpaper()">
-                      set image
-                    </button>
-                  </div>
-                </div>
-                <div class="containerOptionListing">
-                  <label for="wallpaperRepeatToggle"> tile wallpaper? </label>
-                  <input id="wallpaperRepeatToggle" type="checkbox" />
-                </div>
-                <div class="containerOptionListing">
-                  <label for="wallpaperColorPicker">or, set wallpaper as solid color: </label>
-                  <input type="color" id="wallpaperColorPicker" />
-                </div>
-
-
-              <p class="menuHeader">change cursors</p>
-              <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
-
-                <div class="containerOptionListing">
-                  <label for="pointerCursorInput">change normal cursor:</label>
-                  <div style="display: flex; flex-direction: column; align-items: end;">
-                    <input id="pointerCursorInput" placeholder="paste link to image URL" />
-                    <button onclick="setDefaultCursor()">set normal cursor</button>
-                  </div>
-                </div>
-                <div class="containerOptionListing">
-                  <label for="grabCursorInput">change grab cursor:</label>
-                  <div style="display: flex; flex-direction: column; align-items: end;">
-                    <input id="grabCursorInput" placeholder="paste link to image URL" />
-                    <button onclick="setGrabCursor()">set grabbing cursor</button>
-                  </div>
-                </div>
-                <div class="containerOptionListing">
-                  <label for="linkCursorInput">change link cursor:</label>
-                  <div style="display: flex; flex-direction: column; align-items: end;">
-                    <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
-                    <button onclick="setLinkHoverCursor()">set link hover cursor</button>
-                  </div>
-                </div>
-
-              <p class="menuHeader">audio</p>
-              <div class="containerOptionListing">
-                <label for=audioLinkInput">paste a direct URL to an audio file:</label>
-
-                <div style="display: flex; flex-direction: column; align-items: end;">
-                  <input id="audioLinkInput" />
-                  <button onclick="setAudioLink()">set audio</button>
-                </div>
-              </div>
-
-              <audio id="audio" controls style="width: 100%">
-                <source id="audioSource" src="" type="audio/mp3" />
-              </audio>
-
-              <div class="containerOptionListing">
-                <label for="autoplayAudioToggle">auto-play when page loads? </label>
-                <input id="autoplayAudioToggle" type="checkbox" checked />
-              </div>
-
-              <p>
-                (note: this will require white-listing this site in your browser.
-                you can whitelist local HTML files! the URL would be something like
-                "file:///C:/path/to/saved/file")
-              </p>
+              <h2 class="menuHeader">add bookmark layer</h2>
+              <input
+                id="newTextContainerNameInput"
+                placeholder="(optional) layer name"
+                style="width: 100%"
+                type="text"
+              />
+              <button id="newTextContainerCreateButton" onclick="createNewTextContainer(this)">
+                create new layer
+              </button>
             </div>
-          </form>
-      </div>
-      </div>
+            <div>
+              <h2 class="menuHeader">add image to page</h2>
+              <input
+                id="newImageContainerNameInput"
+                placeholder="(optional) image name"
+                style="width: 100%;"
+                type="text"
+              />
+              <input
+                id="newImageContainerUrlInput"
+                placeholder="direct URL to image"
+                style="width: 100%;"
+                type="text"
+              />
+              <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
+                place image
+              </button>
+              <a href="https://imgur.com/upload" target="_blank" style="color: black">imgur upload for convenience</a>
+              <h2 class="menuHeader">layers</h2>
+              <div id="containers"></div>
+          </div>
+        </form>
+
+        <form id="ioForm" onsubmit="return false">
+          <label>use the button below to copy your current configuration to your clipboard<br />(you should save this somewhere)</label>
+          <button onclick="exportData()">export data</button><br />
+
+          <input id="importDataInput" />
+          <button
+            onclick="importData()"
+            placeholder="paste exported data here to load"
+          >
+            import data
+          </button>
+        </form>
+
+        <form id="globalSettingsForm" onsubmit="return false">
+          <div>
+            <p class="menuHeader">image manipulation</p>
+              <div class="containerOptionListing">
+                <label for="imageRatioToggle">image free transform mode</label>
+                <input type="checkbox" id="imageRatioToggle" />
+              </div>
+
+            <p class="menuHeader">change page wallpaper</p>
+              <div class="containerOptionListing">
+                <label for="wallpaperUrl">set image as wallpaper: </label>
+                <div style="display: flex; flex-direction: column; align-items: end;">
+                  <input id="wallpaperUrl" placeholder="paste image URL" style="width: 10rem" />
+                  <br />
+                  <button id="submitUrl" onclick="changeWallpaper()">
+                    set image
+                  </button>
+                </div>
+              </div>
+              <div class="containerOptionListing">
+                <label for="wallpaperRepeatToggle"> tile wallpaper? </label>
+                <input id="wallpaperRepeatToggle" type="checkbox" />
+              </div>
+              <div class="containerOptionListing">
+                <label for="wallpaperColorPicker">or, set wallpaper as solid color: </label>
+                <input type="color" id="wallpaperColorPicker" />
+              </div>
+
+
+            <p class="menuHeader">change cursors</p>
+            <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
+
+              <div class="containerOptionListing">
+                <label for="pointerCursorInput">change normal cursor:</label>
+                <div style="display: flex; flex-direction: column; align-items: end;">
+                  <input id="pointerCursorInput" placeholder="paste link to image URL" />
+                  <button onclick="setDefaultCursor()">set normal cursor</button>
+                </div>
+              </div>
+              <div class="containerOptionListing">
+                <label for="grabCursorInput">change grab cursor:</label>
+                <div style="display: flex; flex-direction: column; align-items: end;">
+                  <input id="grabCursorInput" placeholder="paste link to image URL" />
+                  <button onclick="setGrabCursor()">set grabbing cursor</button>
+                </div>
+              </div>
+              <div class="containerOptionListing">
+                <label for="linkCursorInput">change link cursor:</label>
+                <div style="display: flex; flex-direction: column; align-items: end;">
+                  <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
+                  <button onclick="setLinkHoverCursor()">set link hover cursor</button>
+                </div>
+              </div>
+
+            <p class="menuHeader">audio</p>
+            <div class="containerOptionListing">
+              <label for=audioLinkInput">paste a direct URL to an audio file:</label>
+
+              <div style="display: flex; flex-direction: column; align-items: end;">
+                <input id="audioLinkInput" />
+                <button onclick="setAudioLink()">set audio</button>
+              </div>
+            </div>
+
+            <audio id="audio" controls style="width: 100%">
+              <source id="audioSource" src="" type="audio/mp3" />
+            </audio>
+
+            <div class="containerOptionListing">
+              <label for="autoplayAudioToggle">auto-play when page loads? </label>
+              <input id="autoplayAudioToggle" type="checkbox" checked />
+            </div>
+
+            <p>
+              (note: this will require white-listing this site in your browser.
+              you can whitelist local HTML files! the URL would be something like
+              "file:///C:/path/to/saved/file")
+            </p>
+          </div>
+        </form>
     </div>
-    todo: image for labels
   </body>
 
   <script>
@@ -734,7 +785,7 @@
       loadBookmarkListings() {
         if (Object.keys(this.sections).length == 0) {
           let bookmarkListings = document.getElementById(this.id + "-bookmark-menu--listings");
-          bookmarkListings.innerHTML = "(you have no bookmarks)";
+          bookmarkListings.innerHTML = `<p style="padding: 0 0 .25rem 0; font-style: italic;">(there are no bookmarks to manage...)</p>`;
           return;
         }
 
@@ -835,9 +886,8 @@
           </div>
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
 
-
             <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-              <p>+ ${this.name}: bookmarks</p>
+              <p>${this.name}: bookmarks</p>
               <p class="expandedMenuIndicator">+</p>
             </div>
             <div class="expandableMenu" id=${this.id + "-bookmark-menu"} >
@@ -862,7 +912,7 @@
                   id=${this.id + "-url-input"} 
                   type="text" name="url" 
                   placeholder="enter URL for bookmark"
-                  style="width: 20rem"
+                  style="width: 20rem;"
                 />
                 <br />
 
@@ -882,7 +932,7 @@
                 />
                 <br />
 
-                <button id=${this.id + "-add-link-button"} onclick="addLink(this)">add link</button>
+                <button id=${this.id + "-add-link-button"} onclick="addLink(this)">add it</button>
               </div>
             </div>
             
@@ -1034,7 +1084,26 @@
                     <input id=${this.id + "-settings-bg-alpha"} />
                   </div>
 
-                <p class="menuHeader">border + shape</p>
+                <p class="menuHeader">layer shape</p>
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-border-radius"}>roundness (0 = square, 90 = circle): </label>
+                    <input id=${this.id + "-settings-border-radius"} placeholder="" />
+                  </div>
+
+                <p class="menuHeader">border</p>
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-border-color"}>set border color: </label>
+                    <input id=${this.id + "-settings-border-color"} type="color" />
+                  </div>
+
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-border-width"}>set border width (0px = no border): </label>
+                    <input id=${this.id + "-settings-border-width"} placeholder="0 for none" />
+                  </div>
+
+                
+
+                <p class="menuHeader">shadow / glow</p>
                   <div class="containerOptionListing">
                     <label for=${this.id + "-settings-shadow-color"}>shadow color: </label>
                     <input id=${this.id + "-settings-shadow-color"} type="color" />
@@ -1044,22 +1113,7 @@
                     <label>shadow opacity:</label>
                     <input id=${this.id + "-settings-shadow-alpha"} />
                   </div>
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-border-color"}>set border color: </label>
-                    <input id=${this.id + "-settings-border-color"} type="color" />
-                  </div>
 
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-border-width"}>set border width (0 = no border): </label>
-                    <input id=${this.id + "-settings-border-width"} placeholder="0 for none" />
-                  </div>
-
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-border-radius"}>container roundedness (0 = right angles): </label>
-                    <input id=${this.id + "-settings-border-radius"} placeholder="0 for square" />
-                  </div>
-
-                <p class="menuHeader">shadow / glow</p>
                   <div class="containerOptionListing">
                     <label for=${this.id + "-settings-shadow-x"}>x-offset (in px): </label>
                     <input id=${this.id + "-settings-shadow-x"} placeholder="all 0 for none" />
@@ -1698,40 +1752,6 @@
         JSON.parse(localStorage.getItem("containerMapValues")) || [];
       numberTotalContainers = containerMapValues.length;
       
-
-      /** to ensure that container listings are rendered in order of zindex
-      let tempContainerMap = new Map();
-      for (let i = 0; i < numberTotalContainers; i++) {
-        tempContainerMap.set(containerMapValues[i].id, {
-          id:                 containerMapValues[i].id,
-          name:               containerMapValues[i].name,
-          x:                  containerMapValues[i].x,
-          y:                  containerMapValues[i].y,
-          height:             containerMapValues[i].height,
-          width:              containerMapValues[i].width,
-          imageUrl:           containerMapValues[i].imageUrl,
-          containerSettings:  containerMapValues[i].containerSettings,
-          sections:          containerMapValues[i].sections
-        });
-      }
-
-      for (let i = 1; i <= numberTotalContainers; i++) {
-        let tempContainerData = tempContainerMap.get(zIndexMap.get(String(i)));
-        console.log(tempContainerData);
-        containerDataMap.set(tempContainerData.id, new Container(
-          tempContainerData.id,
-          tempContainerData.name,
-          tempContainerData.x,
-          tempContainerData.y,
-          tempContainerData.height,
-          tempContainerData.width,
-          tempContainerData.imageUrl,
-          tempContainerData.containerSettings,
-          tempContainerData.sections
-        ));
-
-      }*/
-
       for (let i = 0; i < numberTotalContainers; i++) {
         containerDataMap.set(containerMapValues[i].id, new Container(
           containerMapValues[i].id,
@@ -1745,6 +1765,19 @@
           containerMapValues[i].sections
         ));
       }
+
+      /** 
+      if (numberTotalContainers == 0) {
+        new Container(
+          "container-0",
+          "setup help",
+          "15",
+          "15",
+          "150",
+          "100",
+          undefined,
+        );
+      }*/
       
      
       /** set up + load settings menu data */
