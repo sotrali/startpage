@@ -104,8 +104,8 @@
       .tabContent {
         display: none;
         flex-direction: column;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
       }
 
       a.visited {
@@ -187,12 +187,14 @@
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        margin-bottom: .5rem;
       }
 
       .linkListingContainer {
         display: flex;
         flex-direction: row;
         justify-content: space-between;
+        margin-bottom: .5rem;
       }
 
       .containerOptionListing {
@@ -266,13 +268,13 @@
           <a class="tab" id="globalSettingsTab" style="margin: 0 2rem 0 0;">global settings</a>
         </div>
         <div style="text-align: right;">
-          <a class="tab" id="instructionsTab" style="margin: 0;">help</a>
+          <a class="tab" id="helpTab" style="margin: 0;">help</a>
           <a class="tab" id="ioTab" style="margin: 0 0 0 2rem;">import / export</a>
         </div>
       </div>
 
       <div>
-        <div id="instructionsPage" class="tabContent">
+        <div id="helpPage" class="tabContent">
           <p>
             you are now editing the page!<br /><br />
 
@@ -294,7 +296,7 @@
               will stay at the top.
             </li><br />
             <li>
-              <b>image layer:</b><br />paste any URL that points directly at an image 
+              <b>image layer:</b><br />paste any URL that points directly at an image or GIF
               (right click on a picture on any website and click "copy link to image")
               to add it to the page.<br /><br />use "free transform" in the "global 
               settings" tab to change the image resizing mode when customizing the page.
@@ -379,7 +381,7 @@
         </div>
 
         <div id="containerPage" class="tabContent">
-          <div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
             <h2 class="menuHeader">add bookmark layer</h2>
             <input
               id="newTextContainerNameInput"
@@ -392,7 +394,7 @@
             </button>
           </div>
 
-          <div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
             <h2 class="menuHeader">add image to page</h2>
             <input
               id="newImageContainerNameInput"
@@ -409,7 +411,10 @@
             <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
               place image
             </button>
-            <a href="https://imgur.com/upload" target="_blank" style="color: black">imgur upload for convenience</a>
+            <a href="https://imgur.com/upload" target="_blank" style="color: black; font-size: .75rem;">imgur upload for convenience</a>
+          </div>
+
+          <div>
             <h2 class="menuHeader">layers</h2>
             <div style="display: flex; flex-direction: row; justify-content: space-around; margin-bottom: 1rem;">
               <button onclick="collapseLayerListings()">collapse all listings</button>
@@ -511,9 +516,6 @@
           </p>
         </div>
     </div>
-
-    todo: make tab shortcuts.
-    also change section buttons to actual buttons, and collapse / expand all logic
   </body>
 
   <script>
@@ -809,23 +811,22 @@
               ${i == 0 ? "" : `<br />`}
               <div id="${this.id}-section-listing--${i}" class="sectionListingContainer">
                 <span class=${this.id + "-section"}>
-                  ${sectionData[i].label == "" ? "uncategorized links: " : "<u>section</u>: " + sectionData[i].label}
+                  ${sectionData[i].label == "" ? "<u>uncategorized links</u>: " : "<u>section</u>: " + sectionData[i].label}
                 </span>
 
                 <div class="bookmarkListingButtons">
                   ${(i > 1) ? `
-                    <span onClick="reorderSection(this, 'up')" class="bookmarkButton">
-                      [up]
-                    </span>
-                  ` : ``
-                  }
+                    <button onClick="reorderSection(this, 'up')" class="bookmarkButton">
+                      up
+                    </button>
+                  ` : `` }
+
                   ${(i > 0) && (i < sectionData.length - 1) ? `
-                  <span onClick="reorderSection(this, 'down')" class="bookmarkButton">
-                      [down]
-                    </span>
-                  ` : ``
-                  }
-                  <span onClick="deleteSection(this)" class="bookmarkDeleteButton">[delete section]</span>
+                    <button onClick="reorderSection(this, 'down')" class="bookmarkButton">
+                        down
+                    </button>
+                  ` : `` }
+                  <button onClick="deleteSection(this)" class="deleteButton">delete section</button>
                 </div>
               </div>
             `
@@ -850,18 +851,18 @@
 
                   <div class="bookmarkListingButtons">
                     ${l > 0 ? `
-                      <span onClick="reorderLink(this, 'up')" class="bookmarkButton">
-                        [up]
-                      </span>
+                      <button onClick="reorderLink(this, 'up')" class="bookmarkButton">
+                        up
+                      </button>
                     ` : ``
                     }
                     ${l < sectionData[s].links.length - 1 ? `
-                      <span onClick="reorderLink(this, 'down')" class="bookmarkButton">
-                        [down]
-                      </span>
+                      <button onClick="reorderLink(this, 'down')" class="bookmarkButton">
+                        down
+                      </button>
                     ` : ``
                     }
-                    <span onClick="deleteLink(this)" class="bookmarkDeleteButton">[delete link]</span>
+                    <button onClick="deleteLink(this)" class="deleteButton">delete link</button>
                   </div>
                 </div>
               `
@@ -1696,6 +1697,18 @@
         if (e.key == "Escape" && editing) {
           toggleEditMode();
         }
+        if (e.key == "1" && editing) {
+          changeActiveTab({target: { id: "containerTab" }});
+        }
+        if (e.key == "2" && editing) {
+          changeActiveTab({target: { id: "globalSettingsTab" }});
+        }
+        if (e.key == "3" && editing) {
+          changeActiveTab({target: { id: "helpTab" }});
+        }
+        if (e.key == "4" && editing) {
+          changeActiveTab({target: { id: "ioTab" }});
+        }
       });
 
       /** set up cursors */
@@ -1808,7 +1821,7 @@
       setupSettingsContainer();
       // load last active settings tab user was on 
       activeTabId =
-        JSON.parse(localStorage.getItem("activeTabId")) || "instructionsTab";
+        JSON.parse(localStorage.getItem("activeTabId")) || "helpTab";
       document.getElementById(
         activeTabId.replace("Tab", "Page")
       ).style.display = "flex";
@@ -1971,6 +1984,28 @@
       } else {
         menuContent.style.display = "block";
         toggleButton.children[1].innerHTML = "-";
+      }
+    }
+
+    function collapseLayerListings() {
+      let listings = document.getElementsByClassName("containerListing");
+
+      for (let i = 0; i < listings.length; i++) {
+        // first child of a container listing is always the menu toggle
+        if (listings[i].children[0].classList.contains("active")) {
+          toggleExpandableMenu(listings[i].children[0]);
+        }
+      }
+    } 
+
+    function expandLayerListings() {
+      let listings = document.getElementsByClassName("containerListing");
+
+      for (let i = 0; i < listings.length; i++) {
+        // first child of a container listing is always the menu toggle
+        if (!listings[i].children[0].classList.contains("active")) {
+          toggleExpandableMenu(listings[i].children[0]);
+        }
       }
     }
 
