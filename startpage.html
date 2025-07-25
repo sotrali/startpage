@@ -303,25 +303,37 @@
             </li>
           </ol>
           <p>
-            your changes will be saved to the page when you exit editing mode.<br /><br />
-            if you've made edits you wish to undo, refresh the page without disabling
-            editing mode.<br /><br />
+            <b>your changes will be saved to the page when you exit editing mode.</b><br /><br />
+            if you've made edits you wish to undo/revert, refresh the page without disabling
+            editing mode. this will bring you back to the last saved state.<br /><br />
 
             that concludes the basics. there's some more advanced information below:
           </p>
 
           <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-            <p>sharing / stashing your work</p>
+            <p>tips and tricks</p>
             <p class="expandedMenuIndicator">+</p>
           </div>
           <div class="expandableMenu">
             <p>
-              you can export your entire current page's setup to your clipboard in the 
-              "import / export" tab. open a text file and paste the contents to store 
-              your theme for later or for sharing with others.<br /><br />
-
-              to load in a theme, simply paste the output of the export button into the
-              "import" input, and refresh the page. 
+              there are some keyboard shortcuts for your convenience:<br />
+              "e" = enables editing mode<br />
+              esc = disables editing mode (and saves page)<br /> 
+              "1"-"4" = jump between settings box tabs<br /><br />
+            </p>
+            <hr />
+            <p>
+              if you've accidentally pressed down on a "delete" button and want to
+              cancel, you can hit escape before releasing the mouse button to save 
+              your progress and abort deletion. 
+            </p>
+            <hr />
+            <p>
+              floating text:<br />
+              for floating text anywhere on the page, 
+              remove the border and set the background opacity of a layer to 
+              zero. then, add new sections to the bookmark list without any links.
+              customize the layer's "section" text to your liking and place freely.
             </p>
           </div>
 
@@ -356,28 +368,20 @@
           </div>
 
           <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-            <p>tips and tricks</p>
+            <p>sharing / backing pages up</p>
             <p class="expandedMenuIndicator">+</p>
           </div>
           <div class="expandableMenu">
             <p>
-              there are some keyboard shortcuts for your convenience:<br />
-              "e" = enables editing mode<br />
-              esc = disables editing mode (and saves page)<br /> 
-              "1"-"4" = jump between settings box tabs<br /><br />
+              you can export your entire current page's setup to your clipboard in the 
+              "import / export" tab. open a text file and paste the contents to store 
+              your theme for later or for sharing with others.<br /><br />
 
-              if you've accidentally pressed down on a "delete" button and want to
-              cancel, you can hit escape before releasing the mouse button to save 
-              your progress and prevent your thing from being deleted. 
-            </p>
-            <p>
-              floating text:<br />
-              for floating text anywhere on the page, 
-              remove the border and set the background opacity of a layer to 
-              zero. then, add new sections to the bookmark list without any links.
-              customize the layer's "section" text to your liking and place freely.
+              to load in a theme, simply paste the output of the export button into the
+              "import" input, and refresh the page. 
             </p>
           </div>
+          
         </div>
 
         <div id="containerPage" class="tabContent">
@@ -440,7 +444,7 @@
 
         <div id="globalSettingsPage" class="tabContent">
           <p class="menuHeader">image manipulation</p>
-            <div class="containerOptionListing">
+            <div class="containerOptionListing" style="margin-bottom: 2rem;">
               <label for="imageRatioToggle">image free transform mode</label>
               <input type="checkbox" id="imageRatioToggle" />
             </div>
@@ -460,15 +464,14 @@
               <label for="wallpaperRepeatToggle"> tile wallpaper? </label>
               <input id="wallpaperRepeatToggle" type="checkbox" />
             </div>
-            <div class="containerOptionListing">
+            <div class="containerOptionListing" style="margin-bottom: 2rem;">
               <label for="wallpaperColorPicker">or, set wallpaper as solid color: </label>
               <input type="color" id="wallpaperColorPicker" />
             </div>
 
 
           <p class="menuHeader">change cursors</p>
-          <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
-
+            <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
             <div class="containerOptionListing">
               <label for="pointerCursorInput">change normal cursor:</label>
               <div style="display: flex; flex-direction: column; align-items: end;">
@@ -483,7 +486,7 @@
                 <button onclick="setGrabCursor()">set grabbing cursor</button>
               </div>
             </div>
-            <div class="containerOptionListing">
+            <div class="containerOptionListing" style="margin-bottom: 2rem;">
               <label for="linkCursorInput">change link cursor:</label>
               <div style="display: flex; flex-direction: column; align-items: end;">
                 <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
@@ -501,14 +504,14 @@
             </div>
           </div>
 
-          <audio id="audio" controls style="width: 100%">
-            <source id="audioSource" src="" type="audio/mp3" />
-          </audio>
-
           <div class="containerOptionListing">
             <label for="autoplayAudioToggle">auto-play when page loads? </label>
             <input id="autoplayAudioToggle" type="checkbox" checked />
           </div>
+
+          <audio id="audio" controls style="width: 100%">
+            <source id="audioSource" src="" type="audio/mp3" />
+          </audio>
 
           <p>
             (note: this will require either white-listing this site in your browser
@@ -2389,6 +2392,9 @@
         return;
       }
       audioLink = link;
+      document.getElementById("audioLinkInput").value = "";
+      document.getElementById("audioSource").src = audioLink;
+      document.getElementById("audio").load();
     }
 
     function toggleAutoplayAudio(checkbox) {
