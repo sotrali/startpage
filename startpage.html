@@ -69,6 +69,7 @@
         align-self: flex-end;
 
         height: 25rem;
+        width: 40rem;
         overflow: scroll;
       }
 
@@ -99,11 +100,16 @@
         font-weight: bold;
         text-decoration: underline;
       }
+
+      .tabContent {
+        display: none;
+        flex-direction: column;
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
       a.visited {
         color: black;
-      }
-      #ioTab {
-        flex-shrink: 1;
       }
 
       #containers {
@@ -112,17 +118,8 @@
       /*
       * SETTINGS PAGES
       */
-      form,
-      #instructionsForm {
-        display: none;
-        flex-direction: column;
-      }
-      .formTitle {
-        margin-bottom: 1rem;
-        text-decoration: underline;
-        font-style: italic;
-        align-self: center;
-      }
+     
+
       label {
         align-self: start;
       }
@@ -143,7 +140,6 @@
         margin: 0 0 0 0;
         padding: .5rem 0rem .5rem .5rem;
 
-        width: 100%;
       }
       .expandableMenuToggle.active, .expandableMenuToggle:hover {
         background-color: rgba(213, 205, 205, 1);
@@ -170,14 +166,17 @@
       }
 
       .containerListing {
+        border: 1px solid black;
+        margin-bottom: .5rem;
       }
 
       .manageButtons {
         display: flex;
-        flex-direction: reow;
+        flex-direction: row;
         justify-content: space-between;
 
-        margin: 1rem 0rem;
+        align-items: center;
+        padding: 1rem 0rem;
       }
       .bookmarkListingContainer {
         display: flex;
@@ -214,6 +213,11 @@
       input[type="color"] {
         width: 4rem;
       }
+      button {
+        border: none;
+        border-radius: 50px;
+        padding: .25rem .5rem .25rem .5rem;
+      }
 
       .bookmarkListingButtons {
       }
@@ -227,10 +231,9 @@
 
       .bookmarkDeleteButton {
       }
-      .bookmarkDeleteButton:hover {
+      .deleteButton:hover {
         background-color: rgba(173, 165, 165, 0.8);
         color: red;
-        cursor: pointer;
       }
 
       hr {
@@ -268,14 +271,8 @@
         </div>
       </div>
 
-      <div style="padding: 0 .5rem;">
-      <!-- note to self: 
-         - i should rename these so they don't end in "Form",
-         - rather something like "Page". to do that though i need
-         - to change the logic for switching tabs that has the string
-         - modification hardcoded
-      -->
-        <div id="instructionsForm">
+      <div>
+        <div id="instructionsPage" class="tabContent">
           <p>
             you are now editing the page!<br /><br />
 
@@ -365,7 +362,11 @@
               there are some keyboard shortcuts for your convenience:<br />
               "e" = enables editing mode<br />
               esc = disables editing mode (and saves page)<br /> 
-              "1"-"4" = jump between settings box tabs<br />
+              "1"-"4" = jump between settings box tabs<br /><br />
+
+              if you've accidentally pressed down on a "delete" button and want to
+              cancel, you can hit escape before releasing the mouse button to save 
+              your progress and prevent your thing from being deleted. 
             </p>
             <p>
               floating text:<br />
@@ -377,136 +378,142 @@
           </div>
         </div>
 
-        <form id="containerForm" onsubmit="return false">
-            <div>
-              <h2 class="menuHeader">add bookmark layer</h2>
-              <input
-                id="newTextContainerNameInput"
-                placeholder="(optional) layer name"
-                style="width: 100%"
-                type="text"
-              />
-              <button id="newTextContainerCreateButton" onclick="createNewTextContainer(this)">
-                create new layer
-              </button>
-            </div>
-            <div>
-              <h2 class="menuHeader">add image to page</h2>
-              <input
-                id="newImageContainerNameInput"
-                placeholder="(optional) image name"
-                style="width: 100%;"
-                type="text"
-              />
-              <input
-                id="newImageContainerUrlInput"
-                placeholder="direct URL to image"
-                style="width: 100%;"
-                type="text"
-              />
-              <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
-                place image
-              </button>
-              <a href="https://imgur.com/upload" target="_blank" style="color: black">imgur upload for convenience</a>
-              <h2 class="menuHeader">layers</h2>
-              <div id="containers"></div>
-          </div>
-        </form>
-
-        <form id="ioForm" onsubmit="return false">
-          <label>use the button below to copy your current configuration to your clipboard<br />(you should save this somewhere)</label>
-          <button onclick="exportData()">export data</button><br />
-
-          <input id="importDataInput" />
-          <button
-            onclick="importData()"
-            placeholder="paste exported data here to load"
-          >
-            import data
-          </button>
-        </form>
-
-        <form id="globalSettingsForm" onsubmit="return false">
+        <div id="containerPage" class="tabContent">
           <div>
-            <p class="menuHeader">image manipulation</p>
-              <div class="containerOptionListing">
-                <label for="imageRatioToggle">image free transform mode</label>
-                <input type="checkbox" id="imageRatioToggle" />
-              </div>
-
-            <p class="menuHeader">change page wallpaper</p>
-              <div class="containerOptionListing">
-                <label for="wallpaperUrl">set image as wallpaper: </label>
-                <div style="display: flex; flex-direction: column; align-items: end;">
-                  <input id="wallpaperUrl" placeholder="paste image URL" style="width: 10rem" />
-                  <br />
-                  <button id="submitUrl" onclick="changeWallpaper()">
-                    set image
-                  </button>
-                </div>
-              </div>
-              <div class="containerOptionListing">
-                <label for="wallpaperRepeatToggle"> tile wallpaper? </label>
-                <input id="wallpaperRepeatToggle" type="checkbox" />
-              </div>
-              <div class="containerOptionListing">
-                <label for="wallpaperColorPicker">or, set wallpaper as solid color: </label>
-                <input type="color" id="wallpaperColorPicker" />
-              </div>
-
-
-            <p class="menuHeader">change cursors</p>
-            <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
-
-              <div class="containerOptionListing">
-                <label for="pointerCursorInput">change normal cursor:</label>
-                <div style="display: flex; flex-direction: column; align-items: end;">
-                  <input id="pointerCursorInput" placeholder="paste link to image URL" />
-                  <button onclick="setDefaultCursor()">set normal cursor</button>
-                </div>
-              </div>
-              <div class="containerOptionListing">
-                <label for="grabCursorInput">change grab cursor:</label>
-                <div style="display: flex; flex-direction: column; align-items: end;">
-                  <input id="grabCursorInput" placeholder="paste link to image URL" />
-                  <button onclick="setGrabCursor()">set grabbing cursor</button>
-                </div>
-              </div>
-              <div class="containerOptionListing">
-                <label for="linkCursorInput">change link cursor:</label>
-                <div style="display: flex; flex-direction: column; align-items: end;">
-                  <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
-                  <button onclick="setLinkHoverCursor()">set link hover cursor</button>
-                </div>
-              </div>
-
-            <p class="menuHeader">audio</p>
-            <div class="containerOptionListing">
-              <label for=audioLinkInput">paste a direct URL to an audio file:</label>
-
-              <div style="display: flex; flex-direction: column; align-items: end;">
-                <input id="audioLinkInput" />
-                <button onclick="setAudioLink()">set audio</button>
-              </div>
-            </div>
-
-            <audio id="audio" controls style="width: 100%">
-              <source id="audioSource" src="" type="audio/mp3" />
-            </audio>
-
-            <div class="containerOptionListing">
-              <label for="autoplayAudioToggle">auto-play when page loads? </label>
-              <input id="autoplayAudioToggle" type="checkbox" checked />
-            </div>
-
-            <p>
-              (note: this will require white-listing this site in your browser.
-              you can whitelist local HTML files! the URL would be something like
-              "file:///C:/path/to/saved/file")
-            </p>
+            <h2 class="menuHeader">add bookmark layer</h2>
+            <input
+              id="newTextContainerNameInput"
+              placeholder="(optional) layer name"
+              style="width: 100%"
+              type="text"
+            />
+            <button id="newTextContainerCreateButton" onclick="createNewTextContainer(this)">
+              create new layer
+            </button>
           </div>
-        </form>
+
+          <div>
+            <h2 class="menuHeader">add image to page</h2>
+            <input
+              id="newImageContainerNameInput"
+              placeholder="(optional) image name"
+              style="width: 100%;"
+              type="text"
+            />
+            <input
+              id="newImageContainerUrlInput"
+              placeholder="direct URL to image"
+              style="width: 100%;"
+              type="text"
+            />
+            <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
+              place image
+            </button>
+            <a href="https://imgur.com/upload" target="_blank" style="color: black">imgur upload for convenience</a>
+            <h2 class="menuHeader">layers</h2>
+            <div style="display: flex; flex-direction: row; justify-content: space-around; margin-bottom: 1rem;">
+              <button onclick="collapseLayerListings()">collapse all listings</button>
+              <button onclick="expandLayerListings()">expand all listings</button>
+            </div>
+            <div id="containers"></div>
+          </div>
+        </div>
+
+        <div id="ioPage" class="tabContent">
+          <p>export current setup to clipboard (see help tab for more information):</p>
+          <div>
+            <button style="height: 3rem; width: 100%; margin-bottom: 2.5rem;" onclick="exportData()">export data</button>
+          </div>
+          <hr />
+          <div style="display: flex; flex-direction: column; margin-top: 2.5rem; gap: 1rem;">
+            <input id="importDataInput" style="width: 90%; align-self: center" placeholder="paste data to import here"/>
+            <button style="width: 100%; height: 3rem;" onclick="importData()" >
+              import data
+            </button>
+          </div>
+        </div>
+
+        <div id="globalSettingsPage" class="tabContent">
+          <p class="menuHeader">image manipulation</p>
+            <div class="containerOptionListing">
+              <label for="imageRatioToggle">image free transform mode</label>
+              <input type="checkbox" id="imageRatioToggle" />
+            </div>
+
+          <p class="menuHeader">change page wallpaper</p>
+            <div class="containerOptionListing">
+              <label for="wallpaperUrl">set image as wallpaper: </label>
+              <div style="display: flex; flex-direction: column; align-items: end;">
+                <input id="wallpaperUrl" placeholder="paste image URL" style="width: 10rem" />
+                <br />
+                <button id="submitUrl" onclick="changeWallpaper()">
+                  set image
+                </button>
+              </div>
+            </div>
+            <div class="containerOptionListing">
+              <label for="wallpaperRepeatToggle"> tile wallpaper? </label>
+              <input id="wallpaperRepeatToggle" type="checkbox" />
+            </div>
+            <div class="containerOptionListing">
+              <label for="wallpaperColorPicker">or, set wallpaper as solid color: </label>
+              <input type="color" id="wallpaperColorPicker" />
+            </div>
+
+
+          <p class="menuHeader">change cursors</p>
+          <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
+
+            <div class="containerOptionListing">
+              <label for="pointerCursorInput">change normal cursor:</label>
+              <div style="display: flex; flex-direction: column; align-items: end;">
+                <input id="pointerCursorInput" placeholder="paste link to image URL" />
+                <button onclick="setDefaultCursor()">set normal cursor</button>
+              </div>
+            </div>
+            <div class="containerOptionListing">
+              <label for="grabCursorInput">change grab cursor:</label>
+              <div style="display: flex; flex-direction: column; align-items: end;">
+                <input id="grabCursorInput" placeholder="paste link to image URL" />
+                <button onclick="setGrabCursor()">set grabbing cursor</button>
+              </div>
+            </div>
+            <div class="containerOptionListing">
+              <label for="linkCursorInput">change link cursor:</label>
+              <div style="display: flex; flex-direction: column; align-items: end;">
+                <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
+                <button onclick="setLinkHoverCursor()">set link hover cursor</button>
+              </div>
+            </div>
+
+          <p class="menuHeader">audio</p>
+          <div class="containerOptionListing">
+            <label for=audioLinkInput">paste a direct URL to an audio file:</label>
+
+            <div style="display: flex; flex-direction: column; align-items: end;">
+              <input id="audioLinkInput" />
+              <button onclick="setAudioLink()">set audio</button>
+            </div>
+          </div>
+
+          <audio id="audio" controls style="width: 100%">
+            <source id="audioSource" src="" type="audio/mp3" />
+          </audio>
+
+          <div class="containerOptionListing">
+            <label for="autoplayAudioToggle">auto-play when page loads? </label>
+            <input id="autoplayAudioToggle" type="checkbox" checked />
+          </div>
+
+          <p>
+            (note: this will require either white-listing this site in your browser
+            or generally enabling "allow auto-play audio" in your browser's settings.
+          </p>
+        </div>
     </div>
+
+    todo: make tab shortcuts.
+    also change section buttons to actual buttons, and collapse / expand all logic
   </body>
 
   <script>
@@ -651,7 +658,6 @@
           }
 
           this.initializeImageContainer();
-          // this.createImageContainerMenuListing();
         }
         // if constructing text container
         else {
@@ -867,12 +873,17 @@
       createTextContainerMenuListing() {
         let zindex = parseInt(this.containerSettings.zIndex);
         let upButtons = `
-            <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+          <div>
             <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
-          `;
+            <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+          </div>
+          
+        `;
         let downButtons = `
-          <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
-          <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+          <div ${zindex == 1 ? `` : `style="margin-top: .25rem;"`}>
+            <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
+            <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+          </div>
         `;
 
         document.getElementById("containers").insertAdjacentHTML(
@@ -884,7 +895,7 @@
             <p id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
             <p class="expandedMenuIndicator">-</p>
           </div>
-          <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
+          <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block; margin: 0;">
 
             <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
               <p>${this.name}: bookmarks</p>
@@ -1034,9 +1045,7 @@
                   <div class="containerOptionListing">
                     <div>
                       <p style="margin: 0;">
-                        change font (see instructions for more info):<br />
-                        <b>current font:</b>
-                        <span id=${this.id + "-settings-font-name"}></span>
+                        change font:<br />(see help tab for more info)<br />
                       </p>
                     </div>
 
@@ -1044,6 +1053,9 @@
                       <input  id=${this.id + "-settings-font-input"} />
                       <br />
                       <button id=${this.id + "-settings-set-font-button"}>set font</button>
+                      <br />
+                      <b>current font:</b>
+                      <span id=${this.id + "-settings-font-name"}></span>
                     </div>
                   </div>
                   <br />
@@ -1139,7 +1151,7 @@
                   ${zindex == 1 ? `` : downButtons}
                 </div>
               <div>
-                <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete layer</button>
+                <button id=${this.id + "--delete-button"} class="deleteButton" onclick="deleteContainer(this)">delete layer</button>
               </div>
             </div>
           </div>
@@ -1240,12 +1252,16 @@
       createImageContainerMenuListing() {
         let zindex = this.containerSettings.zIndex;
         let upButtons = `
-            <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+          <div>
             <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
-          `;
+            <button id="` + this.id + `--move-top-button"} onclick="reorderContainer(this, 'top')">summon to top</button>
+          </div>
+        `;
         let downButtons = `
-          <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
-          <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+          <div ${zindex == 1 ? `` : `style="margin-top: .25rem;"`}>
+            <button id="` + this.id + `--move-down-button"} onclick="reorderContainer(this, 'down')">move down</button>
+            <button id="` + this.id + `--move-bottom-button"} onclick="reorderContainer(this, 'bottom')">banish to bottom</button>
+          </div>
         `;
 
         document.getElementById("containers").insertAdjacentHTML(
@@ -1257,7 +1273,7 @@
               <p id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
               <p class="expandedMenuIndicator">-</p>
             </div>
-            <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block;">
+            <div class="expandableMenu" style="display: block; margin: 0;" id=${this.id + "-settings-menu"}>
 
               <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
                 <p>border + shape options</p>
@@ -1794,7 +1810,7 @@
       activeTabId =
         JSON.parse(localStorage.getItem("activeTabId")) || "instructionsTab";
       document.getElementById(
-        activeTabId.replace("Tab", "Form")
+        activeTabId.replace("Tab", "Page")
       ).style.display = "flex";
       document.getElementById(activeTabId).classList.add("active");
       // add tab-switching listeners 
@@ -2054,13 +2070,13 @@
       document.getElementById(activeTabId).classList.remove("active");
 
       document.getElementById(
-        activeTabId.replace("Tab", "Form")
+        activeTabId.replace("Tab", "Page")
       ).style.display = "none";
 
       // set new tab
       activeTabId = event.target.id;
       document.getElementById(
-        activeTabId.replace("Tab", "Form")
+        activeTabId.replace("Tab", "Page")
       ).style.display = "flex";
 
       document.getElementById(activeTabId).classList.add("active");
