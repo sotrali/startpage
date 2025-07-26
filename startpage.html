@@ -329,11 +329,12 @@
             </p>
             <hr />
             <p>
-              floating text:<br />
-              for floating text anywhere on the page, 
-              remove the border and set the background opacity of a layer to 
-              zero. then, add new sections to the bookmark list without any links.
-              customize the layer's "section" text to your liking and place freely.
+              <u>floating text</u>:<br />
+              for floating text anywhere on the page, remove the border and set the 
+              background opacity of a layer to zero.<br /> then, add new sections to the 
+              layer without any link information (sections can be added on their own).
+              customize the layer's "section" text to your liking and place the text 
+              wherever you want.
             </p>
           </div>
 
@@ -2596,7 +2597,7 @@
       if (url.length > 0 && !url.startsWith("http")) {
         url = "https://" + url; // append HTTPS to link if needed
       }
-      if (label == "" || url == "https://") {
+      if (section == "" && (label == "" || url == "https://")) {
         alert("you must specify url and label to add a bookmark");
         return;
       }
