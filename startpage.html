@@ -319,13 +319,13 @@
               there are some keyboard shortcuts for your convenience:<br />
               "e" = enables editing mode<br />
               esc = disables editing mode (and saves page)<br /> 
-              "1"-"4" = jump between settings box tabs<br /><br />
+              <!-- "1"-"4" = jump between settings box tabs<br /><br /> -->
             </p>
             <hr />
             <p>
-              if you've accidentally pressed down on a "delete" button and want to
-              cancel, you can hit escape before releasing the mouse button to save 
-              your progress and abort deletion. 
+              <u>precise adjustments:</u>
+              if you click on a slider to focus it, and then keep your mouse hovered over it, 
+              you can use the arrow keys to make minute adjustments.
             </p>
             <hr />
             <p>
@@ -580,7 +580,6 @@
     let editing = false;
     let moving = false;
     let resizing = false;
-    let removing = false;
     let changingElement;
     let lastMouseX = 0;
     let lastMouseY = 0;
@@ -975,10 +974,14 @@
                     <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
                   </div>
 
+                  <br />
+
                   <div class="containerOptionListing">
                     <label for=${this.id + "-settings-clock-color"}>set header text color: </label>
                     <input id=${this.id + "-settings-clock-color"} type="color" />
                   </div>
+ 
+                  <br />                                                    
 
                   <div class="containerOptionListing">
                     <label>set header font size (px): </label>
@@ -986,12 +989,12 @@
                   </div>
 
                   <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-clock-bold"}>bold header?</label>
+                    <label for=${this.id + "-settings-clock-bold"}>bold?</label>
                     <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
                   </div>
 
                   <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-clock-italic"}>italic header?</label>
+                    <label for=${this.id + "-settings-clock-italic"}>italic?</label>
                     <input id=${this.id + "-settings-clock-italic"} type="checkbox" />
                   </div>
 
@@ -1002,7 +1005,7 @@
                   </div>
 
                   <div class="containerOptionListing">
-                    <label>set divider color: </label>
+                    <label>divider color: </label>
                     <input id=${this.id + "-settings-divider-color"} type="color" />
                   </div>
               </div>
@@ -1025,12 +1028,12 @@
                   </div>
 
                   <div class="containerOptionListing">
-                    <label for="sectionBoldToggle">bold sections?</label>
+                    <label for="sectionBoldToggle">bold?</label>
                     <input id=${this.id + "-settings-section-bold"} type="checkbox" />
                   </div>
 
                   <div class="containerOptionListing">
-                    <label for="sectionItalicToggle">italic sections?</label>
+                    <label for="sectionItalicToggle">italic?</label>
                     <input id=${this.id + "-settings-section-italic"} type="checkbox" />
                   </div>
 
@@ -1098,13 +1101,13 @@
 
                   <div class="containerOptionListing">
                     <label for=${this.id + "-settings-bg-alpha"}>set background opacity (%): </label>
-                    <input id=${this.id + "-settings-bg-alpha"} />
+                    <input id=${this.id + "-settings-bg-alpha"} type="range" min="0" max="100" />
                   </div>
 
                 <p class="menuHeader">layer shape</p>
                   <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-border-radius"}>roundness (0 = square, 90 = circle): </label>
-                    <input id=${this.id + "-settings-border-radius"} placeholder="" />
+                    <label for=${this.id + "-settings-border-radius"}>roundness: </label>
+                    <input id=${this.id + "-settings-border-radius"} type="range" max="175" />
                   </div>
 
                 <p class="menuHeader">border</p>
@@ -1114,8 +1117,8 @@
                   </div>
 
                   <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-border-width"}>set border width (0px = no border): </label>
-                    <input id=${this.id + "-settings-border-width"} placeholder="0 for none" />
+                    <label for=${this.id + "-settings-border-width"}>set border width: </label>
+                    <input id=${this.id + "-settings-border-width"} type="range" min="0" max="100" />
                   </div>
 
                 
@@ -1128,22 +1131,26 @@
 
                   <div class="containerOptionListing">
                     <label>shadow opacity:</label>
-                    <input id=${this.id + "-settings-shadow-alpha"} />
+                    <input id=${this.id + "-settings-shadow-alpha"} type="range" min="0" max="100" />
+                  </div>
+
+                  <br />
+
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-shadow-x"}>shift shadow left/right: </label>
+                    <input id=${this.id + "-settings-shadow-x"} type="range" min="-1000" max="1000" />
                   </div>
 
                   <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-shadow-x"}>x-offset (in px): </label>
-                    <input id=${this.id + "-settings-shadow-x"} placeholder="all 0 for none" />
+                    <label for=${this.id + "-settings-shadow-y"}>shift shadow up/down: </label>
+                    <input id=${this.id + "-settings-shadow-y"} type="range" min="-1000" max="1000" />
                   </div>
 
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-shadow-y"}>y-offset (px): </label>
-                    <input id=${this.id + "-settings-shadow-y"} placeholder="all 0 for none" />
-                  </div>
+                  <br />
 
                   <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-shadow-blur"}>blur radius / fuzziness (px): </label>
-                    <input id=${this.id + "-settings-shadow-blur"} placeholder="all 0 for none" />
+                    <label for=${this.id + "-settings-shadow-blur"}>shadow sharpness/fuzziness: </label>
+                    <input id=${this.id + "-settings-shadow-blur"} type="range" min="0" max="200" />
                   </div>
                   
 
@@ -1280,51 +1287,52 @@
             </div>
             <div class="expandableMenu" style="display: block; margin: 0;" id=${this.id + "-settings-menu"}>
 
-              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-                <p>border + shape options</p>
-                <p class="expandedMenuIndicator">+</p>
-              </div>
-              <div class="expandableMenu">
+              <p class="menuHeader">image shape</p>
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-border-radius"}>roundness: </label>
+                    <input id=${this.id + "-settings-border-radius"} type="range" max="175" />
+                  </div>
 
-               <p class="menuHeader">change border + shape</p>
-                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-border-color"}>set border color: </label>
-                  <input id=${this.id + "-settings-border-color"} type="color" />
-                </div>
+                <p class="menuHeader">border</p>
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-border-color"}>set border color: </label>
+                    <input id=${this.id + "-settings-border-color"} type="color" />
+                  </div>
 
-                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-border-width"}>set border width (px): </label>
-                  <input id=${this.id + "-settings-border-width"} placeholder="0 for none" />
-                </div>
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-border-width"}>set border width: </label>
+                    <input id=${this.id + "-settings-border-width"} type="range" min="0" max="100" />
+                  </div>
 
-                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-border-radius"}>set container roundedness (px): </label>
-                  <input id=${this.id + "-settings-border-radius"} placeholder="0 for square" />
-                </div>
+                <p class="menuHeader">shadow / glow</p>
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-shadow-color"}>shadow color: </label>
+                    <input id=${this.id + "-settings-shadow-color"} type="color" />
+                  </div>
 
-               <p class="menuHeader">change shadow / glow</p>
-                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-shadow-x"}>x-offset (px): </label>
-                  <input id=${this.id + "-settings-shadow-x"} placeholder="all 0 for none" />
-                </div>
-                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-shadow-y"}>y-offset (px): </label>
-                  <input id=${this.id + "-settings-shadow-y"} placeholder="all 0 for none" />
-                </div>
-                <br />
-                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-shadow-blur"}>blur radius / fuzziness (px): </label>
-                  <input id=${this.id + "-settings-shadow-blur"} placeholder="all 0 for none" />
-                </div>
-                <br />
-                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-shadow-color"}>shadow color: </label>
-                  <input id=${this.id + "-settings-shadow-color"} type="color" />
-                </div>
-                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-shadow-alpha"}>shadow opacity:</label>
-                  <input id=${this.id + "-settings-shadow-alpha"} />
-                </div>
+                  <div class="containerOptionListing">
+                    <label>shadow opacity:</label>
+                    <input id=${this.id + "-settings-shadow-alpha"} type="range" min="0" max="100" />
+                  </div>
+
+                  <br />
+
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-shadow-x"}>shift shadow left/right: </label>
+                    <input id=${this.id + "-settings-shadow-x"} type="range" min="-1000" max="1000" />
+                  </div>
+
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-shadow-y"}>shift shadow up/down: </label>
+                    <input id=${this.id + "-settings-shadow-y"} type="range" min="-1000" max="1000" />
+                  </div>
+
+                  <br />
+
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-shadow-blur"}>shadow sharpness/fuzziness: </label>
+                    <input id=${this.id + "-settings-shadow-blur"} type="range" min="0" max="200" />
+                  </div>
               </div>
 
               <div class="manageButtons">
@@ -1701,6 +1709,7 @@
         if (e.key == "Escape" && editing) {
           toggleEditMode();
         }
+        /*
         if (e.key == "1" && editing) {
           changeActiveTab({target: { id: "containerTab" }});
         }
@@ -1712,7 +1721,7 @@
         }
         if (e.key == "4" && editing) {
           changeActiveTab({target: { id: "ioTab" }});
-        }
+        }            */
       });
 
       /** set up cursors */
@@ -2004,19 +2013,6 @@
         let movableElements = document.getElementsByClassName("movable");
         for (let i = 0; i < movableElements.length; i++) {
           movableElements[i].style.cursor = "";
-        }
-
-        // disable image removal mode active
-        if (removing) {
-          removing = false;
-          document.getElementById("imageRemovalToggle").checked = false;
-          let images = document.getElementsByClassName("userImage");
-          for (let i = 0; i < images.length; i++) {
-            images[i].classList.remove("removable");
-          }
-          document
-            .getElementById("imageRemovalWarning")
-            .classList.add("hidden");
         }
 
         // hide the settings container
@@ -2448,7 +2444,11 @@
 
     function mouseDownMovableElement(mouseDown) {
       /** MOVEMENT / RESIZING HANDLERS */
-      if (!editing || removing) {
+      if (!editing || 
+        mouseDown.target.tagName == "BUTTON" || 
+        mouseDown.target.tagName == "INPUT"  || 
+        mouseDown.target.classList.contains("expandableMenuToggle")
+      ) {
         return;
       }
 
