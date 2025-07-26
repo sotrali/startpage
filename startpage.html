@@ -902,7 +902,7 @@
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block; margin: 0;">
 
             <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-              <p>${this.name}: bookmarks</p>
+              <p>bookmarks</p>
               <p class="expandedMenuIndicator">+</p>
             </div>
             <div class="expandableMenu" id=${this.id + "-bookmark-menu"} >
@@ -951,210 +951,201 @@
               </div>
             </div>
             
-            <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-              <p>${this.name}: customize</p>
+          <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+              <p>color + shape options</p>
               <p class="expandedMenuIndicator">+</p>
             </div>
             <div class="expandableMenu">
 
-              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-                <p>header options</p>
-                <p class="expandedMenuIndicator">+</p>
-              </div>              
-              <div class="expandableMenu">
+              <p class="menuHeader">background color</p>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-bg-color"}>set background color: </label>
+                  <input id=${this.id + "-settings-bg-color"} type="color" />
+                </div>
 
-                <p class="menuHeader">date + time options</p>
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-date-toggle"}>show date?</label>
-                    <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
-                  </div>
-                  
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-clock-toggle"}>show clock?</label>
-                    <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
-                  </div>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-bg-alpha"}>set background opacity (%): </label>
+                  <input id=${this.id + "-settings-bg-alpha"} type="range" min="0" max="100" />
+                </div>
 
-                  <br />
+              <p class="menuHeader">layer shape</p>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-border-radius"}>roundness: </label>
+                  <input id=${this.id + "-settings-border-radius"} type="range" max="175" />
+                </div>
 
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-clock-color"}>set header text color: </label>
-                    <input id=${this.id + "-settings-clock-color"} type="color" />
-                  </div>
- 
-                  <br />                                                    
+              <p class="menuHeader">border</p>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-border-color"}>set border color: </label>
+                  <input id=${this.id + "-settings-border-color"} type="color" />
+                </div>
 
-                  <div class="containerOptionListing">
-                    <label>set header font size (px): </label>
-                    <input id=${this.id + "-settings-clock-size"} />
-                  </div>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-border-width"}>set border width: </label>
+                  <input id=${this.id + "-settings-border-width"} type="range" min="0" max="100" />
+                </div>
 
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-clock-bold"}>bold?</label>
-                    <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
-                  </div>
+              
 
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-clock-italic"}>italic?</label>
-                    <input id=${this.id + "-settings-clock-italic"} type="checkbox" />
-                  </div>
+              <p class="menuHeader">shadow / glow</p>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-shadow-color"}>shadow color: </label>
+                  <input id=${this.id + "-settings-shadow-color"} type="color" />
+                </div>
 
-                <p class="menuHeader">divider options</p>
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-divider-toggle"}>display divider?</label>
-                    <input id=${this.id + "-settings-divider-toggle"} type="checkbox" />
-                  </div>
+                <div class="containerOptionListing">
+                  <label>shadow opacity:</label>
+                  <input id=${this.id + "-settings-shadow-alpha"} type="range" min="0" max="100" />
+                </div>
 
-                  <div class="containerOptionListing">
-                    <label>divider color: </label>
-                    <input id=${this.id + "-settings-divider-color"} type="color" />
-                  </div>
-              </div>
+                <br />
 
-              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-                <p>text options</p>
-                <p class="expandedMenuIndicator">+</p>
-              </div>
-              <div class="expandableMenu">
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-shadow-x"}>shift shadow left/right: </label>
+                  <input id=${this.id + "-settings-shadow-x"} type="range" min="-1000" max="1000" />
+                </div>
 
-                <p class="menuHeader">section text options</p>
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-section-size"}>set section size (px): </label>
-                    <input id=${this.id + "-settings-section-size"} />
-                  </div>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-shadow-y"}>shift shadow up/down: </label>
+                  <input id=${this.id + "-settings-shadow-y"} type="range" min="-1000" max="1000" />
+                </div>
 
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-section-color"}>set section color: </label>
-                    <input id=${this.id + "-settings-section-color"} type="color" />
-                  </div>
+                <br />
 
-                  <div class="containerOptionListing">
-                    <label for="sectionBoldToggle">bold?</label>
-                    <input id=${this.id + "-settings-section-bold"} type="checkbox" />
-                  </div>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-shadow-blur"}>shadow sharpness/fuzziness: </label>
+                  <input id=${this.id + "-settings-shadow-blur"} type="range" min="0" max="200" />
+                </div>
+             </div>
 
-                  <div class="containerOptionListing">
-                    <label for="sectionItalicToggle">italic?</label>
-                    <input id=${this.id + "-settings-section-italic"} type="checkbox" />
-                  </div>
+            <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+              <p>header text options</p>
+              <p class="expandedMenuIndicator">+</p>
+            </div>              
+            <div class="expandableMenu">
 
-                <p class="menuHeader">bookmark text options</p>
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-link-size"}>set link size (px): </label>
-                    <input id=${this.id + "-settings-link-size"} />
-                  </div>
-
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-link-color"}>set link color: </label>
-                    <input id=${this.id + "-settings-link-color"} type="color" />
-                  </div>
-
-                <p class="menuHeader">layer-wide options</p>
-
-                  <div class="containerOptionListing">
-                    <div>
-                      <p style="margin: 0;">
-                        change font:<br />(see help tab for more info)<br />
-                      </p>
-                    </div>
-
-                    <div style="display: flex; flex-direction: column; align-items: end;">
-                      <input  id=${this.id + "-settings-font-input"} />
-                      <br />
-                      <button id=${this.id + "-settings-set-font-button"}>set font</button>
-                      <br />
-                      <b>current font:</b>
-                      <span id=${this.id + "-settings-font-name"}></span>
-                    </div>
-                  </div>
-                  <br />
-                 <div class="containerOptionListing" >
-                    <p style="margin-top: 0;">align text:</p>
-
-                    <div style="display: flex; flex-direction: column; align-items: end;">
-                      <div>
-                        <label for=${this.id + "-settings-left-align"}>left</label>
-                        <input id=${this.id + "-settings-left-align"} type="radio" name="align" />
-                      </div>
-                      <div>
-                        <label for=${this.id + "-settings-center-align"}>center</label>
-                        <input id=${this.id + "-settings-center-align"} type="radio" name="align" />
-                      </div>
-                      <div>
-                        <label for=${this.id + "-settings-right-align"}>right</label>
-                        <input id=${this.id + "-settings-right-align"} type="radio" name="align" />
-                      </div>
-                    </div>
-                  </div>
-              </div>
-
-              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-                <p>color + shape options</p>
-                <p class="expandedMenuIndicator">+</p>
-              </div>
-              <div class="expandableMenu">
-
-                <p class="menuHeader">background color</p>
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-bg-color"}>set background color: </label>
-                    <input id=${this.id + "-settings-bg-color"} type="color" />
-                  </div>
-
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-bg-alpha"}>set background opacity (%): </label>
-                    <input id=${this.id + "-settings-bg-alpha"} type="range" min="0" max="100" />
-                  </div>
-
-                <p class="menuHeader">layer shape</p>
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-border-radius"}>roundness: </label>
-                    <input id=${this.id + "-settings-border-radius"} type="range" max="175" />
-                  </div>
-
-                <p class="menuHeader">border</p>
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-border-color"}>set border color: </label>
-                    <input id=${this.id + "-settings-border-color"} type="color" />
-                  </div>
-
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-border-width"}>set border width: </label>
-                    <input id=${this.id + "-settings-border-width"} type="range" min="0" max="100" />
-                  </div>
-
+              <p class="menuHeader">date + time options</p>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-date-toggle"}>show date?</label>
+                  <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
+                </div>
                 
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-clock-toggle"}>show clock?</label>
+                  <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
+                </div>
 
-                <p class="menuHeader">shadow / glow</p>
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-shadow-color"}>shadow color: </label>
-                    <input id=${this.id + "-settings-shadow-color"} type="color" />
+                <br />
+
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-clock-color"}>set header text color: </label>
+                  <input id=${this.id + "-settings-clock-color"} type="color" />
+                </div>
+
+                <br />                                                    
+
+                <div class="containerOptionListing">
+                  <label>set header font size (px): </label>
+                  <input id=${this.id + "-settings-clock-size"} />
+                </div>
+
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-clock-bold"}>bold?</label>
+                  <input id=${this.id + "-settings-clock-bold"} type="checkbox" />
+                </div>
+
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-clock-italic"}>italic?</label>
+                  <input id=${this.id + "-settings-clock-italic"} type="checkbox" />
+                </div>
+
+              <p class="menuHeader">divider options</p>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-divider-toggle"}>display divider?</label>
+                  <input id=${this.id + "-settings-divider-toggle"} type="checkbox" />
+                </div>
+
+                <div class="containerOptionListing">
+                  <label>divider color: </label>
+                  <input id=${this.id + "-settings-divider-color"} type="color" />
+                </div>
+            </div>
+
+            <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
+              <p>general text options</p>
+              <p class="expandedMenuIndicator">+</p>
+            </div>
+            <div class="expandableMenu">
+
+              <p class="menuHeader">section text options</p>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-section-size"}>set section size (px): </label>
+                  <input id=${this.id + "-settings-section-size"} />
+                </div>
+
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-section-color"}>set section color: </label>
+                  <input id=${this.id + "-settings-section-color"} type="color" />
+                </div>
+
+                <div class="containerOptionListing">
+                  <label for="sectionBoldToggle">bold?</label>
+                  <input id=${this.id + "-settings-section-bold"} type="checkbox" />
+                </div>
+
+                <div class="containerOptionListing">
+                  <label for="sectionItalicToggle">italic?</label>
+                  <input id=${this.id + "-settings-section-italic"} type="checkbox" />
+                </div>
+
+              <p class="menuHeader">bookmark text options</p>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-link-size"}>set link size (px): </label>
+                  <input id=${this.id + "-settings-link-size"} />
+                </div>
+
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-link-color"}>set link color: </label>
+                  <input id=${this.id + "-settings-link-color"} type="color" />
+                </div>
+
+              <p class="menuHeader">layer-wide options</p>
+
+                <div class="containerOptionListing">
+                  <div>
+                    <p style="margin: 0;">
+                      change font:<br />(see help tab for more info)<br />
+                    </p>
                   </div>
 
-                  <div class="containerOptionListing">
-                    <label>shadow opacity:</label>
-                    <input id=${this.id + "-settings-shadow-alpha"} type="range" min="0" max="100" />
+                  <div style="display: flex; flex-direction: column; align-items: end;">
+                    <input  id=${this.id + "-settings-font-input"} />
+                    <br />
+                    <button id=${this.id + "-settings-set-font-button"}>set font</button>
+                    <br />
+                    <b>current font:</b>
+                    <span id=${this.id + "-settings-font-name"}></span>
                   </div>
+                </div>
+                <br />
+               <div class="containerOptionListing" >
+                  <p style="margin-top: 0;">align text:</p>
 
-                  <br />
-
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-shadow-x"}>shift shadow left/right: </label>
-                    <input id=${this.id + "-settings-shadow-x"} type="range" min="-1000" max="1000" />
+                  <div style="display: flex; flex-direction: column; align-items: end;">
+                    <div>
+                      <label for=${this.id + "-settings-left-align"}>left</label>
+                      <input id=${this.id + "-settings-left-align"} type="radio" name="align" />
+                    </div>
+                    <div>
+                      <label for=${this.id + "-settings-center-align"}>center</label>
+                      <input id=${this.id + "-settings-center-align"} type="radio" name="align" />
+                    </div>
+                    <div>
+                      <label for=${this.id + "-settings-right-align"}>right</label>
+                      <input id=${this.id + "-settings-right-align"} type="radio" name="align" />
+                    </div>
                   </div>
-
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-shadow-y"}>shift shadow up/down: </label>
-                    <input id=${this.id + "-settings-shadow-y"} type="range" min="-1000" max="1000" />
-                  </div>
-
-                  <br />
-
-                  <div class="containerOptionListing">
-                    <label for=${this.id + "-settings-shadow-blur"}>shadow sharpness/fuzziness: </label>
-                    <input id=${this.id + "-settings-shadow-blur"} type="range" min="0" max="200" />
-                  </div>
-                  
-
-               </div>
+                </div>
             </div>
           </div>
 
