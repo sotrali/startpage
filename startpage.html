@@ -650,7 +650,6 @@
           }
           else {
             numberTotalContainers++;
-            console.log("plus one numberTotalContainers (image)");
             if (name == "") this.name = "image " + numberOfImageContainers;
             else            this.name = name;
 
@@ -1881,30 +1880,6 @@
       });
     }
 
-
-    /** inserts saved images in their saved order (postioning done upon return) 
-    function initializeSavedImages() {
-      let numImages = 1;
-      // render each image in the map!
-      imageMap.forEach((value, test, map) => {
-        let data = containerDataMap.get(value.id);
-        document.body.insertAdjacentHTML(
-          "beforeend",
-          `
-          <img
-            class="movable userImage"
-            id="${value.id}"
-            onmousedown="bringImageToTop(this)"
-            style="z-index: ${numImages}; width: ${data.width}; height: ${data.height};"
-            src="${value.url}"
-            draggable=false
-          />
-        `
-        );
-        numImages++;
-      });
-    }*/
-
     /************************
      * LOCAL STATE MANAGERS *
      ************************/
@@ -2004,35 +1979,6 @@
 
     function toggleImageRatio() {
       keepImageRatio = !document.getElementById("imageRatioToggle").checked;
-    }
-
-    function toggleImageRemoval() {
-      removing = document.getElementById("imageRemovalToggle").checked;
-      let images = document.getElementsByClassName("userImage");
-      if (removing) {
-        for (let i = 0; i < images.length; i++) {
-          images[i].addEventListener(
-            "mousedown",
-            mouseDownRemovableElement,
-            false
-          );
-
-          document
-            .getElementById("imageRemovalWarning")
-            .classList.remove("hidden");
-        }
-      } else {
-        for (let i = 0; i < images.length; i++) {
-          images[i].removeEventListener(
-            "mousedown",
-            mouseDownRemovableElement,
-            false
-          );
-          document
-            .getElementById("imageRemovalWarning")
-            .classList.add("hidden");
-        }
-      }
     }
 
     /** handles the revealing/concealing of elements part of toggling edit mode */
@@ -2567,6 +2513,7 @@
       }
       document.getElementById("linkCursorInput").value = "";
     }
+    
     /**********************
      * BOOK MARK HANDLERS *
      **********************/
@@ -2711,103 +2658,7 @@
       container.loadBookmarks();
       container.loadBookmarkListings();
     }
-
-    /******************
-     * IMAGE HANDLERS *
-     ******************/
-
-    function addFloatingImage() {
-      // get image url from form
-      const form = document.getElementById("imageAndWallpaperForm");
-      const formData = new FormData(form);
-      let url = formData.get("url");
-
-      if (url == "") {
-        return;
-      }
-
-      // save image info to local arrays (saved for real upon stopping edit)
-      let keys = imageMap.keys();
-      let numImages = 1;
-      for (const key of keys) {
-        if (key.slice(-1) > numImages) {
-          numImages = parseInt(key.slice(-1));
-        }
-      }
-      numImages++;
-      imageMap.set("img-" + numImages, { id: "img-" + numImages, url: url });
-
-      // render image on page
-      let body = document.body;
-      body.insertAdjacentHTML(
-        "beforeend",
-        `
-        <img
-          class="movable userImage"
-          id="img-${numImages}"
-          onmousedown="bringImageToTop(this)"
-          style="z-index: ${numImages};"
-          src="${url}"
-          draggable=false />
-      `
-      );
-
-      changingElement = document.getElementById("img-" + numImages);
-
-      // make image movable + resizable
-      changingElement.addEventListener(
-        "mousedown",
-        mouseDownMovableElement,
-        true
-      );
-      // prevent right click from opening context menu when resizing
-      changingElement.addEventListener("contextmenu", (e) => {
-        e.preventDefault();
-      });
-
-      // save image size data (don"t use parentheses when calling storeElementData so it's callback)
-      changingElement.onload = storeElementData;
-
-      form.reset();
-    }
-
-    function bringImageToTop(imageTouched) {
-      // when an image gets clicked or dragged, bring it to top!
-
-      if (editing) {
-        // copy map values to temp list
-        let tempValuesList = [];
-        let orderHelper = [];
-        imageMap.forEach((value, key) => {
-          tempValuesList.push(value);
-          orderHelper.push(value.id);
-        });
-
-        // put clicked image at end of temp array
-        let imageIndex = orderHelper.indexOf(imageTouched.id);
-        tempValuesList.splice(imageIndex, 1);
-        tempValuesList.push(imageMap.get(imageTouched.id));
-
-        // set new z-indexes and repopulate map based on temp array
-        imageMap = new Map();
-        for (let i = 0; i < tempValuesList.length; i++) {
-          let element = document.getElementById(tempValuesList[i].id);
-          element.style.zIndex = i.toString();
-          imageMap.set(tempValuesList[i].id, tempValuesList[i]);
-        }
-      }
-    }
-
-    function mouseDownRemovableElement(mouseDown) {
-      if (!removing) {
-        return;
-      }
-      let imageToRemove = mouseDown.currentTarget.id;
-      containerDataMap.delete(imageToRemove);
-      imageMap.delete(imageToRemove);
-      document.getElementById(imageToRemove).remove();
-    }
-
+     
     /************************************
      * CONTAINER CUSTOMIZATION HANDLERS *
      ************************************/
