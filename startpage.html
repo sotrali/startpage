@@ -1769,6 +1769,8 @@
         .getElementById("wallpaperColorPicker")
         .addEventListener("input", changeWallpaper, false);
       document
+        .getElementById("wallpaperRepeatToggle")
+        .addEventListener("change", toggleWallpaperRepeat, false);
 
       /** load container data */
       let zIndexMapData = JSON.parse(localStorage.getItem("zIndexMapData")) || [];
@@ -2092,8 +2094,11 @@
       repeatWallpaper = this.checked;
       if (repeatWallpaper) {
         document.body.style.backgroundSize = "contain";
+        document.body.style.backgroundRepeat = "repeat";
+        
       } else {
         document.body.style.backgroundSize = "cover";
+        document.body.style.backgroundRepeat = "no-repeat";
       }
     }
 
