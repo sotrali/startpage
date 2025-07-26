@@ -630,7 +630,7 @@
           return;
         }
 
-        let loadingFromSave = (x != undefined) && (y != undefined);
+        let loadingFromSave = (id != undefined);
         let isImage = (imageUrl != undefined);
 
 
@@ -650,6 +650,7 @@
           }
           else {
             numberTotalContainers++;
+            console.log("plus one numberTotalContainers (image)");
             if (name == "") this.name = "image " + numberOfImageContainers;
             else            this.name = name;
 
@@ -1800,20 +1801,6 @@
           containerMapValues[i].sections
         ));
       }
-
-      /** 
-      if (numberTotalContainers == 0) {
-        new Container(
-          "container-0",
-          "setup help",
-          "15",
-          "15",
-          "150",
-          "100",
-          undefined,
-        );
-      }*/
-      
      
       /** set up + load settings menu data */
       settingsMenuData = JSON.parse(
