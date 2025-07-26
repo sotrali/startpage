@@ -176,7 +176,7 @@
         justify-content: space-between;
 
         align-items: center;
-        padding: 1rem 0rem;
+        padding: 1rem 1rem;
       }
       .bookmarkListingContainer {
         display: flex;
@@ -1156,15 +1156,15 @@
 
                </div>
             </div>
+          </div>
 
-            <div class="manageButtons">
-                <div id=${this.id + "--manage-buttons"} >
-                  ${zindex == numberTotalContainers ? `` : upButtons}
-                  ${zindex == 1 ? `` : downButtons}
-                </div>
-              <div>
-                <button id=${this.id + "--delete-button"} class="deleteButton" onclick="deleteContainer(this)">delete layer</button>
+          <div class="manageButtons">
+              <div id=${this.id + "--manage-buttons"} >
+                ${zindex == numberTotalContainers ? `` : upButtons}
+                ${zindex == 1 ? `` : downButtons}
               </div>
+            <div>
+              <button id=${this.id + "--delete-button"} class="deleteButton" onclick="deleteContainer(this)">delete layer</button>
             </div>
           </div>
           `
@@ -1333,16 +1333,15 @@
                     <label for=${this.id + "-settings-shadow-blur"}>shadow sharpness/fuzziness: </label>
                     <input id=${this.id + "-settings-shadow-blur"} type="range" min="0" max="200" />
                   </div>
-              </div>
+            </div>
 
-              <div class="manageButtons">
-                <div id=${this.id + "--manage-buttons"}>
-                  ${zindex == numberTotalContainers ? `` : upButtons}
-                  ${zindex == 1 ? `` : downButtons}
-                </div>
-                <div>
-                  <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete layer</button>
-                </div>
+            <div class="manageButtons">
+              <div id=${this.id + "--manage-buttons"}>
+                ${zindex == numberTotalContainers ? `` : upButtons}
+                ${zindex == 1 ? `` : downButtons}
+              </div>
+              <div>
+                <button id=${this.id + "--delete-button"} onclick="deleteContainer(this)">delete layer</button>
               </div>
             </div>
           </div>
