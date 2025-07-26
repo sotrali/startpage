@@ -2447,6 +2447,8 @@
       if (!editing || 
         mouseDown.target.tagName == "BUTTON" || 
         mouseDown.target.tagName == "INPUT"  || 
+        mouseDown.target.tagName == "LABEL"  || 
+        mouseDown.target.parentElement.classList.contains("expandableMenuToggle") ||
         mouseDown.target.classList.contains("expandableMenuToggle")
       ) {
         return;
