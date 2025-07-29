@@ -182,6 +182,12 @@
         display: flex;
         flex-direction: column;
       }
+      .renameAndClone {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        margin: .5rem .5rem 1rem 0;
+      }
 
       .sectionListingContainer {
         display: flex;
@@ -520,6 +526,7 @@
           </p>
         </div>
     </div>
+    todo: recoloring links and then adding a new one resets the color, and something else. check the refreshing of containers, yo!
   </body>
 
   <script>
@@ -901,6 +908,16 @@
           </div>
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block; margin: 0;">
 
+           <div class="renameAndClone">
+              <div>
+                <input id=${this.id + "--rename-input"} placeholder="new name here" />
+                <button id=${this.id + "--rename-button"} onclick="renameContainer(this)">rename layer</button>
+              </div>
+              <button id=${this.id + "--clone-button"} onclick="cloneContainer(this)">clone layer</button>
+            </div>
+
+            <hr />
+
             <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
               <p>bookmarks</p>
               <p class="expandedMenuIndicator">+</p>
@@ -1147,7 +1164,7 @@
                   </div>
                 </div>
             </div>
-          </div>
+           </div>
 
           <div class="manageButtons">
               <div id=${this.id + "--manage-buttons"} >
@@ -1278,6 +1295,16 @@
             </div>
             <div class="expandableMenu" style="display: block; margin: 0;" id=${this.id + "-settings-menu"}>
 
+              <div class="renameAndClone">
+                <div>
+                  <input id=${this.id + "--rename-input"} placeholder="new name here" />
+                  <button id=${this.id + "--rename-button"} onclick="renameContainer(this)">rename layer</button>
+                </div>
+                <button id=${this.id + "--clone-button"} onclick="cloneContainer(this)">clone layer</button>
+              </div>
+
+              <hr />
+
               <p class="menuHeader">image shape</p>
                   <div class="containerOptionListing">
                     <label for=${this.id + "-settings-border-radius"}>roundness: </label>
@@ -1324,6 +1351,8 @@
                     <label for=${this.id + "-settings-shadow-blur"}>shadow sharpness/fuzziness: </label>
                     <input id=${this.id + "-settings-shadow-blur"} type="range" min="0" max="200" />
                   </div>
+
+           
             </div>
 
             <div class="manageButtons">
@@ -2246,6 +2275,18 @@
 
       // and refresh the listings based on the new saved data
       updateContainerListingOrder();
+    }
+
+    function renameContainer(buttonPressed) {
+      let containerId = buttonPressed.id.split("--")[0];
+      let container = containerDataMap.get(containerId);
+
+      let newName = document.getElementById(containerId + "--rename-input").value;
+      container.name = newName;
+      document.getElementById(containerId + "--rename-input").value = ""; 
+
+      document.getElementById(containerId + "--listing-header").innerText = 
+        "[" + container.containerSettings.zIndex + "]: " + newName;
     }
 
     function deleteContainer(buttonPressed) {
