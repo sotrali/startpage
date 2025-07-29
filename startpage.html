@@ -2289,6 +2289,40 @@
         "[" + container.containerSettings.zIndex + "]: " + newName;
     }
 
+    function cloneContainer(buttonPressed) {
+      let containerId = buttonPressed.id.split("--")[0];
+      let container = containerDataMap.get(containerId);
+
+      let newSettings = JSON.parse(JSON.stringify(container.containerSettings));
+      newSettings.zIndex = numberTotalContainers + 1;
+
+      let newX = parseInt(container.x.slice(0, -2)) + 10;
+      let newY = parseInt(container.y.slice(0, -2)) + 10;
+
+      let clone = new Container(
+        findLowestAvailableId(),
+        container.name + " clone",
+        String(newX + "px"),
+        String(newY + "px"),
+        container.height,
+        container.width,
+        container.imageUrl,
+        newSettings,
+        container.sections
+      );
+      zIndexMap.set(numberTotalContainers + 1, clone.id);
+
+      if (clone.imageUrl == undefined) {
+        clone.createTextContainerMenuListing();
+      }
+      else {
+        clone.createImageContainerMenuListing();
+      }
+      clone.addSettingsMenuEventListeners();
+
+      numberTotalContainers++;
+      updateContainerListingOrder();
+    }
     function deleteContainer(buttonPressed) {
       let containerId = buttonPressed.id.split("--")[0];
       let container = containerDataMap.get(containerId);
