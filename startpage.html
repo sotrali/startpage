@@ -11,6 +11,13 @@
         display: none;
       }
 
+      .invertedX {
+        transform: scaleX(-1);
+      }
+      .invertedY {
+        transform: scaleY(-1);
+      }
+
       /*
       * CURSOR STUFF
       body {
@@ -527,6 +534,8 @@
         </div>
     </div>
     todo: recoloring links and then adding a new one resets the color, and something else. check the refreshing of containers, yo!
+    <br />also change add image to "add media" and add youtube iframe support
+    <br />also mirror images x/y?
   </body>
 
   <script>
@@ -1200,73 +1209,73 @@
             .replace("rgba(", "")
             .slice(0, -1)
             .split(",")[3] * 100;
-      // BORDER
-      document.getElementById(this.id + "-settings-border-color").value =
-        containerSettings.borderColor;
-      document.getElementById(this.id + "-settings-border-width").value =
-        containerSettings.borderWidth;
-      document.getElementById(this.id + "-settings-border-radius").value =
-        containerSettings.borderRadius;
-      // FONT
-      if (containerSettings.fontName == "") {
-        document.getElementById(this.id + "-settings-font-name").innerHTML =
-          "system default";
-      } else {
-        document.getElementById(this.id + "-settings-font-name").innerHTML =
-          containerSettings.fontName;
-      }
-      // TEXT ALIGNMENT
-      document.getElementById(this.id + "-settings-left-align").checked =
-        !containerSettings.textAlign == "left";
-      document.getElementById(this.id + "-settings-center-align").checked =
-        containerSettings.textAlign == "center";
-     document.getElementById(this.id + "-settings-right-align").checked =
-        containerSettings.textAlign == "right";
-     // BOOKMARK OPTIONS
-      document.getElementById(this.id + "-settings-section-color").value =
-        containerSettings.sectionColor;
-      document.getElementById(this.id + "-settings-section-size").value =
-        containerSettings.sectionSize;
-      document.getElementById(this.id + "-settings-section-bold").checked =
-        containerSettings.sectionBold;
-      document.getElementById(this.id + "-settings-section-italic").checked =
-        containerSettings.sectionItalic;
-      document.getElementById(this.id + "-settings-link-color").value =
-        containerSettings.linkColor;
-      document.getElementById(this.id + "-settings-link-size").value =
-        containerSettings.linkSize;
-      // BACKGROUND COLOR
-      document.getElementById(this.id + "-settings-bg-color").value =
-        rgbToHex(
+        // BORDER
+        document.getElementById(this.id + "-settings-border-color").value =
+          containerSettings.borderColor;
+        document.getElementById(this.id + "-settings-border-width").value =
+          containerSettings.borderWidth;
+        document.getElementById(this.id + "-settings-border-radius").value =
+          containerSettings.borderRadius;
+        // FONT
+        if (containerSettings.fontName == "") {
+          document.getElementById(this.id + "-settings-font-name").innerHTML =
+            "system default";
+        } else {
+          document.getElementById(this.id + "-settings-font-name").innerHTML =
+            containerSettings.fontName;
+        }
+        // TEXT ALIGNMENT
+        document.getElementById(this.id + "-settings-left-align").checked =
+          !containerSettings.textAlign == "left";
+        document.getElementById(this.id + "-settings-center-align").checked =
+          containerSettings.textAlign == "center";
+        document.getElementById(this.id + "-settings-right-align").checked =
+          containerSettings.textAlign == "right";
+        // BOOKMARK OPTIONS
+        document.getElementById(this.id + "-settings-section-color").value =
+          containerSettings.sectionColor;
+        document.getElementById(this.id + "-settings-section-size").value =
+          containerSettings.sectionSize;
+        document.getElementById(this.id + "-settings-section-bold").checked =
+          containerSettings.sectionBold;
+        document.getElementById(this.id + "-settings-section-italic").checked =
+          containerSettings.sectionItalic;
+        document.getElementById(this.id + "-settings-link-color").value =
+          containerSettings.linkColor;
+        document.getElementById(this.id + "-settings-link-size").value =
+          containerSettings.linkSize;
+        // BACKGROUND COLOR
+        document.getElementById(this.id + "-settings-bg-color").value =
+          rgbToHex(
+            containerSettings.backgroundRgba
+              .replace("rgba(", "")
+              .slice(0, -1)
+              .split(",")
+              .splice(0, 3)
+          );
+        document.getElementById(this.id + "-settings-bg-alpha").value =
           containerSettings.backgroundRgba
             .replace("rgba(", "")
             .slice(0, -1)
-            .split(",")
-            .splice(0, 3)
-        );
-      document.getElementById(this.id + "-settings-bg-alpha").value =
-        containerSettings.backgroundRgba
-          .replace("rgba(", "")
-          .slice(0, -1)
-          .split(",")[3] * 100;
-      // HEADER OPTIONS
-      document.getElementById(this.id + "-settings-date-toggle").checked =
-        containerSettings.enableDate;
-      document.getElementById(this.id + "-settings-clock-toggle").checked =
-        containerSettings.enableClock;
-      document.getElementById(this.id + "-settings-clock-color").value =
-        containerSettings.headerColor;
-      document.getElementById(this.id + "-settings-clock-size").value =
-        containerSettings.headerSize;
-      document.getElementById(this.id + "-settings-clock-bold").checked =
-        containerSettings.headerBold;
-      document.getElementById(this.id + "-settings-clock-italic").checked =
-        containerSettings.headerItalic;
-      // DIVIDER
-      document.getElementById(this.id + "-settings-divider-toggle").checked =
-        containerSettings.enableDivider;
-      document.getElementById(this.id + "-settings-divider-color").value =
-        containerSettings.dividerColor;
+            .split(",")[3] * 100;
+        // HEADER OPTIONS
+        document.getElementById(this.id + "-settings-date-toggle").checked =
+          containerSettings.enableDate;
+        document.getElementById(this.id + "-settings-clock-toggle").checked =
+          containerSettings.enableClock;
+        document.getElementById(this.id + "-settings-clock-color").value =
+          containerSettings.headerColor;
+        document.getElementById(this.id + "-settings-clock-size").value =
+          containerSettings.headerSize;
+        document.getElementById(this.id + "-settings-clock-bold").checked =
+          containerSettings.headerBold;
+        document.getElementById(this.id + "-settings-clock-italic").checked =
+          containerSettings.headerItalic;
+        // DIVIDER
+        document.getElementById(this.id + "-settings-divider-toggle").checked =
+          containerSettings.enableDivider;
+        document.getElementById(this.id + "-settings-divider-color").value =
+          containerSettings.dividerColor;
       }
 
       createImageContainerMenuListing() {
@@ -1405,6 +1414,9 @@
        * applies saved cosmetic customizations to container
        */
       applySettings() {
+        // makes sure that any old themes will still load
+        this.ensureBackwardsCompatibility();
+
         /** set options relevant to both image and text containers */
         /** POSITION */
         document.getElementById(this.id).style.top    = this.y;
@@ -1711,6 +1723,23 @@
         }
       }
 
+      ensureBackwardsCompatibility() {
+        let currentSettings;
+        if (this.imageUrl == undefined) {
+          currentSettings = Object.keys(defaultTextContainerSettings); 
+        } 
+        else {
+          currentSettings = Object.keys(defaultImageContainerSettings); 
+        }
+
+        for (let i = 0; i < currentSettings.length; i++) {
+          if (this.containerSettings[currentSettings[i]] == undefined) {
+            console.log("found missing option: ");
+            console.log(currentSettings[i]);
+            this.containerSettings[currentSettings[i]] = defaultTextContainerSettings[currentSettings[i]];
+          }
+        }
+      }
       
     }
 
