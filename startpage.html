@@ -537,7 +537,8 @@
         </div>
     </div>
     todo: 
-    <br />also change add image to "add media" and add youtube iframe support
+    <br />add youtube iframe support
+    <br />rename stuff. containerSettings -> container | better function names | imageUrl -> mediaUrl | etc.
   </body>
 
   <script>
@@ -681,7 +682,12 @@
             this.containerSettings.zIndex = numberOfImageContainers + numberOfTextContainers;
           }
 
-          this.initializeImageContainer();
+          if (imageUrl.includes("youtube.com")) {
+            this.initializeYoutubeContainer();
+          }
+          else {
+            this.initializeImageContainer();
+          }
         }
         else {
           numberOfTextContainers++;
@@ -736,6 +742,29 @@
             style="z-index: ${numberOfImageContainers + numberOfTextContainers};"
             src="${this.imageUrl}"
             draggable=false
+          />
+        `
+        );
+      }
+
+      initializeYoutubeContainer() {
+        let link = this.imageUrl;
+
+        let videoId = link.slice(link.indexOf("v=")+2, link.length);
+        if (videoId.includes("&")) {
+          videoId = videoId.slice(0, videoId.indexOf("&"));
+        }
+        
+        let embedLink = "https://www.youtube.com/embed/" + videoId;
+
+        document.body.insertAdjacentHTML(
+           "beforeend",
+          `
+          <iframe
+            class="movable userImage"
+            id="${this.id}"
+            style="z-index: ${numberOfImageContainers + numberOfTextContainers}; padding-top: 2rem;"
+            src="${embedLink}"
           />
         `
         );
