@@ -12,10 +12,13 @@
       }
 
       .invertedX {
-        transform: scaleX(-1);
+        transform: scale(-1, 1);
       }
       .invertedY {
-        transform: scaleY(-1);
+        transform: scale(1, -1);
+      }
+      .doubleInverted {
+        transform: scale(-1, -1);
       }
 
       /*
@@ -533,9 +536,8 @@
           </p>
         </div>
     </div>
-    todo: recoloring links and then adding a new one resets the color, and something else. check the refreshing of containers, yo!
+    todo: 
     <br />also change add image to "add media" and add youtube iframe support
-    <br />also mirror images x/y?
   </body>
 
   <script>
@@ -587,7 +589,9 @@
       shadowY: "0",
       shadowBlur: "0",
       shadowRgba: "rgba(255,255,255,.90)",
-      zIndex: ""
+      zIndex: "",
+      invertX: false,
+      invertY: false
     };
 
     let wallpaper = "";
@@ -646,11 +650,10 @@
         }
 
         let loadingFromSave = (id != undefined);
-        let isImage = (imageUrl != undefined);
+        let isMedia = (imageUrl != undefined);
 
 
-        // if constructing image container
-        if (isImage) {
+        if (isMedia) {
           numberOfImageContainers++;
 
           if (loadingFromSave) {
@@ -680,7 +683,6 @@
 
           this.initializeImageContainer();
         }
-        // if constructing text container
         else {
           numberOfTextContainers++;
 
@@ -722,8 +724,7 @@
       
 
       /**
-       * creates image element and lets
-       * loadBookmarks() and applySettings() do the rest
+       * creates image element, applySettings() will do the rest
        */
       initializeImageContainer() {
         document.body.insertAdjacentHTML(
@@ -741,8 +742,7 @@
       }
 
       /**
-       * creates shell HTML to hold bookmarks and lets
-       * loadBookmarks() and applySettings() do the rest
+       * creates text container element, loadBookmarks() and applySettings() do the rest 
        */
       initializeTextContainer() {
         // insert default container HTML
@@ -799,97 +799,8 @@
       }
       
       /**
-       * creates container options menu in page settings menu
+       * inserts and populates the settings inputs for the given text container
        */
-          /**
-            * TODO: 
-            * -> remove "images" from wallpaper tab
-            * -> furthermore, condense all global settings into one tab
-            * - including wallpaper, audio, cursor
-            * rename settings form div ids (see "note to self")
-            */
-
-      loadBookmarkListings() {
-        if (Object.keys(this.sections).length == 0) {
-          let bookmarkListings = document.getElementById(this.id + "-bookmark-menu--listings");
-          bookmarkListings.innerHTML = `<p style="padding: 0 0 .25rem 0; font-style: italic;">(there are no bookmarks to manage...)</p>`;
-          return;
-        }
-
-        let sectionData = Object.values(this.sections);
-        let containerSettings = this.containerSettings;
-
-        let bookmarkListings = document.getElementById(this.id + "-bookmark-menu--listings");
-        bookmarkListings.innerHTML = "";
-
-        // [in]render the section listings
-        for (let i = 0; i < sectionData.length; i++) {
-          bookmarkListings.insertAdjacentHTML(
-            "beforeend",
-            `
-              ${i == 0 ? "" : `<br />`}
-              <div id="${this.id}-section-listing--${i}" class="sectionListingContainer">
-                <span class=${this.id + "-section"}>
-                  ${sectionData[i].label == "" ? "<u>uncategorized links</u>: " : "<u>section</u>: " + sectionData[i].label}
-                </span>
-
-                <div class="bookmarkListingButtons">
-                  ${(i > 1) ? `
-                    <button onClick="reorderSection(this, 'up')" class="bookmarkButton">
-                      up
-                    </button>
-                  ` : `` }
-
-                  ${(i > 0) && (i < sectionData.length - 1) ? `
-                    <button onClick="reorderSection(this, 'down')" class="bookmarkButton">
-                        down
-                    </button>
-                  ` : `` }
-                  <button onClick="deleteSection(this)" class="deleteButton">delete section</button>
-                </div>
-              </div>
-            `
-          );
-        }
-
-        // [re]render the link listings
-        for (let s = sectionData.length - 1; s >= 0; s--) {
-          for (let l = sectionData[s].links.length - 1; l >= 0; l--) {
-            let targetSection = document.getElementById(
-              this.id + "-section-listing--" + s
-            );
-
-            targetSection.insertAdjacentHTML(
-              "afterend",
-              `
-                <div id="${this.id}-section-listing--${s}--${l}" class="linkListingContainer">
-                                    
-                  <span class="${this.id}-link">
-                    ${sectionData[s].links[l].label}
-                  </span>
-
-                  <div class="bookmarkListingButtons">
-                    ${l > 0 ? `
-                      <button onClick="reorderLink(this, 'up')" class="bookmarkButton">
-                        up
-                      </button>
-                    ` : ``
-                    }
-                    ${l < sectionData[s].links.length - 1 ? `
-                      <button onClick="reorderLink(this, 'down')" class="bookmarkButton">
-                        down
-                      </button>
-                    ` : ``
-                    }
-                    <button onClick="deleteLink(this)" class="deleteButton">delete link</button>
-                  </div>
-                </div>
-              `
-            );
-          }
-        }
-      }
-
       createTextContainerMenuListing() {
         let zindex = parseInt(this.containerSettings.zIndex);
         let upButtons = `
@@ -978,7 +889,7 @@
             </div>
             
           <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-              <p>color + shape options</p>
+              <p>shaping / color</p>
               <p class="expandedMenuIndicator">+</p>
             </div>
             <div class="expandableMenu">
@@ -1045,7 +956,7 @@
              </div>
 
             <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-              <p>header text options</p>
+              <p>date / clock / divider</p>
               <p class="expandedMenuIndicator">+</p>
             </div>              
             <div class="expandableMenu">
@@ -1098,7 +1009,7 @@
             </div>
 
             <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-              <p>general text options</p>
+              <p>general text / font options</p>
               <p class="expandedMenuIndicator">+</p>
             </div>
             <div class="expandableMenu">
@@ -1277,7 +1188,90 @@
         document.getElementById(this.id + "-settings-divider-color").value =
           containerSettings.dividerColor;
       }
+       
+      /**
+       * [re]renders bookmarks shown in the settings menu for a given text container
+       */
+      loadBookmarkListings() {
+        if (Object.keys(this.sections).length == 0) {
+          let bookmarkListings = document.getElementById(this.id + "-bookmark-menu--listings");
+          bookmarkListings.innerHTML = `<p style="padding: 0 0 .25rem 0; font-style: italic;">(there are no bookmarks to manage...)</p>`;
+          return;
+        }
 
+        let sectionData = Object.values(this.sections);
+        let containerSettings = this.containerSettings;
+
+        let bookmarkListings = document.getElementById(this.id + "-bookmark-menu--listings");
+        bookmarkListings.innerHTML = "";
+
+        // [in]render the section listings
+        for (let i = 0; i < sectionData.length; i++) {
+          bookmarkListings.insertAdjacentHTML(
+            "beforeend",
+            `
+              ${i == 0 ? "" : `<br />`}
+              <div id="${this.id}-section-listing--${i}" class="sectionListingContainer">
+                <span class=${this.id + "-section"}>
+                  ${sectionData[i].label == "" ? "<u>uncategorized links</u>: " : "<u>section</u>: " + sectionData[i].label}
+                </span>
+
+                <div class="bookmarkListingButtons">
+                  ${(i > 1) ? `
+                    <button onClick="reorderSection(this, 'up')" class="bookmarkButton">
+                      up
+                    </button>
+                  ` : `` }
+
+                  ${(i > 0) && (i < sectionData.length - 1) ? `
+                    <button onClick="reorderSection(this, 'down')" class="bookmarkButton">
+                        down
+                    </button>
+                  ` : `` }
+                  <button onClick="deleteSection(this)" class="deleteButton">delete section</button>
+                </div>
+              </div>
+            `
+          );
+        }
+
+        // [re]render the link listings
+        for (let s = sectionData.length - 1; s >= 0; s--) {
+          for (let l = sectionData[s].links.length - 1; l >= 0; l--) {
+            let targetSection = document.getElementById(
+              this.id + "-section-listing--" + s
+            );
+
+            targetSection.insertAdjacentHTML(
+              "afterend",
+              `
+                <div id="${this.id}-section-listing--${s}--${l}" class="linkListingContainer">
+                                    
+                  <span class="${this.id}-link">
+                    ${sectionData[s].links[l].label}
+                  </span>
+
+                  <div class="bookmarkListingButtons">
+                    ${l > 0 ? `
+                      <button onClick="reorderLink(this, 'up')" class="bookmarkButton">
+                        up
+                      </button>
+                    ` : ``
+                    }
+                    ${l < sectionData[s].links.length - 1 ? `
+                      <button onClick="reorderLink(this, 'down')" class="bookmarkButton">
+                        down
+                      </button>
+                    ` : ``
+                    }
+                    <button onClick="deleteLink(this)" class="deleteButton">delete link</button>
+                  </div>
+                </div>
+              `
+            );
+          }
+        }
+      }
       createImageContainerMenuListing() {
         let zindex = this.containerSettings.zIndex;
         let upButtons = `
@@ -1360,8 +1354,16 @@
                     <label for=${this.id + "-settings-shadow-blur"}>shadow sharpness/fuzziness: </label>
                     <input id=${this.id + "-settings-shadow-blur"} type="range" min="0" max="200" />
                   </div>
-
            
+                <p class="menuHeader">mirroring</p>
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-mirror-x"}>mirror horizontally</label>
+                    <input id=${this.id + "-settings-mirror-x"} type="checkbox" />
+                  </div>
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-mirror-y"}>mirror vertically</label>
+                    <input id=${this.id + "-settings-mirror-y"} type="checkbox" />
+                  </div>
             </div>
 
             <div class="manageButtons">
@@ -1406,160 +1408,18 @@
           containerSettings.borderWidth;
         document.getElementById(this.id + "-settings-border-radius").value =
           containerSettings.borderRadius;
+        // MIRRORING
+        document.getElementById(this.id + "-settings-mirror-x").checked =
+          containerSettings.invertX; 
+        document.getElementById(this.id + "-settings-mirror-y").checked =
+          containerSettings.invertY;
       }
-
-
-
-      /*
-       * applies saved cosmetic customizations to container
-       */
-      applySettings() {
-        // makes sure that any old themes will still load
-        this.ensureBackwardsCompatibility();
-
-        /** set options relevant to both image and text containers */
-        /** POSITION */
-        document.getElementById(this.id).style.top    = this.y;
-        document.getElementById(this.id).style.left   = this.x;
-        document.getElementById(this.id).style.zIndex = this.containerSettings.zIndex;
-        
-        /** SIZE */
-        let containerSettings = this.containerSettings;
-        document.getElementById(this.id).style.width = this.width + "px";
-          // this.width - 2 * parseInt(containerSettings.borderWidth);
-        document.getElementById(this.id).style.height = this.height + "px";
-          // this.height - 2 * parseInt(containerSettings.borderWidth);
-
-        /** SHADOW / GLOW */
-        document.getElementById(this.id).style.boxShadow =
-          containerSettings.shadowX +
-          "px " +
-          containerSettings.shadowY +
-          "px " +
-          containerSettings.shadowBlur +
-          "px " +
-          containerSettings.shadowRgba;
-
-        /** BORDER */
-        document.getElementById(this.id).style.borderStyle = "solid";
-        document.getElementById(this.id).style.borderWidth =
-          containerSettings.borderWidth + "px";
-        document.getElementById(this.id).style.borderRadius =
-          containerSettings.borderRadius + "px";
-        document.getElementById(this.id).style.borderColor =
-          containerSettings.borderColor;
-
-
-        /** if this is an image container, all relevant settings have been applied */
-        if (this.imageUrl != undefined) {
-          return;
-        }
-
-        /** FONT */
-        if (containerSettings.fontCode != "") {
-          document.head.insertAdjacentHTML(
-            "beforeend",
-            containerSettings.fontCode
-          );
-          document.getElementById(this.id).style.fontFamily =
-            containerSettings.fontName;
-        }
-
-        /** TEXT ALIGNMENT */
-        if (containerSettings.textAlign == "center") {
-          document.getElementById(this.id).style.textAlign = "center";
-        } else if (containerSettings.textAlign == "left") {
-          document.getElementById(this.id).style.textAlign = "left";
-        } else if (containerSettings.textAlign == "right") {
-          document.getElementById(this.id).style.textAlign = "right";
-        }
-
-        /** BOOKMARK CUSTOMIZATION */
-        // apply link customization
-        let linkElements = document.getElementsByClassName(this.id + "-link");
-        for (let i = 0; i < linkElements.length; i++) {
-          linkElements[i].style.color = containerSettings.linkColor;
-          linkElements[i].style.fontSize = containerSettings.linkSize + "px";
-        }
-        // apply section customization
-        let sectionElements = document.getElementsByClassName(this.id + "-section");
-        for (let i = 0; i < sectionElements.length; i++) {
-          sectionElements[i].style.color = containerSettings.sectionColor;
-          sectionElements[i].style.fontSize = containerSettings.sectionSize + "px";
-          sectionElements[i].style.fontWeight = containerSettings.sectionBold ? "bold" : "normal";
-          sectionElements[i].style.fontStyle = containerSettings.sectionItalic ? "italic" : "normal";
-        }
-
-
-        /** BACKGROUND COLOR */
-        document.getElementById(this.id).style.backgroundColor =
-          containerSettings.backgroundRgba;
-
-
-        /** HEADER  */
-        // show header elements
-        document.getElementById(this.id + "-date").style.display = 
-            containerSettings.enableDate ? "inline" : "none";
-        document.getElementById(this.id + "-clock").style.display = 
-            containerSettings.enableClock ? "inline" : "none";
-        // apply header customizations
-        document.getElementById(this.id + "-header").style.color =
-          containerSettings.headerColor;
-        document.getElementById(this.id + "-header").style.fontSize =
-          containerSettings.headerSize + "px";
-        document.getElementById(this.id + "-header").style.fontWeight =
-          containerSettings.headerBold ? "bold" : "normal";
-        document.getElementById(this.id + "-header").style.fontStyle =
-          containerSettings.headerItalic ? "italic" : "normal";
-
-
-        /** DIVIDER */
-        let divider = document.getElementById(this.id + "-divider");
-        if (!containerSettings.enableDivider) {
-          document.getElementById(this.id + "-divider").hidden = true;
-          // if there are links in this container, add room under the divider
-          if (Object.keys(this.sections).length > 0) {
-            document.getElementById(this.id + "-header").style.marginBottom =
-              "18px";
-          }
-        } else {
-          divider.style.color = containerSettings.dividerColor;
-          divider.style.backgroundColor = containerSettings.dividerColor;
-          divider.style.borderColor = containerSettings.dividerColor;
-        }
-      }
-
+      
       /**
-       * applies event listeners for the container
-      */
-      addContainerEventListeners() {
-        let container = document.getElementById(this.id);
-
-        // make element movable + resizable
-        container.addEventListener(
-          "mousedown",
-          mouseDownMovableElement,
-          true
-        );
-        // prevent context menu when resizing
-        container.addEventListener("contextmenu", (e) => {
-          e.preventDefault();
-        });
-
-        // stop resizing element if cursor leaves page
-        document.addEventListener("mouseleave", (mouseLeave) => {
-          if (resizing) {
-            resizing = false;
-            document.removeEventListener("mousemove", resizeElement);
-            storeElementData();
-          }
-        });
-      }
-
-      /**
-       * applies event listeners on container options inputs in settings menu
+       * applies event listeners on container options inputs in settings menu (both text+media containers)
        */
       addSettingsMenuEventListeners() {
+        /** apply listeners for both text+media containers */
         // container border setting listeners
         document
           .getElementById(this.id + "-settings-border-color")
@@ -1587,12 +1447,19 @@
           .getElementById(this.id + "-settings-shadow-alpha")
           .addEventListener("input", changeContainerShadow, false);
 
-        /** if this is an image container, all relevant listeners have been applied */
+        /** if this is an media container, settings diverge here */
         if (this.imageUrl != undefined) {
+          document
+            .getElementById(this.id + "-settings-mirror-x")
+            .addEventListener("change", toggleMirrorX, false);
+          document
+            .getElementById(this.id + "-settings-mirror-y")
+            .addEventListener("change", toggleMirrorY, false);          
           return;
         }
 
-        // conatiner background color setting listeners
+        /** text-only settings */
+        // container background color setting listeners
         document
           .getElementById(this.id + "-settings-bg-color")
           .addEventListener("input", changeContainerBackground, false);
@@ -1660,7 +1527,152 @@
           .getElementById(this.id + "-settings-divider-color")
           .addEventListener("input", changeDividerColor, false);
       }
+       
+      /*
+       * applies saved cosmetic customizations to container upon init (both text+media containers)
+       */
+      applySettings() {
+        // make sure old themes will still load
+        this.ensureBackwardsCompatibility();
 
+        /** apply customizations relevant to both image and text containers */
+        /** POSITION */
+        document.getElementById(this.id).style.top    = this.y;
+        document.getElementById(this.id).style.left   = this.x;
+        document.getElementById(this.id).style.zIndex = this.containerSettings.zIndex;
+        
+        /** SIZE */
+        let containerSettings = this.containerSettings;
+        document.getElementById(this.id).style.width = this.width + "px";
+          // this.width - 2 * parseInt(containerSettings.borderWidth);
+        document.getElementById(this.id).style.height = this.height + "px";
+          // this.height - 2 * parseInt(containerSettings.borderWidth);
+
+        /** SHADOW / GLOW */
+        document.getElementById(this.id).style.boxShadow =
+          containerSettings.shadowX +
+          "px " +
+          containerSettings.shadowY +
+          "px " +
+          containerSettings.shadowBlur +
+          "px " +
+          containerSettings.shadowRgba;
+
+        /** BORDER */
+        document.getElementById(this.id).style.borderStyle = "solid";
+        document.getElementById(this.id).style.borderWidth =
+          containerSettings.borderWidth + "px";
+        document.getElementById(this.id).style.borderRadius =
+          containerSettings.borderRadius + "px";
+        document.getElementById(this.id).style.borderColor =
+          containerSettings.borderColor;
+
+
+        /** if this is a media container, settings diverge */
+        if (this.imageUrl != undefined) {
+          let invertX = containerSettings.invertX;
+          let invertY = containerSettings.invertY;
+
+          if (invertY && invertX) {
+            document.getElementById(this.id).classList.add("doubleInverted"); 
+          }
+          else if (invertX) {
+            document.getElementById(this.id).classList.add("invertedX"); 
+          }
+          else if (invertY) {
+            document.getElementById(this.id).classList.toggle("invertedY"); 
+          }
+
+          return;
+        }
+
+        /** apply text-container-only customizations */
+        /** FONT */
+        if (containerSettings.fontCode != "") {
+          document.head.insertAdjacentHTML(
+            "beforeend",
+            containerSettings.fontCode
+          );
+          document.getElementById(this.id).style.fontFamily =
+            containerSettings.fontName;
+        }
+
+        /** TEXT ALIGNMENT */
+        if (containerSettings.textAlign == "center") {
+          document.getElementById(this.id).style.textAlign = "center";
+        } else if (containerSettings.textAlign == "left") {
+          document.getElementById(this.id).style.textAlign = "left";
+        } else if (containerSettings.textAlign == "right") {
+          document.getElementById(this.id).style.textAlign = "right";
+        }
+
+        /** BOOKMARK CUSTOMIZATION HAPPENS IN loadBookmarks() FOR EASIER, 
+          LESS INTENSE RE-RENDERING WHEN BOOKMARK CUSTOMIZATIONS CHANGE */
+
+        /** BACKGROUND COLOR */
+        document.getElementById(this.id).style.backgroundColor =
+          containerSettings.backgroundRgba;
+
+        /** HEADER  */
+        // show header elements
+        document.getElementById(this.id + "-date").style.display = 
+            containerSettings.enableDate ? "inline" : "none";
+        document.getElementById(this.id + "-clock").style.display = 
+            containerSettings.enableClock ? "inline" : "none";
+        // apply header customizations
+        document.getElementById(this.id + "-header").style.color =
+          containerSettings.headerColor;
+        document.getElementById(this.id + "-header").style.fontSize =
+          containerSettings.headerSize + "px";
+        document.getElementById(this.id + "-header").style.fontWeight =
+          containerSettings.headerBold ? "bold" : "normal";
+        document.getElementById(this.id + "-header").style.fontStyle =
+          containerSettings.headerItalic ? "italic" : "normal";
+
+        /** DIVIDER */
+        let divider = document.getElementById(this.id + "-divider");
+        if (!containerSettings.enableDivider) {
+          document.getElementById(this.id + "-divider").hidden = true;
+          // if there are links in this container, add room under the divider
+          if (Object.keys(this.sections).length > 0) {
+            document.getElementById(this.id + "-header").style.marginBottom =
+              "18px";
+          }
+        } else {
+          divider.style.color = containerSettings.dividerColor;
+          divider.style.backgroundColor = containerSettings.dividerColor;
+          divider.style.borderColor = containerSettings.dividerColor;
+        }
+      }
+
+      /**
+       * applies event listeners (moving/resizing) for the container
+      */
+      addContainerEventListeners() {
+        let container = document.getElementById(this.id);
+
+        // make element movable + resizable
+        container.addEventListener(
+          "mousedown",
+          mouseDownMovableElement,
+          true
+        );
+        // prevent context menu when resizing
+        container.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+        });
+
+        // stop resizing element if cursor leaves page
+        document.addEventListener("mouseleave", (mouseLeave) => {
+          if (resizing) {
+            resizing = false;
+            document.removeEventListener("mousemove", resizeElement);
+            storeElementData();
+          }
+        });
+      }
+
+      
       /**
        * [re]renders saved bookmark sections + links for container
        */
@@ -1721,31 +1733,58 @@
         if (!containerSettings.enableDivider) {
           document.getElementById(this.id + "-header").style.marginBottom = "18px";
         }
+
+        // apply link customization
+        let linkElements = document.getElementsByClassName(this.id + "-link");
+        for (let i = 0; i < linkElements.length; i++) {
+          linkElements[i].style.color = containerSettings.linkColor;
+          linkElements[i].style.fontSize = containerSettings.linkSize + "px";
+        }
+        // apply section customization
+        let sectionElements = document.getElementsByClassName(this.id + "-section");
+        for (let i = 0; i < sectionElements.length; i++) {
+          sectionElements[i].style.color = containerSettings.sectionColor;
+          sectionElements[i].style.fontSize = containerSettings.sectionSize + "px";
+          sectionElements[i].style.fontWeight = containerSettings.sectionBold ? "bold" : "normal";
+          sectionElements[i].style.fontStyle = containerSettings.sectionItalic ? "italic" : "normal";
+        }
       }
 
+      /**
+       * if a container is imported and missing a setting, add it and set to default
+       */
       ensureBackwardsCompatibility() {
         let currentSettings;
-        if (this.imageUrl == undefined) {
-          currentSettings = Object.keys(defaultTextContainerSettings); 
+        if (this.imageUrl != undefined) {
+          currentSettings = Object.keys(defaultImageContainerSettings); 
         } 
         else {
-          currentSettings = Object.keys(defaultImageContainerSettings); 
+          currentSettings = Object.keys(defaultTextContainerSettings); 
         }
 
         for (let i = 0; i < currentSettings.length; i++) {
           if (this.containerSettings[currentSettings[i]] == undefined) {
+
             console.log("found missing option: ");
             console.log(currentSettings[i]);
-            this.containerSettings[currentSettings[i]] = defaultTextContainerSettings[currentSettings[i]];
+
+            if (this.imageUrl != undefined) {
+              this.containerSettings[currentSettings[i]] = 
+                defaultImageContainerSettings[currentSettings[i]];
+            }
+            else {
+              this.containerSettings[currentSettings[i]] = 
+                defaultTextContainerSettings[currentSettings[i]];
+            }
           }
         }
       }
       
     }
 
-    /*************************
-     * constructor / init :p *
-     *************************/
+    /******************************
+     * page constructor / init :p *
+     ******************************/
     (() => {
       window.onbeforeunload = unloadPage;
       
@@ -2887,7 +2926,7 @@
       let containerId = colorChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-     container.containerSettings.headerColor = colorChange.target.value;
+      container.containerSettings.headerColor = colorChange.target.value;
       document.getElementById(containerId + "-header").style.color =
         container.containerSettings.headerColor;
     }
@@ -2922,7 +2961,7 @@
       let containerId = colorChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-     container.containerSettings.dividerColor = colorChange.target.value;
+      container.containerSettings.dividerColor = colorChange.target.value;
       let divider = document.getElementById(containerId + "-divider");
       // set multiple places for compatibility
       divider.style.color = container.containerSettings.dividerColor;
@@ -2943,7 +2982,8 @@
         document.getElementById(containerId + "-clock").style.marginBottom = "0px";
       }
     }
-    // TEXT
+
+    // GENERAL TEXT SETTINGS
     function changeContainerAlignment(alignmentChanged) {
       let containerId = alignmentChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
@@ -3017,6 +3057,47 @@
 
       // set shadow
       document.getElementById(containerId).style.boxShadow = shadow;
+    }
+
+    // IMAGE INVERSION
+    function toggleMirrorX(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId);
+      let invertX = checkboxChanged.target.checked;
+
+      container.containerSettings.invertX = invertX;
+
+      if (invertX && container.containerSettings.invertY) {
+        document.getElementById(containerId).classList.remove("invertedY"); 
+        document.getElementById(containerId).classList.add("doubleInverted"); 
+      }
+      else if (!invertX && document.getElementById(containerId).classList.contains("doubleInverted")) {
+        document.getElementById(containerId).classList.remove("doubleInverted"); 
+        document.getElementById(containerId).classList.add("invertedY"); 
+      }
+      else {
+        document.getElementById(containerId).classList.toggle("invertedX"); 
+      }  
+    }
+
+    function toggleMirrorY(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId);
+      let invertY = checkboxChanged.target.checked;
+
+      container.containerSettings.invertY = invertY;
+
+      if (invertY && container.containerSettings.invertX) {
+        document.getElementById(containerId).classList.remove("invertedX"); 
+        document.getElementById(containerId).classList.add("doubleInverted"); 
+      }
+      else if (!invertY && document.getElementById(containerId).classList.contains("doubleInverted")) {
+        document.getElementById(containerId).classList.remove("doubleInverted"); 
+        document.getElementById(containerId).classList.add("invertedX"); 
+      }
+      else {
+        document.getElementById(containerId).classList.toggle("invertedY"); 
+      }
     }
 
     /************************************
