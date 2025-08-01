@@ -60,6 +60,20 @@
         flex-direction: column;
         width: 100%;
         margin: auto;
+        overflow: auto;
+      }
+
+      .youtubeEmbed {
+        width: 100%;
+        height: 100%;
+        position:absolute; 
+        border: none;
+      }
+      .youtubeEmbedCover {
+         width: 100%; 
+         height: 100%; 
+         background-color: rgba(250,0,0,.5);
+         position: absolute;
       }
 
       .section {
@@ -488,7 +502,7 @@
 
 
           <p class="menuHeader">change cursors</p>
-            <p>for reference: <a href="https://www.totallyfreecursors.com/">cursors</a></p>
+            <p>for reference: <a target="_blank" href="https://www.totallyfreecursors.com/">cursors</a></p>
             <div class="containerOptionListing">
               <label for="pointerCursorInput">change normal cursor:</label>
               <div style="display: flex; flex-direction: column; align-items: end;">
@@ -537,7 +551,7 @@
         </div>
     </div>
     todo: 
-    <br />add youtube iframe support
+    <br />add youtube autoplay support
     <br />rename stuff. containerSettings -> container | better function names | imageUrl -> mediaUrl | etc.
   </body>
 
@@ -682,7 +696,7 @@
             this.containerSettings.zIndex = numberOfImageContainers + numberOfTextContainers;
           }
 
-          if (imageUrl.includes("youtube.com")) {
+          if (imageUrl.includes("youtube.com") || imageUrl.includes("youtu.be")) {
             this.initializeYoutubeContainer();
           }
           else {
@@ -737,7 +751,7 @@
           "beforeend",
           `
           <img
-            class="movable userImage"
+            class="movable youtubeEmbed"
             id="${this.id}"
             style="z-index: ${numberOfImageContainers + numberOfTextContainers};"
             src="${this.imageUrl}"
@@ -750,22 +764,38 @@
       initializeYoutubeContainer() {
         let link = this.imageUrl;
 
-        let videoId = link.slice(link.indexOf("v=")+2, link.length);
-        if (videoId.includes("&")) {
+        let videoId;
+        
+        if (link.includes("youtu.be")) {
+          videoId = link.slice(link.indexOf(".be/")+4, link.length)
+        }
+        else {
+          // normal youtube.com link
+          videoId = link.slice(link.indexOf("v=")+2, link.length)
           videoId = videoId.slice(0, videoId.indexOf("&"));
         }
         
         let embedLink = "https://www.youtube.com/embed/" + videoId;
+        if (this.containerSettings.autoplay) {
+          embedLink += "autoplay=1";
+        }
 
         document.body.insertAdjacentHTML(
            "beforeend",
           `
-          <iframe
-            class="movable userImage"
-            id="${this.id}"
-            style="z-index: ${numberOfImageContainers + numberOfTextContainers}; padding-top: 2rem;"
-            src="${embedLink}"
-          />
+          <div 
+            id=${this.id}
+            class="movable"
+            style="width:640px;height:480px"
+          >
+            <div class="youtubeEmbedCover" style="z-index: ${900 + numberOfImageContainers + numberOfTextContainers}; ${editing ? 'display: block"' : 'display:none;"'}></div>
+            <iframe
+              class="youtubeEmbed"
+              id=${this.id + "--embed-frame"}
+              style="z-index: ${numberOfImageContainers + numberOfTextContainers}; "
+              src="${embedLink}"
+            />
+          </div>
         `
         );
       }
@@ -1316,6 +1346,10 @@
           </div>
         `;
 
+        let youtubeEmbedOptions = `
+
+        `;
+
         document.getElementById("containers").insertAdjacentHTML(
           "afterbegin",
           `
@@ -1588,14 +1622,14 @@
           containerSettings.shadowRgba;
 
         /** BORDER */
+        document.getElementById(this.id).style.borderRadius =
+         containerSettings.borderRadius + "px"; 
         document.getElementById(this.id).style.borderStyle = "solid";
         document.getElementById(this.id).style.borderWidth =
           containerSettings.borderWidth + "px";
-        document.getElementById(this.id).style.borderRadius =
-          containerSettings.borderRadius + "px";
         document.getElementById(this.id).style.borderColor =
           containerSettings.borderColor;
-
+        
 
         /** if this is a media container, settings diverge */
         if (this.imageUrl != undefined) {
@@ -2125,11 +2159,24 @@
           // mmovableElements[i].classList.add("grabbable");
           movableElements[i].style.cursor = cursors.grab ? 'url("' + cursors.grab + '"), grab' : "grab";
         }
+
+        // cover any youtube iframes to enable moving/resizing
+        let embeddedVideos = document.getElementsByClassName("youtubeEmbedCover");
+        for (let i = 0; i < embeddedVideos.length; i++) {
+          embeddedVideos[i].style.display = "block";
+        }
+
       } else {
         // remove grabbable cursor
         let movableElements = document.getElementsByClassName("movable");
         for (let i = 0; i < movableElements.length; i++) {
           movableElements[i].style.cursor = "";
+        }
+
+         // cover any youtube iframes to enable moving/resizing
+        let embeddedVideos = document.getElementsByClassName("youtubeEmbedCover");
+        for (let i = 0; i < embeddedVideos.length; i++) {
+          embeddedVideos[i].style.display = "none";
         }
 
         // hide the settings container
@@ -2607,6 +2654,7 @@
     }
 
     function mouseDownMovableElement(mouseDown) {
+
       /** MOVEMENT / RESIZING HANDLERS */
       if (!editing || 
         mouseDown.target.tagName == "BUTTON" || 
