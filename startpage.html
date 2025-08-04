@@ -552,7 +552,7 @@
     </div>
     todo: 
     <br />add youtube autoplay support
-    <br />rename stuff. containerSettings -> container | better function names | imageUrl -> mediaUrl | etc.
+    <br />rename stuff | better function names | imageUrl -> mediaUrl | etc.
   </body>
 
   <script>
@@ -638,7 +638,7 @@
       height;
       width;
       imageUrl;
-      containerSettings;
+      settings;
       sections;
       clockIntervalId;
 
@@ -650,7 +650,7 @@
         height,
         width,
         imageUrl,
-        containerSettings,
+        settings,
         sections
       ) {
         /* check if id is already used
@@ -678,7 +678,7 @@
             this.y                 = y;
             this.height            = height;
             this.width             = width;
-            this.containerSettings = containerSettings;
+            this.settings = settings;
             this.imageUrl          = imageUrl;
           }
           else {
@@ -690,10 +690,10 @@
             this.imageUrl = imageUrl;
             
             // deep copy default settings
-            this.containerSettings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
+            this.settings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
 
             zIndexMap.set(String(numberOfImageContainers + numberOfTextContainers), this.id);
-            this.containerSettings.zIndex = numberOfImageContainers + numberOfTextContainers;
+            this.settings.zIndex = numberOfImageContainers + numberOfTextContainers;
           }
 
           if (imageUrl.includes("youtube.com") || imageUrl.includes("youtu.be")) {
@@ -713,7 +713,7 @@
             this.y                 = y;
             this.height            = height;
             this.width             = width;
-            this.containerSettings = containerSettings;
+            this.settings = settings;
             this.sections          = sections;
           }
           else {
@@ -725,10 +725,10 @@
             this.sections = {};
 
             // deep copy default settings
-            this.containerSettings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
+            this.settings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
  
             zIndexMap.set(String(numberOfTextContainers + numberOfImageContainers), this.id);
-            this.containerSettings.zIndex = numberOfImageContainers + numberOfTextContainers;
+            this.settings.zIndex = numberOfImageContainers + numberOfTextContainers;
          }
 
           this.initializeTextContainer();
@@ -767,25 +767,27 @@
         let videoId;
         
         if (link.includes("youtu.be")) {
-          videoId = link.slice(link.indexOf(".be/")+4, link.length)
+          videoId = link.slice(link.indexOf(".be/")+4, link.length);
         }
         else {
           // normal youtube.com link
-          videoId = link.slice(link.indexOf("v=")+2, link.length)
-          videoId = videoId.slice(0, videoId.indexOf("&"));
+          videoId = link.slice(link.indexOf("v=")+2, link.length);
+          if (videoId.includes("&")) {
+            videoId = videoId.slice(0, videoId.indexOf("&"));
+          }
         }
         
         let embedLink = "https://www.youtube.com/embed/" + videoId;
-        if (this.containerSettings.autoplay) {
-          embedLink += "autoplay=1";
-        }
+        // if (this.settings.autoplay) {
+        //   embedLink += "autoplay=1";
+        // }
 
         document.body.insertAdjacentHTML(
            "beforeend",
           `
           <div 
             id=${this.id}
-            class="movable"
+            class="movable media"
             style="width:640px;height:480px"
           >
             <div class="youtubeEmbedCover" style="z-index: ${900 + numberOfImageContainers + numberOfTextContainers}; ${editing ? 'display: block"' : 'display:none;"'}></div>
@@ -861,7 +863,7 @@
        * inserts and populates the settings inputs for the given text container
        */
       createTextContainerMenuListing() {
-        let zindex = parseInt(this.containerSettings.zIndex);
+        let zindex = parseInt(this.settings.zIndex);
         let upButtons = `
           <div>
             <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
@@ -882,7 +884,7 @@
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
           <div class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">
-            <p id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
+            <p id=${this.id + "--listing-header"}>[${this.settings.zIndex}]: ${this.name}</p>
             <p class="expandedMenuIndicator">-</p>
           </div>
           <div class="expandableMenu" id=${this.id + "-settings-menu"} style="display: block; margin: 0;">
@@ -1158,94 +1160,94 @@
         );
 
         /** fill in inputs with current values */
-        let containerSettings = this.containerSettings;
+        let settings = this.settings;
         // SHADOW / GLOW
         document.getElementById(this.id + "-settings-shadow-x").value =
-          containerSettings.shadowX;
+          settings.shadowX;
         document.getElementById(this.id + "-settings-shadow-y").value =
-          containerSettings.shadowY;
+          settings.shadowY;
         document.getElementById(this.id + "-settings-shadow-blur").value =
-          containerSettings.shadowBlur;
+          settings.shadowBlur;
         document.getElementById(this.id + "-settings-shadow-color").value =
           rgbToHex(
-            containerSettings.shadowRgba
+            settings.shadowRgba
               .replace("rgba(", "")
               .slice(0, -1)
               .split(",")
               .splice(0, 3)
           );
         document.getElementById(this.id + "-settings-shadow-alpha").value =
-          containerSettings.shadowRgba
+          settings.shadowRgba
             .replace("rgba(", "")
             .slice(0, -1)
             .split(",")[3] * 100;
         // BORDER
         document.getElementById(this.id + "-settings-border-color").value =
-          containerSettings.borderColor;
+          settings.borderColor;
         document.getElementById(this.id + "-settings-border-width").value =
-          containerSettings.borderWidth;
+          settings.borderWidth;
         document.getElementById(this.id + "-settings-border-radius").value =
-          containerSettings.borderRadius;
+          settings.borderRadius;
         // FONT
-        if (containerSettings.fontName == "") {
+        if (settings.fontName == "") {
           document.getElementById(this.id + "-settings-font-name").innerHTML =
             "system default";
         } else {
           document.getElementById(this.id + "-settings-font-name").innerHTML =
-            containerSettings.fontName;
+            settings.fontName;
         }
         // TEXT ALIGNMENT
         document.getElementById(this.id + "-settings-left-align").checked =
-          !containerSettings.textAlign == "left";
+          !settings.textAlign == "left";
         document.getElementById(this.id + "-settings-center-align").checked =
-          containerSettings.textAlign == "center";
+          settings.textAlign == "center";
         document.getElementById(this.id + "-settings-right-align").checked =
-          containerSettings.textAlign == "right";
+          settings.textAlign == "right";
         // BOOKMARK OPTIONS
         document.getElementById(this.id + "-settings-section-color").value =
-          containerSettings.sectionColor;
+          settings.sectionColor;
         document.getElementById(this.id + "-settings-section-size").value =
-          containerSettings.sectionSize;
+          settings.sectionSize;
         document.getElementById(this.id + "-settings-section-bold").checked =
-          containerSettings.sectionBold;
+          settings.sectionBold;
         document.getElementById(this.id + "-settings-section-italic").checked =
-          containerSettings.sectionItalic;
+          settings.sectionItalic;
         document.getElementById(this.id + "-settings-link-color").value =
-          containerSettings.linkColor;
+          settings.linkColor;
         document.getElementById(this.id + "-settings-link-size").value =
-          containerSettings.linkSize;
+          settings.linkSize;
         // BACKGROUND COLOR
         document.getElementById(this.id + "-settings-bg-color").value =
           rgbToHex(
-            containerSettings.backgroundRgba
+            settings.backgroundRgba
               .replace("rgba(", "")
               .slice(0, -1)
               .split(",")
               .splice(0, 3)
           );
         document.getElementById(this.id + "-settings-bg-alpha").value =
-          containerSettings.backgroundRgba
+          settings.backgroundRgba
             .replace("rgba(", "")
             .slice(0, -1)
             .split(",")[3] * 100;
         // HEADER OPTIONS
         document.getElementById(this.id + "-settings-date-toggle").checked =
-          containerSettings.enableDate;
+          settings.enableDate;
         document.getElementById(this.id + "-settings-clock-toggle").checked =
-          containerSettings.enableClock;
+          settings.enableClock;
         document.getElementById(this.id + "-settings-clock-color").value =
-          containerSettings.headerColor;
+          settings.headerColor;
         document.getElementById(this.id + "-settings-clock-size").value =
-          containerSettings.headerSize;
+          settings.headerSize;
         document.getElementById(this.id + "-settings-clock-bold").checked =
-          containerSettings.headerBold;
+          settings.headerBold;
         document.getElementById(this.id + "-settings-clock-italic").checked =
-          containerSettings.headerItalic;
+          settings.headerItalic;
         // DIVIDER
         document.getElementById(this.id + "-settings-divider-toggle").checked =
-          containerSettings.enableDivider;
+          settings.enableDivider;
         document.getElementById(this.id + "-settings-divider-color").value =
-          containerSettings.dividerColor;
+          settings.dividerColor;
       }
        
       /**
@@ -1259,7 +1261,7 @@
         }
 
         let sectionData = Object.values(this.sections);
-        let containerSettings = this.containerSettings;
+        let settings = this.settings;
 
         let bookmarkListings = document.getElementById(this.id + "-bookmark-menu--listings");
         bookmarkListings.innerHTML = "";
@@ -1332,7 +1334,7 @@
         }
       }
       createImageContainerMenuListing() {
-        let zindex = this.containerSettings.zIndex;
+        let zindex = this.settings.zIndex;
         let upButtons = `
           <div>
             <button id="` + this.id + `--move-up-button"} onclick="reorderContainer(this, 'up')">move up</button>
@@ -1356,7 +1358,7 @@
           <div class="containerListing" id=${this.id + "-container-listing"}>
 
             <div class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">
-              <p id=${this.id + "--listing-header"}>[${this.containerSettings.zIndex}]: ${this.name}</p>
+              <p id=${this.id + "--listing-header"}>[${this.settings.zIndex}]: ${this.name}</p>
               <p class="expandedMenuIndicator">-</p>
             </div>
             <div class="expandableMenu" style="display: block; margin: 0;" id=${this.id + "-settings-menu"}>
@@ -1443,39 +1445,39 @@
         );
         
         /** fill in inputs with current values */
-        let containerSettings = this.containerSettings;
+        let settings = this.settings;
         // SHADOW / GLOW
         document.getElementById(this.id + "-settings-shadow-x").value =
-          containerSettings.shadowX;
+          settings.shadowX;
         document.getElementById(this.id + "-settings-shadow-y").value =
-          containerSettings.shadowY;
+          settings.shadowY;
         document.getElementById(this.id + "-settings-shadow-blur").value =
-          containerSettings.shadowBlur;
+          settings.shadowBlur;
         document.getElementById(this.id + "-settings-shadow-color").value =
           rgbToHex(
-            containerSettings.shadowRgba
+            settings.shadowRgba
               .replace("rgba(", "")
               .slice(0, -1)
               .split(",")
               .splice(0, 3)
           );
         document.getElementById(this.id + "-settings-shadow-alpha").value =
-          containerSettings.shadowRgba
+          settings.shadowRgba
             .replace("rgba(", "")
             .slice(0, -1)
             .split(",")[3] * 100;
         // BORDER
         document.getElementById(this.id + "-settings-border-color").value =
-          containerSettings.borderColor;
+          settings.borderColor;
         document.getElementById(this.id + "-settings-border-width").value =
-          containerSettings.borderWidth;
+          settings.borderWidth;
         document.getElementById(this.id + "-settings-border-radius").value =
-          containerSettings.borderRadius;
+          settings.borderRadius;
         // MIRRORING
         document.getElementById(this.id + "-settings-mirror-x").checked =
-          containerSettings.invertX; 
+          settings.invertX; 
         document.getElementById(this.id + "-settings-mirror-y").checked =
-          containerSettings.invertY;
+          settings.invertY;
       }
       
       /**
@@ -1602,39 +1604,39 @@
         /** POSITION */
         document.getElementById(this.id).style.top    = this.y;
         document.getElementById(this.id).style.left   = this.x;
-        document.getElementById(this.id).style.zIndex = this.containerSettings.zIndex;
+        document.getElementById(this.id).style.zIndex = this.settings.zIndex;
         
         /** SIZE */
-        let containerSettings = this.containerSettings;
+        let settings = this.settings;
         document.getElementById(this.id).style.width = this.width + "px";
-          // this.width - 2 * parseInt(containerSettings.borderWidth);
+          // this.width - 2 * parseInt(settings.borderWidth);
         document.getElementById(this.id).style.height = this.height + "px";
-          // this.height - 2 * parseInt(containerSettings.borderWidth);
+          // this.height - 2 * parseInt(settings.borderWidth);
 
         /** SHADOW / GLOW */
         document.getElementById(this.id).style.boxShadow =
-          containerSettings.shadowX +
+          settings.shadowX +
           "px " +
-          containerSettings.shadowY +
+          settings.shadowY +
           "px " +
-          containerSettings.shadowBlur +
+          settings.shadowBlur +
           "px " +
-          containerSettings.shadowRgba;
+          settings.shadowRgba;
 
         /** BORDER */
         document.getElementById(this.id).style.borderRadius =
-         containerSettings.borderRadius + "px"; 
+         settings.borderRadius + "px"; 
         document.getElementById(this.id).style.borderStyle = "solid";
         document.getElementById(this.id).style.borderWidth =
-          containerSettings.borderWidth + "px";
+          settings.borderWidth + "px";
         document.getElementById(this.id).style.borderColor =
-          containerSettings.borderColor;
+          settings.borderColor;
         
 
         /** if this is a media container, settings diverge */
         if (this.imageUrl != undefined) {
-          let invertX = containerSettings.invertX;
-          let invertY = containerSettings.invertY;
+          let invertX = settings.invertX;
+          let invertY = settings.invertY;
 
           if (invertY && invertX) {
             document.getElementById(this.id).classList.add("doubleInverted"); 
@@ -1651,21 +1653,21 @@
 
         /** apply text-container-only customizations */
         /** FONT */
-        if (containerSettings.fontCode != "") {
+        if (settings.fontCode != "") {
           document.head.insertAdjacentHTML(
             "beforeend",
-            containerSettings.fontCode
+            settings.fontCode
           );
           document.getElementById(this.id).style.fontFamily =
-            containerSettings.fontName;
+            settings.fontName;
         }
 
         /** TEXT ALIGNMENT */
-        if (containerSettings.textAlign == "center") {
+        if (settings.textAlign == "center") {
           document.getElementById(this.id).style.textAlign = "center";
-        } else if (containerSettings.textAlign == "left") {
+        } else if (settings.textAlign == "left") {
           document.getElementById(this.id).style.textAlign = "left";
-        } else if (containerSettings.textAlign == "right") {
+        } else if (settings.textAlign == "right") {
           document.getElementById(this.id).style.textAlign = "right";
         }
 
@@ -1674,27 +1676,27 @@
 
         /** BACKGROUND COLOR */
         document.getElementById(this.id).style.backgroundColor =
-          containerSettings.backgroundRgba;
+          settings.backgroundRgba;
 
         /** HEADER  */
         // show header elements
         document.getElementById(this.id + "-date").style.display = 
-            containerSettings.enableDate ? "inline" : "none";
+            settings.enableDate ? "inline" : "none";
         document.getElementById(this.id + "-clock").style.display = 
-            containerSettings.enableClock ? "inline" : "none";
+            settings.enableClock ? "inline" : "none";
         // apply header customizations
         document.getElementById(this.id + "-header").style.color =
-          containerSettings.headerColor;
+          settings.headerColor;
         document.getElementById(this.id + "-header").style.fontSize =
-          containerSettings.headerSize + "px";
+          settings.headerSize + "px";
         document.getElementById(this.id + "-header").style.fontWeight =
-          containerSettings.headerBold ? "bold" : "normal";
+          settings.headerBold ? "bold" : "normal";
         document.getElementById(this.id + "-header").style.fontStyle =
-          containerSettings.headerItalic ? "italic" : "normal";
+          settings.headerItalic ? "italic" : "normal";
 
         /** DIVIDER */
         let divider = document.getElementById(this.id + "-divider");
-        if (!containerSettings.enableDivider) {
+        if (!settings.enableDivider) {
           document.getElementById(this.id + "-divider").hidden = true;
           // if there are links in this container, add room under the divider
           if (Object.keys(this.sections).length > 0) {
@@ -1702,9 +1704,9 @@
               "18px";
           }
         } else {
-          divider.style.color = containerSettings.dividerColor;
-          divider.style.backgroundColor = containerSettings.dividerColor;
-          divider.style.borderColor = containerSettings.dividerColor;
+          divider.style.color = settings.dividerColor;
+          divider.style.backgroundColor = settings.dividerColor;
+          divider.style.borderColor = settings.dividerColor;
         }
       }
 
@@ -1747,7 +1749,7 @@
         }
 
         let sectionData = Object.values(this.sections);
-        let containerSettings = this.containerSettings;
+        let settings = this.settings;
 
         let containerBookmarks = document.getElementById(this.id + "-bookmarks");
         
@@ -1793,23 +1795,23 @@
         }
 
         // ensure smooth ux when rerendering
-        if (!containerSettings.enableDivider) {
+        if (!settings.enableDivider) {
           document.getElementById(this.id + "-header").style.marginBottom = "18px";
         }
 
         // apply link customization
         let linkElements = document.getElementsByClassName(this.id + "-link");
         for (let i = 0; i < linkElements.length; i++) {
-          linkElements[i].style.color = containerSettings.linkColor;
-          linkElements[i].style.fontSize = containerSettings.linkSize + "px";
+          linkElements[i].style.color = settings.linkColor;
+          linkElements[i].style.fontSize = settings.linkSize + "px";
         }
         // apply section customization
         let sectionElements = document.getElementsByClassName(this.id + "-section");
         for (let i = 0; i < sectionElements.length; i++) {
-          sectionElements[i].style.color = containerSettings.sectionColor;
-          sectionElements[i].style.fontSize = containerSettings.sectionSize + "px";
-          sectionElements[i].style.fontWeight = containerSettings.sectionBold ? "bold" : "normal";
-          sectionElements[i].style.fontStyle = containerSettings.sectionItalic ? "italic" : "normal";
+          sectionElements[i].style.color = settings.sectionColor;
+          sectionElements[i].style.fontSize = settings.sectionSize + "px";
+          sectionElements[i].style.fontWeight = settings.sectionBold ? "bold" : "normal";
+          sectionElements[i].style.fontStyle = settings.sectionItalic ? "italic" : "normal";
         }
       }
 
@@ -1826,17 +1828,17 @@
         }
 
         for (let i = 0; i < currentSettings.length; i++) {
-          if (this.containerSettings[currentSettings[i]] == undefined) {
+          if (this.settings[currentSettings[i]] == undefined) {
 
             console.log("found missing option: ");
             console.log(currentSettings[i]);
 
             if (this.imageUrl != undefined) {
-              this.containerSettings[currentSettings[i]] = 
+              this.settings[currentSettings[i]] = 
                 defaultImageContainerSettings[currentSettings[i]];
             }
             else {
-              this.containerSettings[currentSettings[i]] = 
+              this.settings[currentSettings[i]] = 
                 defaultTextContainerSettings[currentSettings[i]];
             }
           }
@@ -1956,7 +1958,7 @@
           containerMapValues[i].height,
           containerMapValues[i].width,
           containerMapValues[i].imageUrl,
-          containerMapValues[i].containerSettings,
+          containerMapValues[i].settings,
           containerMapValues[i].sections
         ));
       }
@@ -2300,11 +2302,11 @@
 
           // update layer number
           containerListingHeader.innerText =
-            "[" + currentContainer.containerSettings.zIndex + "] " + currentContainer.name;
+            "[" + currentContainer.settings.zIndex + "] " + currentContainer.name;
 
           // remove / insert the necessary up/down buttons
           containerManageButtons.innerHTML = "";
-          if (currentContainer.containerSettings.zIndex != numberTotalContainers) {
+          if (currentContainer.settings.zIndex != numberTotalContainers) {
             containerManageButtons.insertAdjacentHTML(
               "beforeend",
               `
@@ -2313,7 +2315,7 @@
               `
             );
           }
-          if (currentContainer.containerSettings.zIndex != 1) {
+          if (currentContainer.settings.zIndex != 1) {
            containerManageButtons.insertAdjacentHTML(
               "beforeend",
               `
@@ -2331,7 +2333,7 @@
       let containerId = buttonPressed.id.split("--")[0];
       let movingContainer = containerDataMap.get(containerId);
 
-      let currentIndex = parseInt(movingContainer.containerSettings.zIndex);
+      let currentIndex = parseInt(movingContainer.settings.zIndex);
       let destinationIndex;
       
       // clone + remove the relocating listing
@@ -2366,8 +2368,8 @@
         document.getElementById(zIndexMap.get(destinationIndex)).style.zIndex = currentIndex;
                 
         // save new indexes to container data
-        movingContainer.containerSettings.zIndex = parseInt(destinationIndex);
-        containerDataMap.get(zIndexMap.get(destinationIndex)).containerSettings.zIndex = currentIndex;
+        movingContainer.settings.zIndex = parseInt(destinationIndex);
+        containerDataMap.get(zIndexMap.get(destinationIndex)).settings.zIndex = currentIndex;
 
         // save changes to map
         zIndexMap.set(String(currentIndex), zIndexMap.get(destinationIndex));
@@ -2384,7 +2386,7 @@
 
           zIndexMap.set(String(i), zIndexMap.get(String(i+1)))
           document.getElementById(zIndexMap.get(String(i))).style.zIndex--;
-          containerDataMap.get(zIndexMap.get(String(i))).containerSettings.zIndex--;
+          containerDataMap.get(zIndexMap.get(String(i))).settings.zIndex--;
         }
 
         // then actually move the container and menu listing element
@@ -2392,7 +2394,7 @@
         document.getElementById(containerId).style.zIndex = numberTotalContainers;
 
         // and save
-        containerDataMap.get(containerId).containerSettings.zIndex = numberTotalContainers;
+        containerDataMap.get(containerId).settings.zIndex = numberTotalContainers;
         zIndexMap.set(String(numberTotalContainers), containerId);
 
       }
@@ -2403,14 +2405,14 @@
 
           zIndexMap.set(String(i), zIndexMap.get(String(i - 1)))
           document.getElementById(zIndexMap.get(String(i))).style.zIndex++;
-          containerDataMap.get(zIndexMap.get(String(i))).containerSettings.zIndex++;
+          containerDataMap.get(zIndexMap.get(String(i))).settings.zIndex++;
         }
 
         document.getElementById("containers").insertAdjacentElement("beforeend", clickedListingCopy);
         document.getElementById(containerId).style.zIndex = 1;
 
         // and save
-        containerDataMap.get(containerId).containerSettings.zIndex = 1;
+        containerDataMap.get(containerId).settings.zIndex = 1;
         zIndexMap.set("1", containerId);
       }
 
@@ -2430,14 +2432,14 @@
       document.getElementById(containerId + "--rename-input").value = ""; 
 
       document.getElementById(containerId + "--listing-header").innerText = 
-        "[" + container.containerSettings.zIndex + "]: " + newName;
+        "[" + container.settings.zIndex + "]: " + newName;
     }
 
     function cloneContainer(buttonPressed) {
       let containerId = buttonPressed.id.split("--")[0];
       let container = containerDataMap.get(containerId);
 
-      let newSettings = JSON.parse(JSON.stringify(container.containerSettings));
+      let newSettings = JSON.parse(JSON.stringify(container.settings));
       newSettings.zIndex = numberTotalContainers + 1;
 
       let newX = parseInt(container.x.slice(0, -2)) + 10;
@@ -2480,9 +2482,9 @@
       }
 
       // delete from zindex map and ripple zIndexes down
-      for (let i = container.containerSettings.zIndex; i < numberTotalContainers; i++) {
+      for (let i = container.settings.zIndex; i < numberTotalContainers; i++) {
         zIndexMap.set(String(i), zIndexMap.get(String(i+1)));
-        containerDataMap.get(zIndexMap.get(String(i+1))).containerSettings.zIndex--;
+        containerDataMap.get(zIndexMap.get(String(i+1))).settings.zIndex--;
       }
       zIndexMap.delete(String(numberTotalContainers));
 
@@ -2608,7 +2610,7 @@
       let currentHeight = changingElement.offsetHeight - borderWidth;
 
       // if proportional image resizing enabled
-      if ((changingElement.tagName == "IMG") && keepImageRatio) {
+      if ((changingElement.tagName == "IMG" || changingElement.classList.contains("media")) && keepImageRatio) {
         // growing
         if (mouseOffsetY > 0) {
           let newWidth = currentWidth * (1 + mouseOffsetY / 100);
@@ -2881,36 +2883,36 @@
       let containerId = colorChange.currentTarget.id.split("-settings")[0];
       let container = containerDataMap.get(containerId);
 
-      container.containerSettings.backgroundRgba = hexToRgba(
+      container.settings.backgroundRgba = hexToRgba(
         document.getElementById(containerId + "-settings-bg-color").value,
         document.getElementById(containerId + "-settings-bg-alpha").value
       );
 
       document.getElementById(containerId).style.backgroundColor =
-        container.containerSettings.backgroundRgba;
+        container.settings.backgroundRgba;
     }
 
     function changeLinkColor(colorChange) {
       let containerId = colorChange.currentTarget.id.split("-settings")[0];
       let container = containerDataMap.get(containerId);
 
-      container.containerSettings.linkColor = colorChange.target.value;
+      container.settings.linkColor = colorChange.target.value;
 
       let linkElements = document.getElementsByClassName(container.id + "-link");
       for (let i = 0; i < linkElements.length; i++) {
-        linkElements[i].style.color = container.containerSettings.linkColor;
+        linkElements[i].style.color = container.settings.linkColor;
       }
     }
     function changeLinkSize(sizeChange) {
       let containerId = sizeChange.currentTarget.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.linkSize =
+      container.settings.linkSize =
         sizeChange.target.value == "" ? "0" : sizeChange.target.value;
 
       let linkElements = document.getElementsByClassName(container.id + "-link");
       for (let i = 0; i < linkElements.length; i++) {
-        linkElements[i].style.fontSize = container.containerSettings.linkSize + "px";
+        linkElements[i].style.fontSize = container.settings.linkSize + "px";
       }
     }
 
@@ -2918,22 +2920,22 @@
       let containerId = colorChange.currentTarget.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.sectionColor = colorChange.target.value;
+      container.settings.sectionColor = colorChange.target.value;
       let sectionElements = document.getElementsByClassName(container.id + "-section");
       for (let i = 0; i < sectionElements.length; i++) {
-        sectionElements[i].style.color = container.containerSettings.sectionColor;
+        sectionElements[i].style.color = container.settings.sectionColor;
       }
     }
     function changeSectionSize(sizeChange) {
       let containerId = sizeChange.currentTarget.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.sectionSize =
+      container.settings.sectionSize =
         sizeChange.target.value == "" ? "0" : sizeChange.target.value;
 
       let sectionElements = document.getElementsByClassName(container.id + "-section");
       for (let i = 0; i < sectionElements.length; i++) {
-        sectionElements[i].style.fontSize = container.containerSettings.sectionSize + "px";
+        sectionElements[i].style.fontSize = container.settings.sectionSize + "px";
       }
     }
     function toggleSectionBold(checkboxChanged) {
@@ -2944,7 +2946,7 @@
       for (let i = 0; i < sectionElements.length; i++) {
         sectionElements[i].style.fontWeight = checkboxChanged.target.checked ? "bold" : "normal";
       }
-      container.containerSettings.sectionBold = checkboxChanged.target.checked;
+      container.settings.sectionBold = checkboxChanged.target.checked;
     }
     function toggleSectionItalic(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-settings")[0];
@@ -2954,7 +2956,7 @@
       for (let i = 0; i < sectionElements.length; i++) {
         sectionElements[i].style.fontStyle = checkboxChanged.target.checked ? "italic" : "normal";
       }
-      container.containerSettings.sectionItalic = checkboxChanged.target.checked;
+      container.settings.sectionItalic = checkboxChanged.target.checked;
     }
 
     // BORDER
@@ -2962,32 +2964,32 @@
       let containerId = borderChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.borderWidth = borderChange.target.value;
+      container.settings.borderWidth = borderChange.target.value;
       document.getElementById(containerId).style.borderWidth =
-        container.containerSettings.borderWidth + "px";
+        container.settings.borderWidth + "px";
     }
     function changeContainerBorderRadius(radiusChange) {
       let containerId = radiusChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.borderRadius = radiusChange.target.value;
+      container.settings.borderRadius = radiusChange.target.value;
       document.getElementById(containerId).style.borderRadius =
-        container.containerSettings.borderRadius + "px";
+        container.settings.borderRadius + "px";
     }
     function changeContainerBorderColor(colorChange) {
       let containerId = colorChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.borderColor = colorChange.target.value;
+      container.settings.borderColor = colorChange.target.value;
       document.getElementById(containerId).style.borderColor =
-        container.containerSettings.borderColor;
+        container.settings.borderColor;
     }
     // CLOCK
     function toggleDate(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.enableDate = checkboxChanged.target.checked;
+      container.settings.enableDate = checkboxChanged.target.checked;
       document.getElementById(containerId + "-date").style.display = 
         checkboxChanged.target.checked ? "inline" : "none";
     }
@@ -2995,7 +2997,7 @@
       let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.enableClock = checkboxChanged.target.checked;
+      container.settings.enableClock = checkboxChanged.target.checked;
       document.getElementById(containerId + "-clock").style.display = 
         checkboxChanged.target.checked ? "inline" : "none";
     }
@@ -3003,24 +3005,24 @@
       let containerId = colorChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.headerColor = colorChange.target.value;
+      container.settings.headerColor = colorChange.target.value;
       document.getElementById(containerId + "-header").style.color =
-        container.containerSettings.headerColor;
+        container.settings.headerColor;
     }
     function changeHeaderSize(sizeChange) {
       let containerId = sizeChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.headerSize =
+      container.settings.headerSize =
         sizeChange.target.value == "" ? "0" : sizeChange.target.value;
       document.getElementById(containerId + "-header").style.fontSize =
-        container.containerSettings.headerSize + "px";
+        container.settings.headerSize + "px";
     }
     function toggleHeaderBold(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.headerBold = checkboxChanged.target.checked;
+      container.settings.headerBold = checkboxChanged.target.checked;
       document.getElementById(containerId + "-header").style.fontWeight = 
         checkboxChanged.target.checked ? "bold" : "normal";
     }
@@ -3028,7 +3030,7 @@
       let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.headerItalic = checkboxChanged.target.checked;
+      container.settings.headerItalic = checkboxChanged.target.checked;
       document.getElementById(containerId + "-header").style.fontStyle = 
         checkboxChanged.target.checked ? "italic" : "normal";
     }
@@ -3038,18 +3040,18 @@
       let containerId = colorChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.dividerColor = colorChange.target.value;
+      container.settings.dividerColor = colorChange.target.value;
       let divider = document.getElementById(containerId + "-divider");
       // set multiple places for compatibility
-      divider.style.color = container.containerSettings.dividerColor;
-      divider.style.backgroundColor = container.containerSettings.dividerColor;
-      divider.style.borderColor = container.containerSettings.dividerColor;
+      divider.style.color = container.settings.dividerColor;
+      divider.style.backgroundColor = container.settings.dividerColor;
+      divider.style.borderColor = container.settings.dividerColor;
     }
     function toggleDivider(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.enableDivider = checkboxChanged.target.checked;
+      container.settings.enableDivider = checkboxChanged.target.checked;
       document.getElementById(containerId + "-divider").style.display = 
         checkboxChanged.target.checked ? "block" : "none";
 
@@ -3066,13 +3068,13 @@
       let container   = containerDataMap.get(containerId);
 
       if (document.getElementById(containerId + "-settings-left-align").checked) {
-        container.containerSettings.textAlign = "left";
+        container.settings.textAlign = "left";
         document.getElementById(containerId).style.textAlign = "left";
       } else if (document.getElementById(containerId + "-settings-center-align").checked) {
-        container.containerSettings.textAlign = "center";
+        container.settings.textAlign = "center";
         document.getElementById(containerId).style.textAlign = "center";
       } else if (document.getElementById(containerId + "-settings-right-align").checked) {
-        container.containerSettings.textAlign = "right";
+        container.settings.textAlign = "right";
         document.getElementById(containerId).style.textAlign = "right";
       }
 
@@ -3097,8 +3099,8 @@
       document.head.insertAdjacentHTML("beforeend", fontCode);
       document.getElementById(containerId).style.fontFamily = fontName;
       document.getElementById(containerId + "-settings-font-name").innerHTML = fontName;
-      container.containerSettings.fontCode = fontCode;
-      container.containerSettings.fontName = fontName;
+      container.settings.fontCode = fontCode;
+      container.settings.fontName = fontName;
     }
 
     // SHADOW
@@ -3106,31 +3108,31 @@
       let containerId = valueChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.containerSettings.shadowX =
+      container.settings.shadowX =
         document.getElementById(containerId + "-settings-shadow-x").value == ""
           ? 0
           : document.getElementById(containerId + "-settings-shadow-x").value;
-      container.containerSettings.shadowY =
+      container.settings.shadowY =
         document.getElementById(containerId + "-settings-shadow-y").value == ""
           ? 0
           : document.getElementById(containerId + "-settings-shadow-y").value;
-      container.containerSettings.shadowBlur =
+      container.settings.shadowBlur =
         document.getElementById(containerId + "-settings-shadow-blur").value == ""
           ? 0
           : document.getElementById(containerId + "-settings-shadow-blur").value;
-      container.containerSettings.shadowRgba = hexToRgba(
+      container.settings.shadowRgba = hexToRgba(
         document.getElementById(containerId + "-settings-shadow-color").value,
         document.getElementById(containerId + "-settings-shadow-alpha").value
       );
 
       let shadow =
-        container.containerSettings.shadowX +
+        container.settings.shadowX +
         "px " +
-        container.containerSettings.shadowY +
+        container.settings.shadowY +
         "px " +
-        container.containerSettings.shadowBlur +
+        container.settings.shadowBlur +
         "px " +
-        container.containerSettings.shadowRgba;
+        container.settings.shadowRgba;
 
       // set shadow
       document.getElementById(containerId).style.boxShadow = shadow;
@@ -3142,9 +3144,9 @@
       let container   = containerDataMap.get(containerId);
       let invertX = checkboxChanged.target.checked;
 
-      container.containerSettings.invertX = invertX;
+      container.settings.invertX = invertX;
 
-      if (invertX && container.containerSettings.invertY) {
+      if (invertX && container.settings.invertY) {
         document.getElementById(containerId).classList.remove("invertedY"); 
         document.getElementById(containerId).classList.add("doubleInverted"); 
       }
@@ -3162,9 +3164,9 @@
       let container   = containerDataMap.get(containerId);
       let invertY = checkboxChanged.target.checked;
 
-      container.containerSettings.invertY = invertY;
+      container.settings.invertY = invertY;
 
-      if (invertY && container.containerSettings.invertX) {
+      if (invertY && container.settings.invertX) {
         document.getElementById(containerId).classList.remove("invertedX"); 
         document.getElementById(containerId).classList.add("doubleInverted"); 
       }
