@@ -551,7 +551,6 @@
         </div>
     </div>
     todo: 
-    <br />add youtube autoplay support
     <br />rename stuff | better function names | imageUrl -> mediaUrl | etc.
   </body>
 
@@ -606,7 +605,8 @@
       shadowRgba: "rgba(255,255,255,.90)",
       zIndex: "",
       invertX: false,
-      invertY: false
+      invertY: false,
+      autoplay: false
     };
 
     let wallpaper = "";
@@ -641,6 +641,7 @@
       settings;
       sections;
       clockIntervalId;
+      youtubeId;
 
       constructor(
         id,
@@ -651,7 +652,8 @@
         width,
         imageUrl,
         settings,
-        sections
+        sections,
+        youtubeId
       ) {
         /* check if id is already used
         if (containerDataMap.has(name.replace(" ", "-").toLowerCase())) {
@@ -678,13 +680,36 @@
             this.y                 = y;
             this.height            = height;
             this.width             = width;
-            this.settings = settings;
+            this.settings          = settings;
             this.imageUrl          = imageUrl;
+            this.youtubeId         = youtubeId;
           }
+
           else {
             numberTotalContainers++;
-            if (name == "") this.name = "image " + numberOfImageContainers;
-            else            this.name = name;
+
+            if (imageUrl.includes("youtu.be")) {
+              this.youtubeId = imageUrl.slice(imageUrl.indexOf(".be/")+4, imageUrl.length);
+            }
+            else if (imageUrl.includes("youtube.com")) {
+              // normal youtube.com link
+              this.youtubeId = imageUrl.slice(imageUrl.indexOf("v=")+2, imageUrl.length);
+              if (this.youtubeId.includes("&")) {
+                this.youtubeId = this.youtubeId.slice(0, this.youtubeId.indexOf("&"));
+              }
+            }
+
+            if (name == "") {
+              if (this.videoId != undefined) {
+                this.name = "video " + numberOfImageContainers;
+              }
+              else {
+                this.name = "image " + numberOfImageContainers;
+              }
+            }
+            else {
+              this.name = name;
+            }
 
             this.id = findLowestAvailableId();
             this.imageUrl = imageUrl;
@@ -696,7 +721,7 @@
             this.settings.zIndex = numberOfImageContainers + numberOfTextContainers;
           }
 
-          if (imageUrl.includes("youtube.com") || imageUrl.includes("youtu.be")) {
+          if (this.youtubeId != undefined) {
             this.initializeYoutubeContainer();
           }
           else {
@@ -762,25 +787,10 @@
       }
 
       initializeYoutubeContainer() {
-        let link = this.imageUrl;
-
-        let videoId;
-        
-        if (link.includes("youtu.be")) {
-          videoId = link.slice(link.indexOf(".be/")+4, link.length);
+        let embedLink = "https://www.youtube.com/embed/" + this.youtubeId;
+        if (this.settings.autoplay) {
+           embedLink += "?autoplay=1";
         }
-        else {
-          // normal youtube.com link
-          videoId = link.slice(link.indexOf("v=")+2, link.length);
-          if (videoId.includes("&")) {
-            videoId = videoId.slice(0, videoId.indexOf("&"));
-          }
-        }
-        
-        let embedLink = "https://www.youtube.com/embed/" + videoId;
-        // if (this.settings.autoplay) {
-        //   embedLink += "autoplay=1";
-        // }
 
         document.body.insertAdjacentHTML(
            "beforeend",
@@ -1349,7 +1359,11 @@
         `;
 
         let youtubeEmbedOptions = `
-
+          <p class="menuHeader">youtube autoplay</p>
+            <div class="containerOptionListing">
+              <label for=${this.id + "-settings-youtube-autoplay"}>autoplay on load?</label>
+              <input id=${this.id + "-settings-youtube-autoplay"} type="checkbox" onclick="toggleYoutubeAutoplay(this)" />
+            </div>
         `;
 
         document.getElementById("containers").insertAdjacentHTML(
@@ -1429,6 +1443,8 @@
                     <label for=${this.id + "-settings-mirror-y"}>mirror vertically</label>
                     <input id=${this.id + "-settings-mirror-y"} type="checkbox" />
                   </div>
+
+                  ${this.youtubeId ? youtubeEmbedOptions : ``}
             </div>
 
             <div class="manageButtons">
@@ -1959,7 +1975,8 @@
           containerMapValues[i].width,
           containerMapValues[i].imageUrl,
           containerMapValues[i].settings,
-          containerMapValues[i].sections
+          containerMapValues[i].sections,
+          containerMapValues[i].youtubeId
         ));
       }
      
@@ -2241,6 +2258,7 @@
         undefined,
         undefined,
         undefined,
+        undefined,
         undefined
       );
 
@@ -2269,7 +2287,8 @@
         undefined,
         imageUrl,
         undefined,
-        undefined
+        undefined,
+        undefined,
       );
 
       container.createImageContainerMenuListing();
@@ -2454,7 +2473,8 @@
         container.width,
         container.imageUrl,
         newSettings,
-        container.sections
+        container.sections,
+        container.youtubeId
       );
       zIndexMap.set(numberTotalContainers + 1, clone.id);
 
@@ -3179,6 +3199,13 @@
       }
     }
 
+    function toggleYoutubeAutoplay(checkbox) {
+      let containerId = checkbox.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.settings.autoplay = checkbox.checked;
+    }
+     
     /************************************
      * RESET / IMPORT & EXPORT HANDLERS *
      ************************************/
