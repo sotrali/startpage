@@ -443,6 +443,12 @@
               style="width: 100%;"
               type="text"
             />
+            <input
+              id="newImageContainerHyperlinkInput"
+              placeholder="(optional) URL to hyperlink image"
+              style="width: 100%;"
+              type="text"
+            />
             <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
               place image
             </button>
@@ -551,6 +557,7 @@
         </div>
     </div>
     todo: 
+    <br />add check for youtube container in border functions
     <br />rename stuff | better function names | imageUrl -> mediaUrl | etc.
   </body>
 
@@ -642,6 +649,7 @@
       sections;
       clockIntervalId;
       youtubeId;
+      imageHyperlink;
 
       constructor(
         id,
@@ -653,7 +661,8 @@
         imageUrl,
         settings,
         sections,
-        youtubeId
+        youtubeId,
+        imageHyperlink
       ) {
         /* check if id is already used
         if (containerDataMap.has(name.replace(" ", "-").toLowerCase())) {
@@ -683,6 +692,7 @@
             this.settings          = settings;
             this.imageUrl          = imageUrl;
             this.youtubeId         = youtubeId;
+            this.imageHyperlink    = imageHyperlink;
           }
 
           else {
@@ -713,6 +723,7 @@
 
             this.id = findLowestAvailableId();
             this.imageUrl = imageUrl;
+            this.imageHyperlink = imageHyperlink.length == 0 ? undefined : imageHyperlink ;
             
             // deep copy default settings
             this.settings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
@@ -775,6 +786,9 @@
         document.body.insertAdjacentHTML(
           "beforeend",
           `
+          ${this.imageHyperlink ?
+            `<a class="imageHyperlink hidden" href="` + this.imageHyperlink + `">`
+          : ``}
           <img
             class="movable youtubeEmbed"
             id="${this.id}"
@@ -782,6 +796,7 @@
             src="${this.imageUrl}"
             draggable=false
           />
+          ${this.imageHyperlink ? `</a>` : ``}
         `
         );
       }
@@ -2179,6 +2194,12 @@
           movableElements[i].style.cursor = cursors.grab ? 'url("' + cursors.grab + '"), grab' : "grab";
         }
 
+        // disable any hyperlinks on images to enable movement
+        let hyperlinkedImages = document.getElementsByClassName("imageHyperlink");
+        
+        // TODO todo : finish this / re-enable hyperlinks
+
+
         // cover any youtube iframes to enable moving/resizing
         let embeddedVideos = document.getElementsByClassName("youtubeEmbedCover");
         for (let i = 0; i < embeddedVideos.length; i++) {
@@ -2275,8 +2296,12 @@
       let imageUrl = document.getElementById(
         "newImageContainerUrlInput"
       ).value;
+      let imageHyperlink = document.getElementById(
+        "newImageContainerHyperlinkInput"
+      ).value;
       document.getElementById("newImageContainerNameInput").value = "";
       document.getElementById("newImageContainerUrlInput").value = "";
+      document.getElementById("newImageContainerHyperlinkInput").value = "";
 
       let container = new Container(
         undefined,
@@ -2289,6 +2314,7 @@
         undefined,
         undefined,
         undefined,
+        imageHyperlink
       );
 
       container.createImageContainerMenuListing();
