@@ -66,8 +66,8 @@
       .youtubeEmbed {
         width: 100%;
         height: 100%;
-        position:absolute; 
-        border: none;
+        position: absolute; 
+        display: inline;
       }
       .youtubeEmbedCover {
          width: 100%; 
@@ -75,6 +75,7 @@
          background-color: rgba(250,0,0,.5);
          position: absolute;
       }
+
 
       .section {
         margin-top: 0rem;
@@ -433,19 +434,19 @@
             <h2 class="menuHeader">add image to page</h2>
             <input
               id="newImageContainerNameInput"
-              placeholder="(optional) image name"
+              placeholder="(optional) layer name"
               style="width: 100%;"
               type="text"
             />
             <input
               id="newImageContainerUrlInput"
-              placeholder="direct URL to image"
+              placeholder="image / youtube URL"
               style="width: 100%;"
               type="text"
             />
             <input
               id="newImageContainerHyperlinkInput"
-              placeholder="(optional) URL to hyperlink image"
+              placeholder="(optional) hyperlink URL for image"
               style="width: 100%;"
               type="text"
             />
@@ -736,7 +737,7 @@
             this.initializeYoutubeContainer();
           }
           else {
-            this.initializeImageContainer();
+            this.initializeImageContainer(loadingFromSave);
           }
         }
         else {
@@ -772,7 +773,7 @@
         }
 
         this.applySettings();
-        this.addContainerEventListeners()
+        this.addContainerEventListeners();
 
         // and save
         containerDataMap.set(this.id, this);
@@ -782,23 +783,23 @@
       /**
        * creates image element, applySettings() will do the rest
        */
-      initializeImageContainer() {
+      initializeImageContainer(loadingFromSave) {
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-          ${this.imageHyperlink ?
-            `<a class="imageHyperlink hidden" href="` + this.imageHyperlink + `">`
+          ${loadingFromSave ?
+            `<a id="` + this.id + `--hyperlink" href="` + this.imageHyperlink + `">`
           : ``}
           <img
-            class="movable youtubeEmbed"
+            class="movable ${this.imageHyperlink ? "hyperlinkedImage" : ""}"
             id="${this.id}"
             style="z-index: ${numberOfImageContainers + numberOfTextContainers};"
             src="${this.imageUrl}"
             draggable=false
-          />
-          ${this.imageHyperlink ? `</a>` : ``}
+          ></img>
+          ${loadingFromSave ? `</a>` : ``}
         `
-        );
+        ); 
       }
 
       initializeYoutubeContainer() {
@@ -1654,17 +1655,35 @@
           "px " +
           settings.shadowRgba;
 
-        /** BORDER */
-        document.getElementById(this.id).style.borderRadius =
-         settings.borderRadius + "px"; 
-        document.getElementById(this.id).style.borderStyle = "solid";
-        document.getElementById(this.id).style.borderWidth =
-          settings.borderWidth + "px";
-        document.getElementById(this.id).style.borderColor =
-          settings.borderColor;
-        
+        /** if this is a media container, settings diverge here */
 
-        /** if this is a media container, settings diverge */
+        /** BORDER */
+        if (this.imageUrl?.includes("youtube.com") || this.imageUrl?.includes("youtu.be")) {
+          // apply border to iframe and cover element rather than containing div
+          document.getElementById(this.id).children[0].style.borderColor = 
+            settings.bordeColor;
+          document.getElementById(this.id).children[1].style.borderColor = 
+            settings.bordeColor;
+          document.getElementById(this.id).children[0].style.borderWidth = 
+            settings.borderWidth + "px"; 
+          document.getElementById(this.id).children[1].style.borderWidth = 
+            settings.borderWidth + "px";
+          document.getElementById(this.id).children[0].style.borderRadius = 
+            settings.borderRadius + "px";
+          document.getElementById(this.id).children[1].style.borderRadius = 
+            settings.borderRadius + "px"; 
+        }
+        else {
+          document.getElementById(this.id).style.borderRadius =
+           settings.borderRadius + "px"; 
+          document.getElementById(this.id).style.borderStyle = "solid";
+          document.getElementById(this.id).style.borderWidth =
+            settings.borderWidth + "px";
+          document.getElementById(this.id).style.borderColor =
+            settings.borderColor;
+        } 
+
+        /** MEDIA MIRRORING */
         if (this.imageUrl != undefined) {
           let invertX = settings.invertX;
           let invertY = settings.invertY;
@@ -1678,11 +1697,11 @@
           else if (invertY) {
             document.getElementById(this.id).classList.toggle("invertedY"); 
           }
-
           return;
         }
-
+        
         /** apply text-container-only customizations */
+        
         /** FONT */
         if (settings.fontCode != "") {
           document.head.insertAdjacentHTML(
@@ -1746,6 +1765,8 @@
       */
       addContainerEventListeners() {
         let container = document.getElementById(this.id);
+
+        console.log("adding event listeners for " + this.id);
 
         // make element movable + resizable
         container.addEventListener(
@@ -1991,7 +2012,8 @@
           containerMapValues[i].imageUrl,
           containerMapValues[i].settings,
           containerMapValues[i].sections,
-          containerMapValues[i].youtubeId
+          containerMapValues[i].youtubeId,
+          containerMapValues[i].imageHyperlink
         ));
       }
      
@@ -2135,7 +2157,78 @@
         document.getElementById("editToggle").innerHTML = "edit page";
       }
     }
-  
+
+    /** handles the revealing/concealing of elements part of toggling edit mode */
+    function toggleEditingElements(show) {
+      const editButton = document.getElementById("editToggle");
+      const settingsContainer = document.getElementById("settingsContainer");
+
+      /** when editing-mode is enabled, */
+      if (show) {
+        editButton.innerHTML = "save + stop editing";
+
+        // reveal settings container
+        settingsContainer.classList.remove("hidden");
+
+        // change cursor on movable elements to indicate grabbable
+        let movableElements = document.getElementsByClassName("movable");
+        for (let i = 0; i < movableElements.length; i++) {
+          // mmovableElements[i].classList.add("grabbable");
+          movableElements[i].style.cursor = cursors.grab ? 'url("' + cursors.grab + '"), grab' : "grab";
+        }
+
+        // take hyperlinked images out of anchor tags to enable moving/resizing
+        let hyperlinkedImages = document.getElementsByClassName("hyperlinkedImage");
+        let parent, clone;
+        for (let i = 0; i < hyperlinkedImages.length; i++) {
+          parent = hyperlinkedImages[i].parentElement;
+          clone  = hyperlinkedImages[i].cloneNode();
+          hyperlinkedImages[i].remove();
+          parent.parentNode.insertBefore(clone, parent);
+          parent.remove();
+          containerDataMap.get(clone.id).addContainerEventListeners();
+        }
+
+        // cover any youtube iframes to enable moving/resizing
+        let embeddedVideos = document.getElementsByClassName("youtubeEmbedCover");
+        for (let i = 0; i < embeddedVideos.length; i++) {
+          embeddedVideos[i].style.display = "block";
+        }
+
+      } else {
+        // remove grabbable cursor
+        let movableElements = document.getElementsByClassName("movable");
+        for (let i = 0; i < movableElements.length; i++) {
+          movableElements[i].style.cursor = "";
+        }
+
+        // activate links on hyperlinked images
+        let hyperlinkedImages = document.getElementsByClassName("hyperlinkedImage");
+        let link, clone;
+        for (let i = 0; i < hyperlinkedImages.length; i++) {
+          containerId = hyperlinkedImages[i].id;
+          link        = containerDataMap.get(containerId).imageHyperlink;
+          clone       = hyperlinkedImages[i].cloneNode();
+          
+          hyperlinkedImages[i].insertAdjacentHTML("afterend",
+            `<a id="` + containerId + `--hyperlink" href="` + link + `"></a>`
+          );
+
+          hyperlinkedImages[i].remove();
+          document.getElementById(containerId + "--hyperlink").appendChild(clone);
+        }
+
+         // remove any youtube iframe covers
+        let embeddedVideos = document.getElementsByClassName("youtubeEmbedCover");
+        for (let i = 0; i < embeddedVideos.length; i++) {
+          embeddedVideos[i].style.display = "none";
+        }
+
+        // hide the settings container
+        settingsContainer.classList.add("hidden");
+      }
+    }
+
     function toggleExpandableMenu(toggleButton) {
       toggleButton.classList.toggle("active");
       let menuContent = toggleButton.nextElementSibling;
@@ -2173,55 +2266,6 @@
 
     function toggleImageRatio() {
       keepImageRatio = !document.getElementById("imageRatioToggle").checked;
-    }
-
-    /** handles the revealing/concealing of elements part of toggling edit mode */
-    function toggleEditingElements(show) {
-      const editButton = document.getElementById("editToggle");
-      const settingsContainer = document.getElementById("settingsContainer");
-
-      /** when editing-mode is enabled, */
-      if (show) {
-        editButton.innerHTML = "save + stop editing";
-
-        // reveal settings container
-        settingsContainer.classList.remove("hidden");
-
-        // change cursor on movable elements to indicate grabbable
-        let movableElements = document.getElementsByClassName("movable");
-        for (let i = 0; i < movableElements.length; i++) {
-          // mmovableElements[i].classList.add("grabbable");
-          movableElements[i].style.cursor = cursors.grab ? 'url("' + cursors.grab + '"), grab' : "grab";
-        }
-
-        // disable any hyperlinks on images to enable movement
-        let hyperlinkedImages = document.getElementsByClassName("imageHyperlink");
-        
-        // TODO todo : finish this / re-enable hyperlinks
-
-
-        // cover any youtube iframes to enable moving/resizing
-        let embeddedVideos = document.getElementsByClassName("youtubeEmbedCover");
-        for (let i = 0; i < embeddedVideos.length; i++) {
-          embeddedVideos[i].style.display = "block";
-        }
-
-      } else {
-        // remove grabbable cursor
-        let movableElements = document.getElementsByClassName("movable");
-        for (let i = 0; i < movableElements.length; i++) {
-          movableElements[i].style.cursor = "";
-        }
-
-         // cover any youtube iframes to enable moving/resizing
-        let embeddedVideos = document.getElementsByClassName("youtubeEmbedCover");
-        for (let i = 0; i < embeddedVideos.length; i++) {
-          embeddedVideos[i].style.display = "none";
-        }
-
-        // hide the settings container
-        settingsContainer.classList.add("hidden");
-      }
     }
 
     function toggleWallpaperRepeat(checkbox) {
@@ -2273,6 +2317,7 @@
      let container = new Container(
         undefined,
         containerName,
+        undefined,
         undefined,
         undefined,
         undefined,
@@ -2500,7 +2545,8 @@
         container.imageUrl,
         newSettings,
         container.sections,
-        container.youtubeId
+        container.youtubeId,
+        container.imageHyperlink
       );
       zIndexMap.set(numberTotalContainers + 1, clone.id);
 
@@ -3011,24 +3057,51 @@
       let container   = containerDataMap.get(containerId);
 
       container.settings.borderWidth = borderChange.target.value;
-      document.getElementById(containerId).style.borderWidth =
-        container.settings.borderWidth + "px";
+
+      if (container.imageUrl?.includes("youtube.com") || container.imageUrl?.includes("youtu.be")) {
+        document.getElementById(containerId).children[0].style.borderWidth = 
+          container.settings.borderWidth + "px";
+        document.getElementById(containerId).children[0].style.borderWidth = 
+          container.settings.borderWidth + "px";
+      }
+      else {
+        document.getElementById(containerId).style.borderWidth =
+          container.settings.borderWidth + "px";
+      }
     }
     function changeContainerBorderRadius(radiusChange) {
       let containerId = radiusChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.settings.borderRadius = radiusChange.target.value;
-      document.getElementById(containerId).style.borderRadius =
-        container.settings.borderRadius + "px";
+
+      if (container.imageUrl?.includes("youtube.com") || container.imageUrl?.includes("youtu.be")) {
+        document.getElementById(containerId).children[0].style.borderRadius = 
+          container.settings.borderRadius + "px";
+        document.getElementById(containerId).children[1].style.borderRadius = 
+          container.settings.borderRadius + "px";
+      }
+      else {
+        document.getElementById(containerId).style.borderRadius =
+          container.settings.borderRadius + "px";
+      }
     }
     function changeContainerBorderColor(colorChange) {
       let containerId = colorChange.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
       container.settings.borderColor = colorChange.target.value;
-      document.getElementById(containerId).style.borderColor =
-        container.settings.borderColor;
+
+      if (container.imageUrl?.includes("youtube.com") || container.imageUrl?.includes("youtu.be")) {
+        document.getElementById(containerId).children[0].style.borderColor = 
+          container.settings.borderColor; 
+        document.getElementById(containerId).children[1].style.borderColor = 
+          container.settings.borderColor;
+      }
+      else {
+        document.getElementById(containerId).style.borderColor =
+          container.settings.borderColor;
+      }
     }
     // CLOCK
     function toggleDate(checkboxChanged) {
