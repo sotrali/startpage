@@ -64,18 +64,23 @@
       }
 
       .youtubeEmbed {
+        border-style: solid;
         width: 100%;
         height: 100%;
         position: absolute; 
         display: inline;
       }
       .youtubeEmbedCover {
+        border-style: solid;
          width: 100%; 
          height: 100%; 
-         background-color: rgba(250,0,0,.5);
+         background-color: rgba(250,250,250,.5);
          position: absolute;
       }
 
+      .hyperlinkedImage {
+        cursor: inherit;
+      }
 
       .section {
         margin-top: 0rem;
@@ -1661,9 +1666,9 @@
         if (this.imageUrl?.includes("youtube.com") || this.imageUrl?.includes("youtu.be")) {
           // apply border to iframe and cover element rather than containing div
           document.getElementById(this.id).children[0].style.borderColor = 
-            settings.bordeColor;
+            settings.borderColor;
           document.getElementById(this.id).children[1].style.borderColor = 
-            settings.bordeColor;
+            settings.borderColor;
           document.getElementById(this.id).children[0].style.borderWidth = 
             settings.borderWidth + "px"; 
           document.getElementById(this.id).children[1].style.borderWidth = 
@@ -1928,13 +1933,7 @@
         }            */
       });
 
-      /** set up cursors */
-      cursors = JSON.parse(localStorage.getItem("cursors")) || {};
-      if (cursors.default != undefined) {
-        // apply new default cursor to entire html document
-        document.getElementsByTagName("html")[0].style.cursor =
-          'url("' + cursors.default + '"), auto';
-      }
+      
 
       /** set wallpaper */
       wallpaper = JSON.parse(localStorage.getItem("wallpaper")) || "";
@@ -2016,6 +2015,7 @@
           containerMapValues[i].imageHyperlink
         ));
       }
+
      
       /** set up + load settings menu data */
       settingsMenuData = JSON.parse(
@@ -2038,6 +2038,19 @@
       let tabs = document.getElementsByClassName("tab");
       for (let i = 0; i < tabs.length; i++) {
         tabs[i].addEventListener("click", changeActiveTab, false);
+      }
+
+      /** set up cursors */
+      cursors = JSON.parse(localStorage.getItem("cursors")) || {};
+      if (cursors != {}) {
+        // apply new default cursor to entire html document
+        document.getElementsByTagName("html")[0].style.cursor =
+          cursors.link ? 'url("' + cursors.default + '"), auto' : "";
+        // apply link hover cursor
+        let links = document.getElementsByTagName("a");
+        for (let i = 0; i < links.length; i++) {
+          links[i].style.cursor = cursors.link ? 'url("' + cursors.link + '"), pointer' : "pointer";
+        }
       }
     })();
 
@@ -2213,9 +2226,12 @@
           hyperlinkedImages[i].insertAdjacentHTML("afterend",
             `<a id="` + containerId + `--hyperlink" href="` + link + `"></a>`
           );
-
           hyperlinkedImages[i].remove();
           document.getElementById(containerId + "--hyperlink").appendChild(clone);
+
+          if (cursors.link != undefined) {
+            document.getElementById(containerId + "--hyperlink").style.cursor = cursors.link ? 'url("' + cursors.link + '"), pointer' : "";
+          }
         }
 
          // remove any youtube iframe covers
@@ -2814,7 +2830,7 @@
 
     function setLinkHoverCursor() {
       cursors.link = document.getElementById("linkCursorInput").value;
-      // apply new grab cursor to grabbable elements...
+      // apply cursor on links...
       let links = document.getElementsByTagName("a");
       for (let i = 0; i < links.length; i++) {
         links[i].style.cursor = cursors.link ? 'url("' + cursors.link + '"), pointer' : "pointer";
@@ -3061,7 +3077,7 @@
       if (container.imageUrl?.includes("youtube.com") || container.imageUrl?.includes("youtu.be")) {
         document.getElementById(containerId).children[0].style.borderWidth = 
           container.settings.borderWidth + "px";
-        document.getElementById(containerId).children[0].style.borderWidth = 
+        document.getElementById(containerId).children[1].style.borderWidth = 
           container.settings.borderWidth + "px";
       }
       else {
@@ -3076,7 +3092,7 @@
       container.settings.borderRadius = radiusChange.target.value;
 
       if (container.imageUrl?.includes("youtube.com") || container.imageUrl?.includes("youtu.be")) {
-        document.getElementById(containerId).children[0].style.borderRadius = 
+         document.getElementById(containerId).children[0].style.borderRadius = 
           container.settings.borderRadius + "px";
         document.getElementById(containerId).children[1].style.borderRadius = 
           container.settings.borderRadius + "px";
