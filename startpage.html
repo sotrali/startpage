@@ -449,12 +449,7 @@
               style="width: 100%;"
               type="text"
             />
-            <input
-              id="newImageContainerHyperlinkInput"
-              placeholder="(optional) hyperlink URL for image"
-              style="width: 100%;"
-              type="text"
-            />
+            
             <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
               place image
             </button>
@@ -639,7 +634,7 @@
     let autoplayAudio = true;
 
     let numberOfTextContainers = 0;
-    let numberOfImageContainers = 0;
+    let numberOfMediaContainers = 0;
 
     let cursors = {};
 
@@ -650,7 +645,7 @@
       y;
       height;
       width;
-      imageUrl;
+      mediaUrl;
       settings;
       sections;
       clockIntervalId;
@@ -664,7 +659,7 @@
         y,
         height,
         width,
-        imageUrl,
+        mediaUrl,
         settings,
         sections,
         youtubeId,
@@ -682,11 +677,11 @@
         }
 
         let loadingFromSave = (id != undefined);
-        let isMedia = (imageUrl != undefined);
+        let isMedia = (mediaUrl != undefined);
 
 
         if (isMedia) {
-          numberOfImageContainers++;
+          numberOfMediaContainers++;
 
           if (loadingFromSave) {
             this.name              = name;
@@ -696,7 +691,7 @@
             this.height            = height;
             this.width             = width;
             this.settings          = settings;
-            this.imageUrl          = imageUrl;
+            this.mediaUrl          = mediaUrl;
             this.youtubeId         = youtubeId;
             this.imageHyperlink    = imageHyperlink;
           }
@@ -704,12 +699,12 @@
           else {
             numberTotalContainers++;
 
-            if (imageUrl.includes("youtu.be")) {
-              this.youtubeId = imageUrl.slice(imageUrl.indexOf(".be/")+4, imageUrl.length);
+            if (mediaUrl.includes("youtu.be")) {
+              this.youtubeId = mediaUrl.slice(mediaUrl.indexOf(".be/")+4, mediaUrl.length);
             }
-            else if (imageUrl.includes("youtube.com")) {
+            else if (mediaUrl.includes("youtube.com")) {
               // normal youtube.com link
-              this.youtubeId = imageUrl.slice(imageUrl.indexOf("v=")+2, imageUrl.length);
+              this.youtubeId = mediaUrl.slice(mediaUrl.indexOf("v=")+2, mediaUrl.length);
               if (this.youtubeId.includes("&")) {
                 this.youtubeId = this.youtubeId.slice(0, this.youtubeId.indexOf("&"));
               }
@@ -717,10 +712,10 @@
 
             if (name == "") {
               if (this.videoId != undefined) {
-                this.name = "video " + numberOfImageContainers;
+                this.name = "video " + numberOfMediaContainers;
               }
               else {
-                this.name = "image " + numberOfImageContainers;
+                this.name = "image " + numberOfMediaContainers;
               }
             }
             else {
@@ -728,14 +723,14 @@
             }
 
             this.id = findLowestAvailableId();
-            this.imageUrl = imageUrl;
+            this.mediaUrl = mediaUrl;
             this.imageHyperlink = imageHyperlink.length == 0 ? undefined : imageHyperlink ;
             
             // deep copy default settings
             this.settings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
 
-            zIndexMap.set(String(numberOfImageContainers + numberOfTextContainers), this.id);
-            this.settings.zIndex = numberOfImageContainers + numberOfTextContainers;
+            zIndexMap.set(String(numberOfMediaContainers + numberOfTextContainers), this.id);
+            this.settings.zIndex = numberOfMediaContainers + numberOfTextContainers;
           }
 
           if (this.youtubeId != undefined) {
@@ -769,8 +764,8 @@
             // deep copy default settings
             this.settings = JSON.parse(JSON.stringify(defaultTextContainerSettings));
  
-            zIndexMap.set(String(numberOfTextContainers + numberOfImageContainers), this.id);
-            this.settings.zIndex = numberOfImageContainers + numberOfTextContainers;
+            zIndexMap.set(String(numberOfTextContainers + numberOfMediaContainers), this.id);
+            this.settings.zIndex = numberOfMediaContainers + numberOfTextContainers;
          }
 
           this.initializeTextContainer();
@@ -798,8 +793,8 @@
           <img
             class="movable ${this.imageHyperlink ? "hyperlinkedImage" : ""}"
             id="${this.id}"
-            style="z-index: ${numberOfImageContainers + numberOfTextContainers};"
-            src="${this.imageUrl}"
+            style="z-index: ${numberOfMediaContainers + numberOfTextContainers};"
+            src="${this.mediaUrl}"
             draggable=false
           ></img>
           ${loadingFromSave ? `</a>` : ``}
@@ -821,11 +816,11 @@
             class="movable media"
             style="width:640px;height:480px"
           >
-            <div class="youtubeEmbedCover" style="z-index: ${900 + numberOfImageContainers + numberOfTextContainers}; ${editing ? 'display: block"' : 'display:none;"'}></div>
+            <div class="youtubeEmbedCover" style="z-index: ${900 + numberOfMediaContainers + numberOfTextContainers}; ${editing ? 'display: block"' : 'display:none;"'}></div>
             <iframe
               class="youtubeEmbed"
               id=${this.id + "--embed-frame"}
-              style="z-index: ${numberOfImageContainers + numberOfTextContainers}; "
+              style="z-index: ${numberOfMediaContainers + numberOfTextContainers}; "
               src="${embedLink}"
             />
           </div>
@@ -1364,7 +1359,7 @@
           }
         }
       }
-      createImageContainerMenuListing() {
+      createMediaContainerMenuListing() {
         let zindex = this.settings.zIndex;
         let upButtons = `
           <div>
@@ -1385,6 +1380,18 @@
               <label for=${this.id + "-settings-youtube-autoplay"}>autoplay on load?</label>
               <input id=${this.id + "-settings-youtube-autoplay"} type="checkbox" onclick="toggleYoutubeAutoplay(this)" />
             </div>
+        `;
+
+        // TODO set up the rest of the container option listings (an add and remove hyperlink button should be added) and then embed in the listing if it's an image container
+        // then, we'll need to make event listeners and functions for adding it / removing it.
+        // lastly/ revist constructor, as now there will never be such thing as creating a new hyperlinked image from scratch. they'd only be from save
+        let imageHyperlinkOptions = `
+           <input
+              id="newImageContainerHyperlinkInput"
+              placeholder="(optional) hyperlink URL for image"
+              style="width: 100%;"
+              type="text"
+            />
         `;
 
         document.getElementById("containers").insertAdjacentHTML(
@@ -1550,7 +1557,7 @@
           .addEventListener("input", changeContainerShadow, false);
 
         /** if this is an media container, settings diverge here */
-        if (this.imageUrl != undefined) {
+        if (this.mediaUrl != undefined) {
           document
             .getElementById(this.id + "-settings-mirror-x")
             .addEventListener("change", toggleMirrorX, false);
@@ -1663,7 +1670,7 @@
         /** if this is a media container, settings diverge here */
 
         /** BORDER */
-        if (this.imageUrl?.includes("youtube.com") || this.imageUrl?.includes("youtu.be")) {
+        if (this.mediaUrl?.includes("youtube.com") || this.mediaUrl?.includes("youtu.be")) {
           // apply border to iframe and cover element rather than containing div
           document.getElementById(this.id).children[0].style.borderColor = 
             settings.borderColor;
@@ -1689,7 +1696,7 @@
         } 
 
         /** MEDIA MIRRORING */
-        if (this.imageUrl != undefined) {
+        if (this.mediaUrl != undefined) {
           let invertX = settings.invertX;
           let invertY = settings.invertY;
 
@@ -1877,7 +1884,7 @@
        */
       ensureBackwardsCompatibility() {
         let currentSettings;
-        if (this.imageUrl != undefined) {
+        if (this.mediaUrl != undefined) {
           currentSettings = Object.keys(defaultImageContainerSettings); 
         } 
         else {
@@ -1890,7 +1897,7 @@
             console.log("found missing option: ");
             console.log(currentSettings[i]);
 
-            if (this.imageUrl != undefined) {
+            if (this.mediaUrl != undefined) {
               this.settings[currentSettings[i]] = 
                 defaultImageContainerSettings[currentSettings[i]];
             }
@@ -2008,7 +2015,8 @@
           containerMapValues[i].y,
           containerMapValues[i].height,
           containerMapValues[i].width,
-          containerMapValues[i].imageUrl,
+          containerMapValues[i].imageUrl ? // ensure backwards compatibility after field name changed
+            containerMapValues[i].imageUrl : containerMapValues[i].mediaUrl, 
           containerMapValues[i].settings,
           containerMapValues[i].sections,
           containerMapValues[i].youtubeId,
@@ -2070,12 +2078,12 @@
       // render listings of existing containers in menu, in order of z-index
       for (let i = 1; i <= numberTotalContainers; i++) {
         let currentContainer = containerDataMap.get(zIndexMap.get(String(i)));
-        if (currentContainer.imageUrl == undefined) {
+        if (currentContainer.mediaUrl == undefined) {
           currentContainer.createTextContainerMenuListing();
           currentContainer.loadBookmarkListings();
         }
         else {
-          currentContainer.createImageContainerMenuListing();
+          currentContainer.createMediaContainerMenuListing();
         }
           currentContainer.addSettingsMenuEventListeners();
       }
@@ -2354,7 +2362,7 @@
       let containerName = document.getElementById(
         "newImageContainerNameInput"
       ).value;
-      let imageUrl = document.getElementById(
+      let mediaUrl = document.getElementById(
         "newImageContainerUrlInput"
       ).value;
       let imageHyperlink = document.getElementById(
@@ -2371,14 +2379,14 @@
         undefined,
         undefined,
         undefined,
-        imageUrl,
+        mediaUrl,
         undefined,
         undefined,
         undefined,
         imageHyperlink
       );
 
-      container.createImageContainerMenuListing();
+      container.createMediaContainerMenuListing();
       container.addSettingsMenuEventListeners();
       updateContainerListingOrder();
     }
@@ -2558,7 +2566,7 @@
         String(newY + "px"),
         container.height,
         container.width,
-        container.imageUrl,
+        container.mediaUrl,
         newSettings,
         container.sections,
         container.youtubeId,
@@ -2566,11 +2574,11 @@
       );
       zIndexMap.set(numberTotalContainers + 1, clone.id);
 
-      if (clone.imageUrl == undefined) {
+      if (clone.mediaUrl == undefined) {
         clone.createTextContainerMenuListing();
       }
       else {
-        clone.createImageContainerMenuListing();
+        clone.createMediaContainerMenuListing();
       }
       clone.addSettingsMenuEventListeners();
 
@@ -2581,12 +2589,12 @@
       let containerId = buttonPressed.id.split("--")[0];
       let container = containerDataMap.get(containerId);
 
-      if (container.imageUrl == undefined) {
+      if (container.mediaUrl == undefined) {
         numberOfTextContainers--;
         clearInterval(container.clockIntervalId);
       }
       else {
-        numberOfImageContainers--;
+        numberOfMediaContainers--;
       }
 
       // delete from zindex map and ripple zIndexes down
@@ -3074,7 +3082,7 @@
 
       container.settings.borderWidth = borderChange.target.value;
 
-      if (container.imageUrl?.includes("youtube.com") || container.imageUrl?.includes("youtu.be")) {
+      if (container.mediaUrl?.includes("youtube.com") || container.mediaUrl?.includes("youtu.be")) {
         document.getElementById(containerId).children[0].style.borderWidth = 
           container.settings.borderWidth + "px";
         document.getElementById(containerId).children[1].style.borderWidth = 
@@ -3091,7 +3099,7 @@
 
       container.settings.borderRadius = radiusChange.target.value;
 
-      if (container.imageUrl?.includes("youtube.com") || container.imageUrl?.includes("youtu.be")) {
+      if (container.mediaUrl?.includes("youtube.com") || container.mediaUrl?.includes("youtu.be")) {
          document.getElementById(containerId).children[0].style.borderRadius = 
           container.settings.borderRadius + "px";
         document.getElementById(containerId).children[1].style.borderRadius = 
@@ -3108,7 +3116,7 @@
 
       container.settings.borderColor = colorChange.target.value;
 
-      if (container.imageUrl?.includes("youtube.com") || container.imageUrl?.includes("youtu.be")) {
+      if (container.mediaUrl?.includes("youtube.com") || container.mediaUrl?.includes("youtu.be")) {
         document.getElementById(containerId).children[0].style.borderColor = 
           container.settings.borderColor; 
         document.getElementById(containerId).children[1].style.borderColor = 
