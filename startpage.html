@@ -314,33 +314,30 @@
           <p>
             you are now editing the page!<br /><br />
 
-            this is the settings box - there are various tabs containing various
+            this is the settings box - use the tabs above to find various
             customization options for your startpage experience.<br /><br />
 
-            this box is adjustable, just like every layer you add to the page. 
-            you can drag it around the page, and dragging with right click will 
-            adjust the size of the layer.<br /><br />
+            this box is adjustable, and so will be every layer you add to the page. 
+            click + drag to move, right-click + drag to resize.<br /><br />
 
             on the "layers" tab, you can add two types of layers to the page:
           </p>
           <ol>
             <li>
               <b>bookmark layer:</b><br />a customizable box that can serve as a clock,
-              tell you the date, and hold bookmarks all at once. it can also just be
-              one of those things, or any combination.<br /><br />to group a bookmarks 
-              together within a layer, enter the respective links with the same "section". 
-              uncategorized (no section specified) bookmarks will stay at the top of their layer.
+              tell you the date, and/or hold bookmarks.<br /><br />to group a bookmarks 
+              together within a layer, enter links with the same "section". 
+              uncategorized (no "section" specified) bookmarks will stay at the top of their layer.
             </li><br />
             <li>
-              <b>image layer:</b><br />paste any URL that points directly at an image or GIF
-              to add it to the page.<br /><br />use "free transform" in the "global 
-              settings" tab to change the image resizing style.
+              <b>media layer:</b><br />paste any URL that either points directly to an image/GIF
+              or to a youtube video to add it to the page.<br /><br />use "free transform" in the  
+              "global settings" tab to change the container's resizing style.
             </li>
           </ol>
           <p>
             <b>your changes will be saved to the page when you exit editing mode.</b><br /><br />
-            to go back to the last saved state while still editing the page (or to revert/undo 
-            live changes), refresh the page without disabling / exiting "editing" mode.
+            to undo current changes / revert to the last saved state, refresh the page without disabling / exiting "editing" mode.
             <br /><br />
 
             that concludes the basics. there's some more advanced information below:
@@ -360,17 +357,15 @@
             <hr />
             <p>
               <u>precise adjustments:</u>
-              if you click on a slider to focus it, and then keep your mouse hovered over it, 
-              you can use the arrow keys to make minute adjustments.
+              click on a slider (e.g. border width) to focus it, keep your mouse hovered over it, 
+              and use the arrow keys to make minute changes.
             </p>
             <hr />
             <p>
               <u>floating text</u>:<br />
-              for floating text anywhere on the page, remove the border and set the 
-              background opacity of a layer to zero.<br /> then, add new sections to the 
-              layer without any link information (sections can be added on their own).
-              customize the layer's "section" text to your liking and place the text 
-              wherever you want.
+              create a bookmark layer, remove the border, and set the background opacity to zero.
+              <br /> then, add new sections to the layer without entering any label/link information.
+              customize the layer's section text to your liking and place wherever you want.
             </p>
           </div>
 
@@ -384,8 +379,8 @@
               <a href="https://fonts.google.com/" target="blank">google fonts</a>.
               <br /><br />
 
-              beware, if you have multiple font families selected (it keeps track of
-              all of the fonts you press "get font" on), only the first one will be 
+              NOTE: if you have multiple font families in your cart (it tracks all
+              of the fonts you press "get font" on), only the top one will be 
               loaded. also, only regular versions of fonts are supported.<br /><br />
 
               to load a font:<br />
@@ -410,12 +405,12 @@
           </div>
           <div class="expandableMenu">
             <p>
-              you can export your entire current page's setup to your clipboard in the 
-              "import / export" tab. open a text file and paste the contents to store 
+              you can export your current page's entire setup to your clipboard in the 
+              "import / export" tab. save the contents somewhere on your computer to store 
               your theme for later or for sharing with others.<br /><br />
 
-              to load in a theme, simply paste the output of the export button into the
-              "import" input, and refresh the page. 
+              to load in a theme, simply paste exported data  into the "import" input, 
+              and refresh the page (ignore the warning that saved data will be lost). 
             </p>
           </div>
           
@@ -431,12 +426,12 @@
               type="text"
             />
             <button id="newTextContainerCreateButton" onclick="createNewTextContainer(this)">
-              create new layer
+              create layer
             </button>
           </div>
 
           <div style="display:flex;flex-direction:column;align-items:center;">
-            <h2 class="menuHeader">add image to page</h2>
+            <h2 class="menuHeader">add media layer</h2>
             <input
               id="newImageContainerNameInput"
               placeholder="(optional) layer name"
@@ -451,13 +446,13 @@
             />
             
             <button id="newImageContainerCreateButton" onclick="createNewImageContainer(this)">
-              place image
+              create layer
             </button>
             <a href="https://imgur.com/upload" target="_blank" style="color: black; font-size: .75rem;">imgur upload for convenience</a>
           </div>
 
           <div>
-            <h2 class="menuHeader">layers</h2>
+            <h2 class="menuHeader">layer list</h2>
             <div style="display: flex; flex-direction: row; justify-content: space-around; margin-bottom: 1rem;">
               <button onclick="collapseLayerListings()">collapse all listings</button>
               <button onclick="expandLayerListings()">expand all listings</button>
@@ -481,13 +476,15 @@
         </div>
 
         <div id="globalSettingsPage" class="tabContent">
-          <p class="menuHeader">image manipulation</p>
+          <p class="menuHeader">media manipulation</p>
             <div class="containerOptionListing" style="margin-bottom: 2rem;">
-              <label for="imageRatioToggle">image free transform mode</label>
+              <label for="imageRatioToggle">free transform mode</label>
               <input type="checkbox" id="imageRatioToggle" />
             </div>
 
-          <p class="menuHeader">change page wallpaper</p>
+          <hr />
+
+          <p class="menuHeader">change wallpaper</p>
             <div class="containerOptionListing">
               <label for="wallpaperUrl">set image as wallpaper: </label>
               <div style="display: flex; flex-direction: column; align-items: end;">
@@ -507,9 +504,10 @@
               <input type="color" id="wallpaperColorPicker" />
             </div>
 
+          <hr />
 
           <p class="menuHeader">change cursors</p>
-            <p>for reference: <a target="_blank" href="https://www.totallyfreecursors.com/">cursors</a></p>
+            <p><a target="_blank" href="https://www.totallyfreecursors.com/">site with a bunch of cursors for reference</a> (copy desired cursor image URLs for below)</p>
             <div class="containerOptionListing">
               <label for="pointerCursorInput">change normal cursor:</label>
               <div style="display: flex; flex-direction: column; align-items: end;">
@@ -532,34 +530,33 @@
               </div>
             </div>
 
+          <hr />
+
           <p class="menuHeader">audio</p>
-          <div class="containerOptionListing">
-            <label for=audioLinkInput">paste a direct URL to an audio file:</label>
+            <div class="containerOptionListing">
+              <label for=audioLinkInput">paste a direct URL to an audio file:</label>
 
-            <div style="display: flex; flex-direction: column; align-items: end;">
-              <input id="audioLinkInput" />
-              <button onclick="setAudioLink()">set audio</button>
+              <div style="display: flex; flex-direction: column; align-items: end;">
+                <input id="audioLinkInput" />
+                <button onclick="setAudioLink()">set audio</button>
+              </div>
             </div>
-          </div>
 
-          <div class="containerOptionListing">
-            <label for="autoplayAudioToggle">auto-play when page loads? </label>
-            <input id="autoplayAudioToggle" type="checkbox" checked />
-          </div>
+            <div class="containerOptionListing">
+              <label for="autoplayAudioToggle">auto-play when page loads? </label>
+              <input id="autoplayAudioToggle" type="checkbox" checked />
+            </div>
 
-          <audio id="audio" controls style="width: 100%">
-            <source id="audioSource" src="" type="audio/mp3" />
-          </audio>
+            <audio id="audio" controls style="width: 100%">
+              <source id="audioSource" src="" type="audio/mp3" />
+            </audio>
 
-          <p>
-            (note: this will require either white-listing this site in your browser
-            or generally enabling "allow auto-play audio" in your browser's settings.
-          </p>
+            <p>
+              (note: this will require either white-listing this site in your browser
+              or generally enabling "allow auto-play audio" in your browser's settings.
+            </p>
         </div>
     </div>
-    todo: 
-    <br />add check for youtube container in border functions
-    <br />rename stuff | better function names | imageUrl -> mediaUrl | etc.
   </body>
 
   <script>
@@ -724,7 +721,6 @@
 
             this.id = findLowestAvailableId();
             this.mediaUrl = mediaUrl;
-            this.imageHyperlink = imageHyperlink.length == 0 ? undefined : imageHyperlink ;
             
             // deep copy default settings
             this.settings = JSON.parse(JSON.stringify(defaultImageContainerSettings));
@@ -787,7 +783,7 @@
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-          ${loadingFromSave ?
+          ${loadingFromSave && this.imageHyperlink ?
             `<a id="` + this.id + `--hyperlink" href="` + this.imageHyperlink + `">`
           : ``}
           <img
@@ -1142,7 +1138,7 @@
                     </p>
                   </div>
 
-                  <div style="display: flex; flex-direction: column; align-items: end;">
+                  <div style="display: flex; flex-direction: column; align-items: end; gap: .5rem;">
                     <input  id=${this.id + "-settings-font-input"} />
                     <br />
                     <button id=${this.id + "-settings-set-font-button"}>set font</button>
@@ -1382,16 +1378,32 @@
             </div>
         `;
 
-        // TODO set up the rest of the container option listings (an add and remove hyperlink button should be added) and then embed in the listing if it's an image container
-        // then, we'll need to make event listeners and functions for adding it / removing it.
-        // lastly/ revist constructor, as now there will never be such thing as creating a new hyperlinked image from scratch. they'd only be from save
         let imageHyperlinkOptions = `
-           <input
-              id="newImageContainerHyperlinkInput"
-              placeholder="(optional) hyperlink URL for image"
-              style="width: 100%;"
-              type="text"
-            />
+          <p class="menuHeader">set image hyperlink</p>
+             <div class="containerOptionListing">
+               <label for=${this.id + "-settings-image-hyperlink-input"}>hyperlink image</label>
+
+               <div style="display: flex; flex-direction: column; align-items: end; gap: .5rem">
+                 <input
+                    id=${this.id + "-settings-image-hyperlink-input"}
+                    placeholder="URL to apply to image"
+                    style="width: 100%;"
+                    type="text"
+                 />
+                 <button id=${this.id + "-settings-image-hyperlink-set-button"}    onclick="setImageHyperlink(this)">
+                   set hyperlink
+                 </button>`;
+
+        if (this.imageHyperlink) {
+          imageHyperlinkOptions += `
+                 <button id=${this.id + "-settings-image-hyperlink-remove-button"} onclick="removeImageHyperlink(this)">
+                   remove hyperlink
+                  </button>`;
+        }
+        
+        imageHyperlinkOptions += `
+               </div>
+             </div>
         `;
 
         document.getElementById("containers").insertAdjacentHTML(
@@ -1414,6 +1426,8 @@
               </div>
 
               <hr />
+
+              ${this.youtubeId ? `` : imageHyperlinkOptions}
 
               <p class="menuHeader">image shape</p>
                   <div class="containerOptionListing">
@@ -2365,12 +2379,8 @@
       let mediaUrl = document.getElementById(
         "newImageContainerUrlInput"
       ).value;
-      let imageHyperlink = document.getElementById(
-        "newImageContainerHyperlinkInput"
-      ).value;
       document.getElementById("newImageContainerNameInput").value = "";
       document.getElementById("newImageContainerUrlInput").value = "";
-      document.getElementById("newImageContainerHyperlinkInput").value = "";
 
       let container = new Container(
         undefined,
@@ -2383,7 +2393,7 @@
         undefined,
         undefined,
         undefined,
-        imageHyperlink
+        undefined
       );
 
       container.createMediaContainerMenuListing();
@@ -3328,7 +3338,35 @@
 
       container.settings.autoplay = checkbox.checked;
     }
-     
+
+    // IMAGE HYPERLINKS
+    function setImageHyperlink(button) {
+      let containerId = button.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId); 
+
+      let input = document.getElementById(containerId + "-settings-image-hyperlink-input").value;
+      if (input == "") {
+        return;
+      }
+      document.getElementById(containerId + "-settings-image-hyperlink-input").value = "";
+
+      if (container.imageHyperlink == undefined) {
+        document.getElementById(containerId + "-settings-image-hyperlink-set-button")
+          .insertAdjacentHTML("afterend", `
+            <button id=${containerId + "-settings-image-hyperlink-remove-button"} onclick="removeImageHyperlink(this)">remove hyperlink</button>`);
+      }
+      container.imageHyperlink = input;
+      document.getElementById(containerId).classList.add("hyperlinkedImage");
+    }
+
+    function removeImageHyperlink(button) {
+      let containerId = button.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId); 
+
+      container.imageHyperlink = undefined;
+      document.getElementById(containerId).classList.remove("hyperlinkedImage");
+      document.getElementById(containerId + "-settings-image-hyperlink-remove-button").remove();
+    }
     /************************************
      * RESET / IMPORT & EXPORT HANDLERS *
      ************************************/
@@ -3363,7 +3401,7 @@
       alert(
         "data import successful. " +
           "please refresh the page!" +
-          "\n(you can ignore unsaved changes warning, the imported data has already been saved)"
+          "\n(you can ignore unsaved changes warning, the imported data has already been loaded + stored)"
       );
       justImported = true;
     }
