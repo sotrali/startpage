@@ -144,9 +144,9 @@
         color: black;
       }
 
-      /** #newTextContainerCreateButton, #newImageContainerCreateButton {
-        margin-top: .25rem;
-      } */
+      #newTextContainerNameInput, #newImageContainerNameInput, #newImageContainerUrlInput {
+        margin-bottom: .25rem;
+      } 
 
       #containers {
         padding-left: .25rem;
@@ -214,6 +214,13 @@
         align-items: center;
         padding: 1rem 1rem;
       }
+
+      .newBookmarkForm {
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+         gap: .25rem;
+       }
       .bookmarkListingContainer {
         display: flex;
         flex-direction: column;
@@ -242,6 +249,7 @@
       .containerOptionListing {
         display: flex;
         justify-content: space-between;
+        margin: .25rem 0;
       }
 
       #noContainerWarning {
@@ -249,13 +257,7 @@
       }
 
       input {
-        width: 4rem;
-      }
-      input[type="text"] {
-        width: 4rem;
-      }
-      input[type="color"] {
-        width: 4rem;
+        width: 6rem;
       }
       button {
         border: none;
@@ -320,10 +322,10 @@
           <p>
             you are now editing the page!<br /><br />
 
-            this is the settings box - use the tabs above to find various
+            this is the configuration panel - use the tabs above to find various
             customization options for your startpage experience.<br /><br />
 
-            this box is adjustable, and so will be every layer you add to the page. 
+            this panel is adjustable, as every "layer" you add to the page will be as well. 
             click + drag to move, right-click + drag to resize.<br /><br />
 
             on the "layers" tab, you can add two types of layers to the page:
@@ -331,19 +333,21 @@
           <ol>
             <li>
               <b>bookmark layer:</b><br />a customizable box that can serve as a clock,
-              tell you the date, and/or hold bookmarks.<br /><br />to group a bookmarks 
-              together within a layer, enter links with the same "section". 
+              tell you the date, and/or hold bookmarks.<br /><br />to group multiple bookmarks 
+              together, enter links with the same "section". 
               uncategorized (no "section" specified) bookmarks will stay at the top of their layer.
             </li><br />
             <li>
               <b>media layer:</b><br />paste any URL that either points directly to an image/GIF
-              or to a youtube video to add it to the page.<br /><br />use "free transform" in the  
-              "global settings" tab to change the container's resizing style.
+              or to a youtube video to add it to the page. images/GIFs can act as bookmarks themselves.
+              <br /><br />use "free transform" in the "global settings" tab to toggle the resizing 
+              mode on media containers. 
             </li>
           </ol>
           <p>
-            <b>your changes will be saved to the page when you exit editing mode.</b><br /><br />
-            to undo current changes / revert to the last saved state, refresh the page without disabling / exiting "editing" mode.
+            <b><u>your changes will be saved to the page when you exit editing mode!</u></b><br /><br />
+            to undo current changes / revert to the last saved state, force refresh the page while still
+            editing the page.
             <br /><br />
 
             that concludes the basics. there's some more advanced information below:
@@ -406,7 +410,7 @@
           </div>
 
           <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-            <p>sharing / backing pages up</p>
+            <p>sharing / backing up (import/export tab)</p>
             <p class="expandedMenuIndicator">+</p>
           </div>
           <div class="expandableMenu">
@@ -436,6 +440,8 @@
             </button>
           </div>
 
+          <hr style="margin-top: 2rem" />
+
           <div style="display:flex;flex-direction:column;align-items:center;">
             <h2 class="menuHeader">add media layer</h2>
             <input
@@ -457,6 +463,8 @@
             <a href="https://imgur.com/upload" target="_blank" style="color: black; font-size: .75rem;">imgur upload for convenience</a>
           </div>
 
+          <hr style="margin-top: 2rem" />
+
           <div>
             <h2 class="menuHeader">layer list</h2>
             <div style="display: flex; flex-direction: row; justify-content: space-around; margin-bottom: 1rem;">
@@ -468,29 +476,29 @@
         </div>
 
         <div id="ioPage" class="tabContent">
-          <p>export current setup to clipboard (see help tab for more information):</p>
-          <div>
+          <div style="margin-top: 2.5rem">
             <button style="height: 3rem; width: 100%; margin-bottom: 2.5rem;" onclick="exportData()">export data</button>
           </div>
           <hr />
-          <div style="display: flex; flex-direction: column; margin-top: 2.5rem; gap: 1rem;">
+          <div style="display: flex; flex-direction: column; margin-top: 2.5rem; gap: 1rem;align-items:center;">
             <input id="importDataInput" style="width: 90%; align-self: center" placeholder="paste theme data to import here"/>
             <button style="width: 100%; height: 3rem;" onclick="importData()" >
               import data
             </button>
+            <span style="font-size: .8rem">(see help tab for more information)</span>
           </div>
         </div>
 
         <div id="globalSettingsPage" class="tabContent">
-          <p class="menuHeader">media manipulation</p>
+          <h2 class="menuHeader">media manipulation</h2>
             <div class="containerOptionListing" style="margin-bottom: 2rem;">
-              <label for="imageRatioToggle">free transform mode</label>
+              <label for="imageRatioToggle">toggle free transform on images/videos</label>
               <input type="checkbox" id="imageRatioToggle" />
             </div>
 
           <hr />
 
-          <p class="menuHeader">change wallpaper</p>
+          <h2 class="menuHeader">change wallpaper</h2>
             <div class="containerOptionListing">
               <label for="wallpaperUrl">set image as wallpaper: </label>
               <div style="display: flex; flex-direction: column; align-items: end;">
@@ -512,55 +520,62 @@
 
           <hr />
 
-          <p class="menuHeader">change cursors</p>
-            <p><a target="_blank" href="https://www.totallyfreecursors.com/">site with a bunch of cursors for reference</a> (copy desired cursor image URLs for below)</p>
+          <h2 class="menuHeader">change cursors</h2>
+          <p>
+            NOTE: images larger than 32x32 may not work (based on browser)<br />
+            <a target="_blank" href="https://www.totallyfreecursors.com/">
+              site with a bunch of cursors for reference
+            </a>
+          </p>
             <div class="containerOptionListing">
               <label for="pointerCursorInput">change normal cursor:</label>
               <div style="display: flex; flex-direction: column; align-items: end;">
-                <input id="pointerCursorInput" placeholder="paste link to image URL" />
+                <input id="pointerCursorInput" style="width: 80%" placeholder="paste image URL" />
                 <button onclick="setDefaultCursor()">set normal cursor</button>
               </div>
             </div>
             <div class="containerOptionListing">
               <label for="grabCursorInput">change grab cursor:</label>
               <div style="display: flex; flex-direction: column; align-items: end;">
-                <input id="grabCursorInput" placeholder="paste link to image URL" />
+                <input id="grabCursorInput" style="width: 80%" placeholder="paste image URL" />
                 <button onclick="setGrabCursor()">set grabbing cursor</button>
               </div>
             </div>
             <div class="containerOptionListing" style="margin-bottom: 2rem;">
               <label for="linkCursorInput">change link cursor:</label>
               <div style="display: flex; flex-direction: column; align-items: end;">
-                <input id="linkCursorInput" placeholder="paste link to cursor image URL here" />
+                <input id="linkCursorInput" style="width: 80%" placeholder="paste image URL" />
                 <button onclick="setLinkHoverCursor()">set link hover cursor</button>
               </div>
             </div>
 
           <hr />
 
-          <p class="menuHeader">audio</p>
+          <h2 class="menuHeader">audio</h2>
             <div class="containerOptionListing">
+
               <label for=audioLinkInput">paste a direct URL to an audio file:</label>
 
               <div style="display: flex; flex-direction: column; align-items: end;">
-                <input id="audioLinkInput" />
+                <input id="audioLinkInput" style="width: 80%" placeholder="paste file URL" />
                 <button onclick="setAudioLink()">set audio</button>
               </div>
-            </div>
-
-            <div class="containerOptionListing">
-              <label for="autoplayAudioToggle">auto-play when page loads? </label>
-              <input id="autoplayAudioToggle" type="checkbox" checked />
             </div>
 
             <audio id="audio" controls style="width: 100%">
               <source id="audioSource" src="" type="audio/mp3" />
             </audio>
 
-            <p>
-              (note: this will require either white-listing this site in your browser
-              or generally enabling "allow auto-play audio" in your browser's settings.
+            <div class="containerOptionListing">
+              <label for="autoplayAudioToggle">auto-play when page loads? </label>
+              <input id="autoplayAudioToggle" type="checkbox" checked />
+            </div>
+
+           <p>
+              NOTE: autoplay requires either whitelisting this site or generally 
+              enabling "allow auto-play audio" in your browser's settings.
             </p>
+
         </div>
     </div>
   </body>
@@ -932,49 +947,47 @@
               <p class="expandedMenuIndicator">+</p>
             </div>
             <div class="expandableMenu" id=${this.id + "-bookmark-menu"} >
-
-              <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-                <p>manage</p>
-                <p class="expandedMenuIndicator">+</p>
-              </div>
-              <div class="expandableMenu">
-                <div class="menuHeader">current bookmarks</div>
-                <div id=${this.id + "-bookmark-menu--listings"} class="bookmarkListingContainer">
-                </div>
-              </div>
-
               <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
                 <p>add new</p>
                 <p class="expandedMenuIndicator">+</p>
               </div>
               <div class="expandableMenu" id=${this.id + "-bookmark-menu--add-new"} >
 
-                <input 
-                  id=${this.id + "-url-input"} 
-                  type="text" name="url" 
-                  placeholder="enter URL for bookmark"
-                  style="width: 90%;"
-                />
-                <br />
+                <div class="newBookmarkForm">
+                  <input 
+                    id=${this.id + "-url-input"} 
+                    type="text" name="url" 
+                    placeholder="enter URL for bookmark"
+                    style="width: 100%;"
+                  />
 
-                <input 
-                  id=${this.id + "-label-input"} 
-                  type="text" name="label"
-                  placeholder="enter label for bookmark"
-                  style="width: 90%"
-                />
-                <br />
+                  <input 
+                    id=${this.id + "-label-input"} 
+                    type="text" name="label"
+                    placeholder="enter label for bookmark"
+                    style="width: 100%"
+                  />
 
-                <input 
-                  id=${this.id + "-section-input"} 
-                  type="text" name="section" 
-                  placeholder="optional: enter a new or existing section name" 
-                  style="width: 90%"
-                />
-                <br />
+                  <input 
+                    id=${this.id + "-section-input"} 
+                    type="text" name="section" 
+                    placeholder="optional: enter a new or existing section name" 
+                    style="width: 100%"
+                  />
 
-                <button id=${this.id + "-add-link-button"} onclick="addLink(this)">add it</button>
+                  <button 
+                    id=${this.id + "-add-link-button"} 
+                    onclick="addLink(this)"
+                    style="width: 50%">
+                      add it
+                  </button>
+                </div>
               </div>
+
+              <div class="menuHeader">current bookmarks</div>
+              <div id=${this.id + "-bookmark-menu--listings"} class="bookmarkListingContainer">
+              </div>
+              
             </div>
             
           <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
@@ -1140,11 +1153,11 @@
                 <div class="containerOptionListing">
                   <div>
                     <p style="margin: 0;">
-                      change font:<br />(see help tab for more info)<br />
+                      change font:<br /><span style="font-size: .8rem">(see help tab for more info)</span><br />
                     </p>
                   </div>
 
-                  <div style="display: flex; flex-direction: column; align-items: end; gap: .5rem;">
+                  <div style="display: flex; flex-direction: column; align-items: end;">
                     <input  id=${this.id + "-settings-font-input"} />
                     <br />
                     <button id=${this.id + "-settings-set-font-button"}>set font</button>
@@ -1219,7 +1232,7 @@
         // FONT
         if (settings.fontName == "") {
           document.getElementById(this.id + "-settings-font-name").innerHTML =
-            "system default";
+            "browser default";
         } else {
           document.getElementById(this.id + "-settings-font-name").innerHTML =
             settings.fontName;
@@ -1389,7 +1402,7 @@
              <div class="containerOptionListing">
                <label for=${this.id + "-settings-image-hyperlink-input"}>hyperlink image</label>
 
-               <div style="display: flex; flex-direction: column; align-items: end; gap: .5rem">
+               <div style="display: flex; flex-direction: column; align-items: end;">
                  <input
                     id=${this.id + "-settings-image-hyperlink-input"}
                     placeholder="URL to apply to image"
@@ -1997,13 +2010,7 @@
           });
       }
 
-      /** (FROM ADDSETTINGSEVENTLISTENERS) local state setting input listeners */
-      document
-        .getElementById("imageRatioToggle")
-        .addEventListener("change", toggleImageRatio, false);
-      document
-        .getElementById("autoplayAudioToggle")
-        .addEventListener("change", toggleAutoplayAudio, false);
+
 
       // page wallpaper
       document
@@ -2121,6 +2128,14 @@
         mouseDownMovableElement,
         true
       );
+      // local state inputs 
+      document.getElementById("imageRatioToggle").checked = !keepImageRatio;
+      document
+        .getElementById("imageRatioToggle")
+        .addEventListener("change", toggleImageRatio, false);
+      document
+        .getElementById("autoplayAudioToggle")
+        .addEventListener("change", toggleAutoplayAudio, false);            
       
       // prevent context menu when resizing
       settingsContainer.addEventListener("contextmenu", (e) => {
