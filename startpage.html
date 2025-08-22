@@ -87,7 +87,9 @@
       }
 
       .settingsContainer {
-        background-color: rgba(173, 165, 165, 0.9);
+        /** background-color: rgba(173, 165, 165, 0.9); */
+
+        background-color: rgba(133, 135, 135, 0.95);
         z-index: 999;
 
         border: solid black 2px;
@@ -111,7 +113,7 @@
         justify-content: space-between;
         position: sticky;
         top: 0;
-        background-color: rgba(173, 165, 165, 1);
+        background-color: rgba(133, 135, 135, 1);
         padding: 5px 5px 5px 5px;
 
         border-bottom: solid 2px black;
@@ -141,6 +143,10 @@
       a.visited {
         color: black;
       }
+
+      /** #newTextContainerCreateButton, #newImageContainerCreateButton {
+        margin-top: .25rem;
+      } */
 
       #containers {
         padding-left: .25rem;
@@ -928,17 +934,17 @@
             <div class="expandableMenu" id=${this.id + "-bookmark-menu"} >
 
               <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-                <p>manage bookmarks / sections</p>
+                <p>manage</p>
                 <p class="expandedMenuIndicator">+</p>
               </div>
               <div class="expandableMenu">
-
+                <div class="menuHeader">current bookmarks</div>
                 <div id=${this.id + "-bookmark-menu--listings"} class="bookmarkListingContainer">
                 </div>
               </div>
 
               <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-                <p>add new bookmarks / sections</p>
+                <p>add new</p>
                 <p class="expandedMenuIndicator">+</p>
               </div>
               <div class="expandableMenu" id=${this.id + "-bookmark-menu--add-new"} >
