@@ -325,7 +325,7 @@
             this is the configuration panel - use the tabs above to find various
             customization options for your startpage experience.<br /><br />
 
-            this panel is adjustable, as every "layer" you add to the page will be as well. 
+            this panel is adjustable, and every "layer" you add to the page will be as well. 
             click + drag to move, right-click + drag to resize.<br /><br />
 
             on the "layers" tab, you can add two types of layers to the page:
@@ -452,7 +452,7 @@
             />
             <input
               id="newImageContainerUrlInput"
-              placeholder="image / youtube URL"
+              placeholder="image / gif / youtube URL"
               style="width: 100%;"
               type="text"
             />
@@ -2098,7 +2098,7 @@
       if (numberTotalContainers == 0) {
         document.getElementById("containers").insertAdjacentHTML(
           "beforeend",
-          `<p id="noContainerWarning">(you have no layers right now)</p>`
+          `<p id="noContainerWarning" style="text-align: center">(you have no layers right now)</p>`
         );
       }
 
