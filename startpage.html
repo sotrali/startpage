@@ -195,7 +195,7 @@
       .menuHeader {
         text-align: center;
         width: 100%;
-        font-style: italic;
+        font-style: normal;
         font-weight: bold;
         padding: 1rem 0;
         margin: 0;
@@ -354,7 +354,7 @@
           </p>
 
           <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-            <p>tips and tricks</p>
+            <p>tips and design tricks</p>
             <p class="expandedMenuIndicator">+</p>
           </div>
           <div class="expandableMenu">
@@ -376,6 +376,12 @@
               create a bookmark layer, remove the border, and set the background opacity to zero.
               <br /> then, add new sections to the layer without entering any label/link information.
               customize the layer's section text to your liking and place wherever you want.
+            </p>
+            <p>
+              <u>vertical / horizontal lines</u>:<br />
+              create a bookmark layer and set the border to your desired line width. remove the 
+              clock, date, and divider so that it's just an empty container, then shrink the container 
+              all the way left or up so that it becomes just a line!
             </p>
           </div>
 
@@ -854,14 +860,14 @@
           "beforeend",
           `
             <div class="movable container" id=${this.id}>
-              <div>
+              <div class="autoMarginHolder">
                 <div id=${this.id + "-header"} class="containerHeader">
                   <div id=${this.id + "-date"}></div>
                   <div id=${this.id + "-clock"}></div>
                 </div>
                 <hr id=${this.id + "-divider"} />
                 <div id=${this.id + "-bookmarks"} ></div>
-              <div>
+              </div>
             </div>
         `
         );
@@ -3229,11 +3235,11 @@
       document.getElementById(containerId + "-divider").style.display = 
         checkboxChanged.target.checked ? "block" : "none";
 
-      if (checkboxChanged.target.checked && Object.keys(container.sections).length > 0) {
-        document.getElementById(containerId + "-clock").style.marginBottom = "18px";
+      if (!checkboxChanged.target.checked && Object.keys(container.sections).length > 0) {
+        document.getElementById(containerId + "-header").style.marginBottom = "18px";
       } else {
-        document.getElementById(containerId + "-clock").style.marginBottom = "0px";
-      }
+        document.getElementById(containerId + "-header").style.marginBottom = "0px";
+      }  
     }
 
     // GENERAL TEXT SETTINGS
