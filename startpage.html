@@ -249,7 +249,7 @@
       .containerOptionListing {
         display: flex;
         justify-content: space-between;
-        margin: .25rem 0;
+        margin: .25rem 1rem 0 .25rem;
       }
 
       #noContainerWarning {
@@ -789,7 +789,7 @@
  
             zIndexMap.set(String(numberOfTextContainers + numberOfMediaContainers), this.id);
             this.settings.zIndex = numberOfMediaContainers + numberOfTextContainers;
-         }
+          }
 
           this.initializeTextContainer();
           this.loadBookmarks();
@@ -997,7 +997,7 @@
             </div>
             
           <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-              <p>shaping / color</p>
+              <p>container styling</p>
               <p class="expandedMenuIndicator">+</p>
             </div>
             <div class="expandableMenu">
@@ -1013,10 +1013,14 @@
                   <input id=${this.id + "-settings-bg-alpha"} type="range" min="0" max="100" />
                 </div>
 
-              <p class="menuHeader">layer shape</p>
+              <p class="menuHeader">shape</p>
                 <div class="containerOptionListing">
                   <label for=${this.id + "-settings-border-radius"}>roundness: </label>
                   <input id=${this.id + "-settings-border-radius"} type="range" max="175" />
+                </div>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-rotation"}>rotation: </label>
+                  <input id=${this.id + "-settings-rotation"} type="range" min="-180" max="180" />
                 </div>
 
               <p class="menuHeader">border</p>
@@ -1117,7 +1121,7 @@
             </div>
 
             <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-              <p>general text / font options</p>
+              <p>text / font options</p>
               <p class="expandedMenuIndicator">+</p>
             </div>
             <div class="expandableMenu">
@@ -1235,6 +1239,9 @@
           settings.borderWidth;
         document.getElementById(this.id + "-settings-border-radius").value =
           settings.borderRadius;
+        // ROTATION
+        document.getElementById(this.id + "-settings-rotation").value =
+          settings.rotation;
         // FONT
         if (settings.fontName == "") {
           document.getElementById(this.id + "-settings-font-name").innerHTML =
@@ -1454,10 +1461,14 @@
 
               ${this.youtubeId ? `` : imageHyperlinkOptions}
 
-              <p class="menuHeader">image shape</p>
+              <p class="menuHeader">shape</p>
                   <div class="containerOptionListing">
                     <label for=${this.id + "-settings-border-radius"}>roundness: </label>
                     <input id=${this.id + "-settings-border-radius"} type="range" max="175" />
+                  </div>
+                  <div class="containerOptionListing">
+                    <label for=${this.id + "-settings-rotation"}>rotation: </label>
+                    <input id=${this.id + "-settings-rotation"} type="range" min="-360" max="360" />
                   </div>
 
                 <p class="menuHeader">border</p>
@@ -1556,6 +1567,9 @@
           settings.borderWidth;
         document.getElementById(this.id + "-settings-border-radius").value =
           settings.borderRadius;
+        // ROTATION
+        document.getElementById(this.id + "-settings-rotation").value =
+          settings.rotation;
         // MIRRORING
         document.getElementById(this.id + "-settings-mirror-x").checked =
           settings.invertX; 
@@ -1594,6 +1608,10 @@
         document
           .getElementById(this.id + "-settings-shadow-alpha")
           .addEventListener("input", changeContainerShadow, false);
+        // container rotation setting listeners
+        document
+          .getElementById(this.id + "-settings-rotation")
+          .addEventListener("input", changeContainerRotation, false);
 
         /** if this is an media container, settings diverge here */
         if (this.mediaUrl != undefined) {
@@ -1706,7 +1724,10 @@
           "px " +
           settings.shadowRgba;
 
-        /** if this is a media container, settings diverge here */
+        
+        /** 
+          * if this is a media container, settings diverge here 
+          */
 
         /** BORDER */
         if (this.mediaUrl?.includes("youtube.com") || this.mediaUrl?.includes("youtu.be")) {
@@ -1734,24 +1755,19 @@
             settings.borderColor;
         } 
 
-        /** MEDIA MIRRORING */
+        /** MEDIA MIRRORING + ROTATOIN*/
         if (this.mediaUrl != undefined) {
-          let invertX = settings.invertX;
-          let invertY = settings.invertY;
+          let transformValue =
+            `scale(${settings.invertX ? `-1` : `1`}, ${settings.invertY ? `-1` : `1`}) `;
+          transformValue +=
+            `rotate(${settings.rotation}deg)`;
 
-          if (invertY && invertX) {
-            document.getElementById(this.id).classList.add("doubleInverted"); 
-          }
-          else if (invertX) {
-            document.getElementById(this.id).classList.add("invertedX"); 
-          }
-          else if (invertY) {
-            document.getElementById(this.id).classList.toggle("invertedY"); 
-          }
+          document.getElementById(this.id).style.transform = transformValue; 
           return;
         }
         
         /** apply text-container-only customizations */
+
         
         /** FONT */
         if (settings.fontCode != "") {
@@ -1809,6 +1825,11 @@
           divider.style.backgroundColor = settings.dividerColor;
           divider.style.borderColor = settings.dividerColor;
         }
+
+        /** ROTATION */
+        document.getElementById(this.id).style.transform = 
+          "rotate(" + settings.rotation + "deg)";
+         
       }
 
       /**
@@ -1816,8 +1837,6 @@
       */
       addContainerEventListeners() {
         let container = document.getElementById(this.id);
-
-        console.log("adding event listeners for " + this.id);
 
         // make element movable + resizable
         container.addEventListener(
@@ -2491,14 +2510,6 @@
       let clickedListingCopy = document.getElementById(containerId + "-container-listing").cloneNode(true);
       document.getElementById(containerId + "-container-listing").remove();
 
-
-      if (direction == "top") {
-
-      }
-      else if (direction == "bottom") {
-        
-      }
-
       /** then, deal with reordering the actual containers */
 
       // for up/down, simply swap container element z-indexes + save to map
@@ -2533,8 +2544,6 @@
       else if (direction == "top") {
         // moved container will be at end, so we need to ripple all zIndexes between Current and end down 1
         for (let i = currentIndex; i < numberTotalContainers; i++) {
-          console.log("setting: " + i + ", " + zIndexMap.get(String(i+1)));
-
           zIndexMap.set(String(i), zIndexMap.get(String(i+1)))
           document.getElementById(zIndexMap.get(String(i))).style.zIndex--;
           containerDataMap.get(zIndexMap.get(String(i))).settings.zIndex--;
@@ -2552,8 +2561,6 @@
       else if (direction == "bottom") {
         // moved container is now at bottom, so we need to ripple all other zIndexes up 1
         for (let i = currentIndex; i > 1; i--) {
-          console.log("setting: " + i + ", " + zIndexMap.get(String(i+1)));
-
           zIndexMap.set(String(i), zIndexMap.get(String(i - 1)))
           document.getElementById(zIndexMap.get(String(i))).style.zIndex++;
           containerDataMap.get(zIndexMap.get(String(i))).settings.zIndex++;
@@ -2567,7 +2574,7 @@
         zIndexMap.set("1", containerId);
       }
 
-      // since menu for moving container was removed+readded, we need to reapply listeners
+      // since menu for moving container was removed+readded, we need to reapply listeners to inputs
       movingContainer.addSettingsMenuEventListeners();
 
       // and refresh the listings based on the new saved data
@@ -2660,7 +2667,6 @@
       for(let index = 1; index < 200; index ++) {
         id = "container-" + index;
         if (!containerDataMap.has(id)) {
-          console.log(id);
           return id;
         }
       }
@@ -2724,7 +2730,6 @@
 
     function moveElement(mouseMove) {
       if (!moving) {
-        console.log("RETURN: " + mouseMove.target.tagName);
         return;
       }
 
@@ -2867,8 +2872,7 @@
       // apply new grab cursor to grabbable elements...
       let movableElements = document.getElementsByClassName("movable");
       for (let i = 0; i < movableElements.length; i++) {
-        console.log(movableElements[i]);
-          movableElements[i].style.cursor = cursors.grab ? 'url("' + cursors.grab + '"), grab' : "grab";
+        movableElements[i].style.cursor = cursors.grab ? 'url("' + cursors.grab + '"), grab' : "grab";
       }
       document.getElementById("grabCursorInput").value = "";
     }
@@ -3318,45 +3322,65 @@
       document.getElementById(containerId).style.boxShadow = shadow;
     }
 
+    // ROTATION
+    function changeContainerRotation(valueChanged) {
+      let containerId = valueChanged.target.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId);
+       
+      let rotation = valueChanged.target.value; 
+      let invertX = container.settings.invertX;
+      let invertY = container.settings.invertY;
+
+      // save to container
+      container.settings.rotation = rotation;
+
+      // perform transformation
+      let transformValue =
+        `scale(${invertX ? `-1` : `1`}, ${invertY ? `-1` : `1`}) `;
+      transformValue +=
+        `rotate(${container.settings.rotation}deg)`;
+       
+      document.getElementById(containerId).style.transform = transformValue;
+    }
+
     // IMAGE INVERSION
     function toggleMirrorX(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
-      let invertX = checkboxChanged.target.checked;
 
+      let invertX = checkboxChanged.target.checked;
+      let invertY = container.settings.invertY;
+
+      // save to container
       container.settings.invertX = invertX;
 
-      if (invertX && container.settings.invertY) {
-        document.getElementById(containerId).classList.remove("invertedY"); 
-        document.getElementById(containerId).classList.add("doubleInverted"); 
-      }
-      else if (!invertX && document.getElementById(containerId).classList.contains("doubleInverted")) {
-        document.getElementById(containerId).classList.remove("doubleInverted"); 
-        document.getElementById(containerId).classList.add("invertedY"); 
-      }
-      else {
-        document.getElementById(containerId).classList.toggle("invertedX"); 
-      }  
+      // perform transformation
+      let transformValue =
+        `scale(${invertX ? `-1` : `1`}, ${invertY ? `-1` : `1`}) `;
+      transformValue +=
+        `rotate(${container.settings.rotation}deg)`;
+
+      document.getElementById(containerId).style.transform = transformValue;
+        
     }
 
     function toggleMirrorY(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
-      let invertY = checkboxChanged.target.checked;
 
+      let invertY = checkboxChanged.target.checked;
+      let invertX = container.settings.invertX;
+      
+      // save to container
       container.settings.invertY = invertY;
 
-      if (invertY && container.settings.invertX) {
-        document.getElementById(containerId).classList.remove("invertedX"); 
-        document.getElementById(containerId).classList.add("doubleInverted"); 
-      }
-      else if (!invertY && document.getElementById(containerId).classList.contains("doubleInverted")) {
-        document.getElementById(containerId).classList.remove("doubleInverted"); 
-        document.getElementById(containerId).classList.add("invertedX"); 
-      }
-      else {
-        document.getElementById(containerId).classList.toggle("invertedY"); 
-      }
+      // perform transformation
+      let transformValue =
+        `scale(${invertX ? `-1` : `1`}, ${invertY ? `-1` : `1`}) `;
+      transformValue +=
+        `rotate(${container.settings.rotation}deg)`;
+
+      document.getElementById(containerId).style.transform = transformValue;
     }
 
     function toggleYoutubeAutoplay(checkbox) {
