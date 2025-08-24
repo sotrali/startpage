@@ -378,7 +378,7 @@
               customize the layer's section text to your liking and place wherever you want.
             </p>
             <p>
-              <u>vertical / horizontal lines</u>:<br />
+              <u>straight lines</u>:<br />
               create a bookmark layer and set the border to your desired line width. remove the 
               clock, date, and divider so that it's just an empty container, then shrink the container 
               all the way left or up so that it becomes just a line!
@@ -1074,28 +1074,39 @@
             <div class="expandableMenu">
 
               <p class="menuHeader">date + time options</p>
-                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-date-toggle"}>show date?</label>
-                  <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
+
+               <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-clock-color"}>set text color: </label>
+                  <input id=${this.id + "-settings-clock-color"} type="color" />
                 </div>
-                
+
                 <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-clock-toggle"}>show clock?</label>
-                  <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
+                  <label>set text font size (px): </label>
+                  <input id=${this.id + "-settings-clock-size"} />
                 </div>
 
                 <br />
 
                 <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-clock-color"}>set header text color: </label>
-                  <input id=${this.id + "-settings-clock-color"} type="color" />
+                  <label for=${this.id + "-settings-date-toggle"}>show date?</label>
+                  <input id=${this.id + "-settings-date-toggle"} type="checkbox" />
                 </div>
 
-                <br />                                                    
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-date-bold"}>bold?</label>
+                  <input id=${this.id + "-settings-date-bold"} type="checkbox" />
+                </div>
 
                 <div class="containerOptionListing">
-                  <label>set header font size (px): </label>
-                  <input id=${this.id + "-settings-clock-size"} />
+                  <label for=${this.id + "-settings-date-italic"}>italic?</label>
+                  <input id=${this.id + "-settings-date-italic"} type="checkbox" />
+                </div>
+
+                <br />
+
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-clock-toggle"}>show clock?</label>
+                  <input id=${this.id + "-settings-clock-toggle"} type="checkbox" />
                 </div>
 
                 <div class="containerOptionListing">
@@ -1293,10 +1304,14 @@
           settings.headerColor;
         document.getElementById(this.id + "-settings-clock-size").value =
           settings.headerSize;
+        document.getElementById(this.id + "-settings-date-bold").checked =
+          settings.dateBold;
         document.getElementById(this.id + "-settings-clock-bold").checked =
-          settings.headerBold;
+          settings.clockBold;
+        document.getElementById(this.id + "-settings-date-italic").checked =
+          settings.dateItalic;
         document.getElementById(this.id + "-settings-clock-italic").checked =
-          settings.headerItalic;
+          settings.clockItalic;
         // DIVIDER
         document.getElementById(this.id + "-settings-divider-toggle").checked =
           settings.enableDivider;
@@ -1680,11 +1695,17 @@
           .getElementById(this.id + "-settings-clock-size")
           .addEventListener("input", changeHeaderSize, false);
         document
+          .getElementById(this.id + "-settings-date-bold")
+          .addEventListener("change", toggleDateBold, false);
+        document
           .getElementById(this.id + "-settings-clock-bold")
-          .addEventListener("change", toggleHeaderBold, false);
+          .addEventListener("change", toggleClockBold, false); 
+        document
+          .getElementById(this.id + "-settings-date-italic")
+          .addEventListener("change", toggleDateItalic, false);
         document
           .getElementById(this.id + "-settings-clock-italic")
-          .addEventListener("change", toggleHeaderItalic, false);
+          .addEventListener("change", toggleClockItalic, false); 
         // container divider setting listeners
         document
           .getElementById(this.id + "-settings-divider-toggle")
@@ -1698,9 +1719,6 @@
        * applies saved cosmetic customizations to container upon init (both text+media containers)
        */
       applySettings() {
-        // make sure old themes will still load
-        this.ensureBackwardsCompatibility();
-
         /** apply customizations relevant to both image and text containers */
         /** POSITION */
         document.getElementById(this.id).style.top    = this.y;
@@ -1801,15 +1819,19 @@
             settings.enableDate ? "inline" : "none";
         document.getElementById(this.id + "-clock").style.display = 
             settings.enableClock ? "inline" : "none";
-        // apply header customizations
+        // apply text customizations
         document.getElementById(this.id + "-header").style.color =
           settings.headerColor;
         document.getElementById(this.id + "-header").style.fontSize =
           settings.headerSize + "px";
-        document.getElementById(this.id + "-header").style.fontWeight =
-          settings.headerBold ? "bold" : "normal";
-        document.getElementById(this.id + "-header").style.fontStyle =
-          settings.headerItalic ? "italic" : "normal";
+        document.getElementById(this.id + "-date").style.fontWeight =
+          settings.dateBold ? "bold" : "normal";
+        document.getElementById(this.id + "-clock").style.fontWeight =
+          settings.clockBold ? "bold" : "normal";
+        document.getElementById(this.id + "-date").style.fontStyle =
+          settings.dateItalic ? "italic" : "normal";
+        document.getElementById(this.id + "-clock").style.fontStyle =
+          settings.clockItalic ? "italic" : "normal";
 
         /** DIVIDER */
         let divider = document.getElementById(this.id + "-divider");
@@ -1936,36 +1958,6 @@
           sectionElements[i].style.fontStyle = settings.sectionItalic ? "italic" : "normal";
         }
       }
-
-      /**
-       * if a container is imported and missing a setting, add it and set to default
-       */
-      ensureBackwardsCompatibility() {
-        let currentSettings;
-        if (this.mediaUrl != undefined) {
-          currentSettings = Object.keys(defaultImageContainerSettings); 
-        } 
-        else {
-          currentSettings = Object.keys(defaultTextContainerSettings); 
-        }
-
-        for (let i = 0; i < currentSettings.length; i++) {
-          if (this.settings[currentSettings[i]] == undefined) {
-
-            console.log("found missing option: ");
-            console.log(currentSettings[i]);
-
-            if (this.mediaUrl != undefined) {
-              this.settings[currentSettings[i]] = 
-                defaultImageContainerSettings[currentSettings[i]];
-            }
-            else {
-              this.settings[currentSettings[i]] = 
-                defaultTextContainerSettings[currentSettings[i]];
-            }
-          }
-        }
-      }
       
     }
 
@@ -2067,8 +2059,7 @@
           containerMapValues[i].y,
           containerMapValues[i].height,
           containerMapValues[i].width,
-          containerMapValues[i].imageUrl ? // ensure backwards compatibility after field name changed
-            containerMapValues[i].imageUrl : containerMapValues[i].mediaUrl, 
+          containerMapValues[i].mediaUrl,
           containerMapValues[i].settings,
           containerMapValues[i].sections,
           containerMapValues[i].youtubeId,
@@ -3202,20 +3193,36 @@
       document.getElementById(containerId + "-header").style.fontSize =
         container.settings.headerSize + "px";
     }
-    function toggleHeaderBold(checkboxChanged) {
+    function toggleDateBold(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.settings.headerBold = checkboxChanged.target.checked;
-      document.getElementById(containerId + "-header").style.fontWeight = 
+      container.settings.dateBold = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-date").style.fontWeight = 
         checkboxChanged.target.checked ? "bold" : "normal";
     }
-    function toggleHeaderItalic(checkboxChanged) {
+    function toggleDateItalic(checkboxChanged) {
       let containerId = checkboxChanged.target.id.split("-settings")[0];
       let container   = containerDataMap.get(containerId);
 
-      container.settings.headerItalic = checkboxChanged.target.checked;
-      document.getElementById(containerId + "-header").style.fontStyle = 
+      container.settings.dateItalic = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-date").style.fontStyle = 
+        checkboxChanged.target.checked ? "italic" : "normal";
+    }
+    function toggleClockBold(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.settings.clockBold = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-clock").style.fontWeight = 
+        checkboxChanged.target.checked ? "bold" : "normal";
+    }
+    function toggleClockItalic(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.settings.clockItalic = checkboxChanged.target.checked;
+      document.getElementById(containerId + "-clock").style.fontStyle = 
         checkboxChanged.target.checked ? "italic" : "normal";
     }
 
