@@ -349,7 +349,7 @@
             to undo current changes / revert to the last saved state, force refresh the page while still
             editing the page.
             <br /><br />
-
+            
             that concludes the basics. there's some more advanced information below:
           </p>
 
@@ -415,21 +415,6 @@
             </p>
           </div>
 
-          <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-            <p>sharing / backing up (import/export tab)</p>
-            <p class="expandedMenuIndicator">+</p>
-          </div>
-          <div class="expandableMenu">
-            <p>
-              you can export your current page's entire setup to your clipboard in the 
-              "import / export" tab. save the contents somewhere on your computer to store 
-              your theme for later or for sharing with others.<br /><br />
-
-              to load in a theme, simply paste exported data  into the "import" input, 
-              and refresh the page (ignore the warning that saved data will be lost). 
-            </p>
-          </div>
-          
         </div>
 
         <div id="containerPage" class="tabContent">
@@ -482,16 +467,20 @@
         </div>
 
         <div id="ioPage" class="tabContent">
-          <div style="margin-top: 2.5rem">
-            <button style="height: 3rem; width: 100%; margin-bottom: 2.5rem;" onclick="exportData()">export data</button>
+          <div style="display: flex; flex-direction: column; margin: 2rem 0; gap: 1rem;align-items:center;">
+            <p class="menuHeader">import theme file</p>
+            <input id="import-input" type="file" accept".txt" style="width: 45%; align-self: center" />
+            
+            <button style="width: 100%; height: 3rem;" onclick="importData()" >
+              set new theme
+            </button>
           </div>
           <hr />
-          <div style="display: flex; flex-direction: column; margin-top: 2.5rem; gap: 1rem;align-items:center;">
-            <input id="importDataInput" style="width: 90%; align-self: center" placeholder="paste theme data to import here"/>
-            <button style="width: 100%; height: 3rem;" onclick="importData()" >
-              import data
-            </button>
-            <span style="font-size: .8rem">(see help tab for more information)</span>
+          <div style="margin-top:1rem;">
+            <p class="menuHeader">export current page as theme</p>
+            <a id="export-button" download="startpage_theme_export.txt" href="">
+              <button style="height: 3rem; width: 100%; margin-bottom: 2.5rem;">export data</button>
+            </a>
           </div>
         </div>
 
@@ -583,6 +572,7 @@
             </p>
 
         </div>
+   todo: enable changing color of edit page toggle? remove underline from links? nudge elements 1px with arrow keys? reset data button?
     </div>
   </body>
 
@@ -2103,6 +2093,11 @@
           links[i].style.cursor = cursors.link ? 'url("' + cursors.link + '"), pointer' : "pointer";
         }
       }
+
+      // lastly, set current state as download contents for export button
+      const exportData = new Blob([JSON.stringify(localStorage)], {type: 'text/plain'});
+      const url = window.URL.createObjectURL(exportData);
+      document.getElementById("export-button").href = url;
     })();
 
     /**************************
@@ -2225,6 +2220,11 @@
 
         // save active settings tab for next session
         localStorage.setItem("activeTabId", JSON.stringify(activeTabId));
+
+        // lastly, set current state as download contents for export button
+        const exportData = new Blob([JSON.stringify(localStorage)], {type: 'text/plain'});
+        const url = window.URL.createObjectURL(exportData);
+        document.getElementById("export-button").href = url;
 
         document.getElementById("editToggle").innerHTML = "edit page";
       }
@@ -3428,40 +3428,36 @@
     /************************************
      * RESET / IMPORT & EXPORT HANDLERS *
      ************************************/
-    async function exportData() {
-      try {
-        window.focus();
-        await navigator.clipboard.writeText(JSON.stringify(localStorage));
-      } catch (error) {
-        console.error(error.message);
-      }
-      alert(
-        "export to clipboard successful. paste contents to file and keep safe!"
-      );
-    }
-
     function importData(buttonClick) {
-      let data = document.getElementById("importDataInput").value;
-      if (data == "") {
+      let input = document.getElementById("import-input").files[0];
+      if (!input) {
         return;
       }
 
       try {
-        data = JSON.parse(document.getElementById("importDataInput").value);
-      } catch (error) {
+        const reader = new FileReader();
+        reader.onload = () => { 
+          let themeData = reader.result; 
+          themeData = JSON.parse(themeData);
+          for (const [key, value] of Object.entries(themeData)) {
+            localStorage.setItem(key, value);
+          }
+
+          alert(
+            "data import successful. " +
+              "please refresh the page!" +
+              "\n(you can ignore unsaved changes warning, the imported data has already been loaded + stored)"
+          );
+          justImported = true;
+        }
+        reader.readAsText(input);
+      } 
+      catch (error) {
+        console.log(error);
         alert("please only enter data that was provided by the export button!");
       }
 
-      for (const [key, value] of Object.entries(data)) {
-        localStorage.setItem(key, value);
-      }
-
-      alert(
-        "data import successful. " +
-          "please refresh the page!" +
-          "\n(you can ignore unsaved changes warning, the imported data has already been loaded + stored)"
-      );
-      justImported = true;
+      
     }
 
     /*****************
