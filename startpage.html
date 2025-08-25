@@ -1159,6 +1159,11 @@
                   <input id=${this.id + "-settings-link-color"} type="color" />
                 </div>
 
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-link-decor"}>underline links?</label>
+                  <input id=${this.id + "-settings-link-decor"} type="checkbox" />
+                </div>
+
               <p class="menuHeader">layer-wide options</p>
 
                 <div class="containerOptionListing">
@@ -1271,6 +1276,8 @@
           settings.linkColor;
         document.getElementById(this.id + "-settings-link-size").value =
           settings.linkSize;
+        document.getElementById(this.id + "-settings-link-decor").checked =
+          settings.linkDecor;
         // BACKGROUND COLOR
         document.getElementById(this.id + "-settings-bg-color").value =
           rgbToHex(
@@ -1671,6 +1678,9 @@
         document
           .getElementById(this.id + "-settings-link-size")
           .addEventListener("input", changeLinkSize, false);
+        document
+          .getElementById(this.id + "-settings-link-decor")
+          .addEventListener("change", toggleLinkDecor, false); 
         // clock setting listeners
         document
           .getElementById(this.id + "-settings-date-toggle")
@@ -1856,6 +1866,7 @@
           mouseDownMovableElement,
           true
         );
+        // TODO put event listeners here to a single function to handle nudges
         // prevent context menu when resizing
         container.addEventListener("contextmenu", (e) => {
           e.preventDefault();
@@ -1938,6 +1949,8 @@
         for (let i = 0; i < linkElements.length; i++) {
           linkElements[i].style.color = settings.linkColor;
           linkElements[i].style.fontSize = settings.linkSize + "px";
+          linkElements[i].style.textDecoration = settings.linkDecor ?
+            "underline" : "none"; 
         }
         // apply section customization
         let sectionElements = document.getElementsByClassName(this.id + "-section");
@@ -3062,6 +3075,19 @@
       for (let i = 0; i < linkElements.length; i++) {
         linkElements[i].style.fontSize = container.settings.linkSize + "px";
       }
+    }
+    function toggleLinkDecor(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.settings.linkDecor = checkboxChanged.target.checked;
+
+      let linkElements = document.getElementsByClassName(container.id + "-link");
+      for (let i = 0; i < linkElements.length; i++) {
+        linkElements[i].style.textDecoration = container.settings.linkDecor ?
+          "underline" : "none";
+      }
+
     }
 
     function changeSectionColor(colorChange) {
