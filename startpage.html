@@ -619,6 +619,10 @@
       sectionBold: false,
       linkColor: "",
       linkSize: "16",
+      linkDecor: true,
+      linkBold: false,
+      linkItalic: false,
+
       enableDate: true,
       enableClock: true,
       headerColor: "",
@@ -1187,8 +1191,17 @@
                   <input id=${this.id + "-settings-link-decor"} type="checkbox" />
                 </div>
 
-              <p class="menuHeader">general layer font options</p>
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-link-bold"}>bold links?</label>
+                  <input id=${this.id + "-settings-link-bold"} type="checkbox" />
+                </div>
 
+                <div class="containerOptionListing">
+                  <label for=${this.id + "-settings-link-italic"}>italic links?</label>
+                  <input id=${this.id + "-settings-link-italic"} type="checkbox" />
+                </div>
+
+              <p class="menuHeader">general layer font options</p>
                 <div class="containerOptionListing">
                   <div>
                     <p style="margin: 0;">
@@ -1301,6 +1314,10 @@
           settings.linkSize;
         document.getElementById(this.id + "-settings-link-decor").checked =
           settings.linkDecor;
+        document.getElementById(this.id + "-settings-link-bold").checked =
+          settings.linkBold;
+        document.getElementById(this.id + "-settings-link-italic").checked =
+          settings.linkItalic;
         // BACKGROUND COLOR
         document.getElementById(this.id + "-settings-bg-color").value =
           rgbToHex(
@@ -1704,6 +1721,12 @@
         document
           .getElementById(this.id + "-settings-link-decor")
           .addEventListener("change", toggleLinkDecor, false); 
+        document
+          .getElementById(this.id + "-settings-link-bold")
+          .addEventListener("change", toggleLinkBold, false);  
+        document
+          .getElementById(this.id + "-settings-link-italic")
+          .addEventListener("change", toggleLinkItalic, false);
         // clock setting listeners
         document
           .getElementById(this.id + "-settings-date-toggle")
@@ -1979,6 +2002,10 @@
           linkElements[i].style.fontSize = settings.linkSize + "px";
           linkElements[i].style.textDecoration = settings.linkDecor ?
             "underline" : "none"; 
+          linkElements[i].style.fontWeight = settings.linkBold ?
+            "bold" : "normal"; 
+          linkElements[i].style.fontStyle = settings.linkItalic ?
+            "italic" : "normal"; 
         }
         // apply section customization
         let sectionElements = document.getElementsByClassName(this.id + "-section");
@@ -3186,7 +3213,30 @@
         linkElements[i].style.textDecoration = container.settings.linkDecor ?
           "underline" : "none";
       }
+    }
+    function toggleLinkBold(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId);
 
+      container.settings.linkBold = checkboxChanged.target.checked;
+
+      let linkElements = document.getElementsByClassName(container.id + "-link");
+      for (let i = 0; i < linkElements.length; i++) {
+        linkElements[i].style.fontWeight = container.settings.linkBold ?
+          "bold" : "normal";
+      }
+    }
+    function toggleLinkItalic(checkboxChanged) {
+      let containerId = checkboxChanged.target.id.split("-settings")[0];
+      let container   = containerDataMap.get(containerId);
+
+      container.settings.linkItalic = checkboxChanged.target.checked;
+
+      let linkElements = document.getElementsByClassName(container.id + "-link");
+      for (let i = 0; i < linkElements.length; i++) {
+        linkElements[i].style.fontStyle = container.settings.linkItalic ?
+          "italic" : "normal";
+      }
     }
 
     function changeSectionColor(colorChange) {
