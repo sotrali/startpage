@@ -362,23 +362,23 @@
               there are some keyboard shortcuts for your convenience:<br />
               "e" = enables editing mode<br />
               esc = disables editing mode (and saves page)<br /> 
-              <br />
-              arrow keys = slight movement (must click on container first to focus)<br />
-              backspace = delete container (must click on container first to focus)<br />
+              backspace = delete last clicked container (only in editing mode)<br />
             </p>
             <hr />
             <p>
               <u>precise adjustments:</u>
-              click on a slider (e.g. border width) to focus it, keep your mouse hovered over it, 
-              and use the arrow keys to make minute changes.
+              click on a container or settings slider to focus it, then use the arrow keys 
+              to make minute changes.
             </p>
             <hr />
             <p>
               <u>floating text</u>:<br />
-              create a bookmark layer, remove the border, and set the background opacity to zero.
-              <br /> then, add new sections to the layer without entering any label/link information.
-              customize the layer's section text to your liking and place wherever you want.
+              to create floating text, create a bookmark layer, remove the border, and 
+              set the background opacity to zero. then, add new sections to the layer 
+              with no bookmark link or label information. customize the layer's section 
+              text to your liking and place freely.
             </p>
+            <hr />
             <p>
               <u>straight lines</u>:<br />
               create a bookmark layer and set the border to your desired line width. remove the 
@@ -399,7 +399,8 @@
 
               NOTE: if you have multiple font families in your cart (it tracks all
               of the fonts you press "get font" on), only the top one will be 
-              loaded. also, only regular versions of fonts are supported.<br /><br />
+              loaded into your startpage. also, only regular versions of fonts 
+              are supported.<br /><br />
 
               to load a font:<br />
               
@@ -670,6 +671,8 @@
 
     let cursors = {};
 
+    // TODO: settings for italize / bold bookmark links
+
     class Container {
       id;
       name;
@@ -869,7 +872,7 @@
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-            <div class="movable container" id=${this.id} tabindex="0">
+            <div class="movable container" id=${this.id} tabindex="0" >
               <div class="autoMarginHolder">
                 <div id=${this.id + "-header"} class="containerHeader">
                   <div id=${this.id + "-date"}></div>
@@ -1086,12 +1089,12 @@
               <p class="menuHeader">date + time options</p>
 
                <div class="containerOptionListing">
-                  <label for=${this.id + "-settings-clock-color"}>set text color: </label>
+                  <label for=${this.id + "-settings-clock-color"}>set font color: </label>
                   <input id=${this.id + "-settings-clock-color"} type="color" />
                 </div>
 
                 <div class="containerOptionListing">
-                  <label>set text font size (px): </label>
+                  <label>set font size (px): </label>
                   <input id=${this.id + "-settings-clock-size"} />
                 </div>
 
@@ -1142,7 +1145,7 @@
             </div>
 
             <div class="expandableMenuToggle" onclick="toggleExpandableMenu(this)">
-              <p>text / font options</p>
+              <p>section / link / font options</p>
               <p class="expandedMenuIndicator">+</p>
             </div>
             <div class="expandableMenu">
@@ -1184,7 +1187,7 @@
                   <input id=${this.id + "-settings-link-decor"} type="checkbox" />
                 </div>
 
-              <p class="menuHeader">layer-wide options</p>
+              <p class="menuHeader">general layer font options</p>
 
                 <div class="containerOptionListing">
                   <div>
