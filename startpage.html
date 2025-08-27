@@ -572,7 +572,7 @@
             </p>
 
         </div>
-   todo: enable changing color of edit page toggle? remove underline from links? nudge elements 1px with arrow keys? reset data button?
+   todo: enable changing color of edit page toggle?  reset data button?
     </div>
   </body>
 
@@ -809,6 +809,7 @@
             style="z-index: ${numberOfMediaContainers + numberOfTextContainers};"
             src="${this.mediaUrl}"
             draggable=false
+            tabindex="0"
           ></img>
           ${loadingFromSave ? `</a>` : ``}
         `
@@ -828,6 +829,7 @@
             id=${this.id}
             class="movable media"
             style="width:640px;height:480px"
+            tabindex="0"
           >
             <div class="youtubeEmbedCover" style="z-index: ${900 + numberOfMediaContainers + numberOfTextContainers}; ${editing ? 'display: block"' : 'display:none;"'}></div>
             <iframe
@@ -849,7 +851,7 @@
         document.body.insertAdjacentHTML(
           "beforeend",
           `
-            <div class="movable container" id=${this.id}>
+            <div class="movable container" id=${this.id} tabindex="0">
               <div class="autoMarginHolder">
                 <div id=${this.id + "-header"} class="containerHeader">
                   <div id=${this.id + "-date"}></div>
@@ -920,7 +922,7 @@
         document.getElementById("containers").insertAdjacentHTML(
           "afterbegin",
           `
-          <div class="containerListing" id=${this.id + "-container-listing"}>
+          <div class="containerListing" id=${this.id + "-container-listing"} tabIndex="0">
 
           <div class="expandableMenuToggle active" onclick="toggleExpandableMenu(this)">
             <p id=${this.id + "--listing-header"}>[${this.settings.zIndex}]: ${this.name}</p>
@@ -1866,8 +1868,13 @@
           mouseDownMovableElement,
           true
         );
-        // TODO put event listeners here to a single function to handle nudges
-        // prevent context menu when resizing
+
+        container.addEventListener(
+          "keydown",
+          keyDownMovableElement,
+          false
+        );
+
         container.addEventListener("contextmenu", (e) => {
           e.preventDefault();
         });
@@ -1972,6 +1979,7 @@
       
       /** add keybinds */
       document.body.addEventListener("keydown", (e) => {
+        console.log("grabbed");
         if (e.key == "e" && !editing) {
           toggleEditMode();
         }
@@ -2634,7 +2642,15 @@
       updateContainerListingOrder();
     }
     function deleteContainer(buttonPressed) {
-      let containerId = buttonPressed.id.split("--")[0];
+      let  containerId;
+      if (buttonPressed.id) {
+        containerId = buttonPressed.id.split("--")[0];
+      }
+      else {
+        // if being called from keyboard shortcut
+        containerId = buttonPressed;
+      }
+
       let container = containerDataMap.get(containerId);
 
       if (container.mediaUrl == undefined) {
@@ -2677,7 +2693,7 @@
       return -1;
     }
 
-    /** upon click release on movable elements, store position data for when saving to localStorage when disabling edit mode */
+    /** upon click release on movable elements, store position data to save to localStorage when edit mode gets disabled */
     function storeElementData() {
       let borderWidth = changingElement.style.borderWidth.slice(0, -2) * 2; // slice to remove "px"
       let element = document.getElementById(changingElement.id);
@@ -2859,6 +2875,45 @@
             storeElementData();
           }
         });
+      }
+    }
+
+    function keyDownMovableElement(keyDown) {
+      if (!editing || 
+        keyDown.target.id == "settingsContainer" ||
+        keyDown.key == "Escape"
+      ) {
+        console.log(keyDown.key);
+        console.log(keyDown.target.id);
+        return;
+      }
+      keyDown.stopPropagation();
+
+      changingElement = document.getElementById(keyDown.target.id);
+
+      currentX = parseInt(changingElement.style.left.replace("px", ""));
+      currentY = parseInt(changingElement.style.top.replace("px", ""));
+
+      // deletion
+      if(keyDown.key == "Backspace") {
+        deleteContainer(keyDown.target.id);
+      }
+      // nudges
+      if(keyDown.key == "ArrowUp") {
+        changingElement.style.top =`${currentY - 1}px`;
+        storeElementData();
+      }
+      if(keyDown.key == "ArrowRight") {
+        changingElement.style.left =`${currentX + 1}px`;
+        storeElementData();
+      }
+      if(keyDown.key == "ArrowDown") {
+        changingElement.style.top =`${currentY + 1}px`;
+        storeElementData();
+      }
+      if(keyDown.key == "ArrowLeft") {
+        changingElement.style.left =`${currentX - 1}px`;
+        storeElementData();
       }
     }
 
