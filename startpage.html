@@ -362,7 +362,9 @@
               there are some keyboard shortcuts for your convenience:<br />
               "e" = enables editing mode<br />
               esc = disables editing mode (and saves page)<br /> 
-              <!-- "1"-"4" = jump between settings box tabs<br /><br /> -->
+              <br />
+              arrow keys = slight movement (must click on container first to focus)<br />
+              backspace = delete container (must click on container first to focus)<br />
             </p>
             <hr />
             <p>
@@ -566,19 +568,35 @@
               <input id="autoplayAudioToggle" type="checkbox" checked />
             </div>
 
-           <p>
+            <p>
               NOTE: autoplay requires either whitelisting this site or generally 
               enabling "allow auto-play audio" in your browser's settings.
             </p>
 
+          <hr />
+
+          <h2 class="menuHeader">edit mode toggle</h2>
+            <div class="containerOptionListing">
+              <label for="edit-toggle-color">set "edit mode" toggle color: </label>
+              <input id="edit-toggle-color" type="color" />
+            </div>
+
+            <div class="containerOptionListing">
+              <label for="edit-toggle-alpha">set "edit mode" toggle opacity (%): </label>
+              <input id="edit-toggle-alpha"} type="range" min="0" max="100" />
+            </div>
+           
+
         </div>
-   todo: enable changing color of edit page toggle?  reset data button?
     </div>
   </body>
 
   <script>
     // cookie holder for coordinates + size of settings menu
     let settingsMenuData = {};
+
+    // cookie holder for edit toggle mode customization
+    let editToggleRgba = "rbga(0,0,0,1)";
 
     // cookie holders for container data
     let containerDataMap = new Map();
@@ -1975,33 +1993,39 @@
      * page constructor / init :p *
      ******************************/
     (() => {
+      console.log("========== if you're looking in here because something is broken, reset the page with the `localStorage.clear()` command. that should fix everything");
       window.onbeforeunload = unloadPage;
       
       /** add keybinds */
       document.body.addEventListener("keydown", (e) => {
-        console.log("grabbed");
         if (e.key == "e" && !editing) {
           toggleEditMode();
         }
         if (e.key == "Escape" && editing) {
           toggleEditMode();
         }
-        /*
-        if (e.key == "1" && editing) {
-          changeActiveTab({target: { id: "containerTab" }});
-        }
-        if (e.key == "2" && editing) {
-          changeActiveTab({target: { id: "globalSettingsTab" }});
-        }
-        if (e.key == "3" && editing) {
-          changeActiveTab({target: { id: "helpTab" }});
-        }
-        if (e.key == "4" && editing) {
-          changeActiveTab({target: { id: "ioTab" }});
-        }            */
       });
 
-      
+      /** set edit mode toggle color */
+      editToggleRgba = localStorage.getItem("editToggleRgba") 
+        || "rgba(0,0,0,1)";
+      document.getElementById("editToggle").style.color = editToggleRgba; 
+      // fill in inputs with saved value
+      document.getElementById("edit-toggle-color").value = 
+        rgbToHex(
+            editToggleRgba.replace("rgba(", "").slice(0, -1).split(",").splice(0, 3)
+        );
+      document.getElementById("edit-toggle-alpha").value = 
+        parseInt(
+          editToggleRgba.replace("rgba(", "").slice(0, -1).split(",")[3]
+        ) * 100; 
+      // set event listeners
+      document
+        .getElementById("edit-toggle-color")
+        .addEventListener("input", changeEditToggleColor, false);
+      document
+        .getElementById("edit-toggle-alpha")
+        .addEventListener("input", changeEditToggleColor, false);
 
       /** set wallpaper */
       wallpaper = JSON.parse(localStorage.getItem("wallpaper")) || "";
@@ -2020,6 +2044,13 @@
         document.body.style.backgroundSize = "cover";
         document.body.style.backgroundPosition = "center";
       }
+      // set wallpaper event listeners
+      document
+        .getElementById("wallpaperColorPicker")
+        .addEventListener("input", changeWallpaper, false);
+      document
+        .getElementById("wallpaperRepeatToggle")
+        .addEventListener("change", toggleWallpaperRepeat, false);
 
       /* init audio + auto-play */
       audioLink = JSON.parse(localStorage.getItem("audioLink")) || "";
@@ -2037,16 +2068,11 @@
             );
           });
       }
-
-
-
-      // page wallpaper
+      // add event listeners
       document
-        .getElementById("wallpaperColorPicker")
-        .addEventListener("input", changeWallpaper, false);
-      document
-        .getElementById("wallpaperRepeatToggle")
-        .addEventListener("change", toggleWallpaperRepeat, false);
+        .getElementById("autoplayAudioToggle")
+        .addEventListener("change", toggleAutoplayAudio, false);
+
 
       /** load container data */
       let zIndexMapData = JSON.parse(localStorage.getItem("zIndexMapData")) || [];
@@ -2165,9 +2191,7 @@
       document
         .getElementById("imageRatioToggle")
         .addEventListener("change", toggleImageRatio, false);
-      document
-        .getElementById("autoplayAudioToggle")
-        .addEventListener("change", toggleAutoplayAudio, false);            
+                  
       
       // prevent context menu when resizing
       settingsContainer.addEventListener("contextmenu", (e) => {
@@ -2241,6 +2265,9 @@
 
         // save active settings tab for next session
         localStorage.setItem("activeTabId", JSON.stringify(activeTabId));
+
+        // save edit mode toggle customization
+        localStorage.setItem("editToggleRgba", editToggleRgba);
 
         // lastly, set current state as download contents for export button
         const exportData = new Blob([JSON.stringify(localStorage)], {type: 'text/plain'});
@@ -2606,7 +2633,14 @@
     }
 
     function cloneContainer(buttonPressed) {
-      let containerId = buttonPressed.id.split("--")[0];
+      let containerId;
+      if (buttonPressed.id) {
+        containerId = buttonPressed.id.split("--")[0];
+      }
+      else {
+        // if being called from keyboard shortcut
+        containerId = buttonPressed;
+      }
       let container = containerDataMap.get(containerId);
 
       let newSettings = JSON.parse(JSON.stringify(container.settings));
@@ -2748,6 +2782,15 @@
       }
     }
 
+    function changeEditToggleColor(colorChange) {
+      editToggleRgba = hexToRgba(
+        document.getElementById("edit-toggle-color").value,
+        document.getElementById("edit-toggle-alpha").value
+      );
+
+      document.getElementById("editToggle").style.color = editToggleRgba; 
+    }
+
     function moveElement(mouseMove) {
       if (!moving) {
         return;
@@ -2883,8 +2926,6 @@
         keyDown.target.id == "settingsContainer" ||
         keyDown.key == "Escape"
       ) {
-        console.log(keyDown.key);
-        console.log(keyDown.target.id);
         return;
       }
       keyDown.stopPropagation();
